@@ -49,7 +49,6 @@ def main():
     for i, room in enumerate(rooms):
         print(f"{i + 1}. {room.get_room_name()}")
 
-
     # --- Book 5: Create a new booking draft ---
     start_time = datetime.strptime(start_time_str, "%Y-%m-%d %H:%M")
     end_time = datetime.strptime(end_time_str, "%Y-%m-%d %H:%M")
@@ -60,6 +59,15 @@ def main():
     print("Start time:", start_time_str)
     print("End time:", end_time_str)
 
+    # --- Book 9: Select an available room ---
+    choice = int(input("\nSelect a room number: ")) - 1
+    selected_room = rooms[choice]
+
+    print("\nSelected room:")
+    print(selected_room.get_room_name())
+
+
+    
 
 if __name__ == "__main__":
     main()
