@@ -50,6 +50,16 @@ def main():
         print(f"{i + 1}. {room.get_room_name()}")
 
 
+    # --- Book 5: Create a new booking draft ---
+    start_time = datetime.strptime(start_time_str, "%Y-%m-%d %H:%M")
+    end_time = datetime.strptime(end_time_str, "%Y-%m-%d %H:%M")
+
+    print("\nBooking Summary:")
+    print("Room:", selected_room.get_room_name())
+    print("Building:", selected_room.get_building())
+    print("Start time:", start_time_str)
+    print("End time:", end_time_str)
+
 
 if __name__ == "__main__":
     main()
