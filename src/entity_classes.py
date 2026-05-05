@@ -1,18 +1,8 @@
-"""
-MSSRB - Monash Smart Study Room Booking System
-<<Entity>> 实体类定义
-"""
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional
 
-
-# ============================================================
-# <<Entity>> User - 抽象基类
-# ============================================================
 class User(ABC):
-    """用户抽象基类，Student 和 Admin 的父类"""
-
     def __init__(self, email: str, password: str, first_name: str, last_name: str, phone: str) -> None:
         self.__email: str = email
         self.__password: str = password
@@ -64,9 +54,6 @@ class User(ABC):
         return f"User({self.__email}, {self.__first_name} {self.__last_name})"
 
 
-# ============================================================
-# <<Entity>> Student
-# ============================================================
 class Student(User):
     """学生实体类 (Account Management 1-13, Booking, Checkout)"""
 
@@ -217,9 +204,6 @@ class Student(User):
         return self.__activity_history[start:end]
 
 
-# ============================================================
-# <<Entity>> Admin
-# ============================================================
 class Admin(User):
     """管理员实体类 (Account Management 14-15, Room Management 1-11)"""
 
@@ -252,9 +236,6 @@ class Admin(User):
         return False
 
 
-# ============================================================
-# <<Entity>> Room
-# ============================================================
 class Room:
     """房间实体类 (Room Management 1, 4-8, Booking Management 1)"""
 
@@ -348,9 +329,6 @@ class Room:
             self.__available_time_slots.remove(time_slot)
 
 
-# ============================================================
-# <<Entity>> Booking
-# ============================================================
 class Booking:
     """预定实体类 (Booking Management 2-3, 5-6, 15, Checkout 10)"""
 
@@ -432,9 +410,6 @@ class Booking:
         return "regular_cancellation"
 
 
-# ============================================================
-# <<Entity>> PromoCode
-# ============================================================
 class PromoCode:
     """优惠码实体类 (Checkout 4)"""
 
@@ -478,9 +453,6 @@ class PromoCode:
         return max(0, original_price - self.__discount_amount)
 
 
-# ============================================================
-# <<Entity>> DealPackage
-# ============================================================
 class DealPackage:
     """套餐实体类 (Checkout 3, 5, 7)"""
 
@@ -510,9 +482,6 @@ class DealPackage:
         self.__hours = hours
 
 
-# ============================================================
-# <<Entity>> Equipment
-# ============================================================
 class Equipment:
     """设备实体类 (Booking Management 4, Room Management 5, 11)"""
 
@@ -547,9 +516,6 @@ class Equipment:
         return self.__deposit_amount
 
 
-# ============================================================
-# <<Entity>> ActivityRecord
-# ============================================================
 class ActivityRecord:
     """活动记录实体类 (Account Management 9-10)"""
 
@@ -589,9 +555,6 @@ class ActivityRecord:
         return f"[{self.__date}] {self.__record_type}: {self.__details} (${self.__amount})"
 
 
-# ============================================================
-# <<Entity>> Order
-# ============================================================
 class Order:
     """订单实体类 (Checkout 9-10)"""
 

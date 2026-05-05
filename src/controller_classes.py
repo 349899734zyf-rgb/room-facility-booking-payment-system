@@ -1,6 +1,3 @@
-"""
-MSSRB - <<Controller>> 控制器类定义
-"""
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta
 from entity_classes import (User, Student, Admin, Room, Booking,
@@ -8,7 +5,7 @@ from entity_classes import (User, Student, Admin, Room, Booking,
 
 
 class AuthController:
-    """<<Controller>> 认证控制器 (Account Management 1-4, 6-7, 13-15)"""
+    """认证控制器 (Account Management 1-4, 6-7, 13-15)"""
 
     def __init__(self) -> None:
         self.__students: List[Student] = []
@@ -21,11 +18,9 @@ class AuthController:
         return self.__admins
 
     def validate_email(self, email: str) -> bool:
-        """验证Monash邮箱格式 (Acct 2)"""
         return email.endswith("@student.monash.edu")
 
     def validate_password(self, password: str) -> bool:
-        """验证密码规则 (Acct 3): >=8字符,含大写和数字"""
         if len(password) < 8:
             return False
         has_upper = any(c.isupper() for c in password)
@@ -33,12 +28,10 @@ class AuthController:
         return has_upper and has_digit
 
     def validate_mobile(self, mobile: str) -> bool:
-        """验证手机号格式 (Acct 6): 04XXXXXXXX"""
         return len(mobile) == 10 and mobile.startswith("04") and mobile.isdigit()
 
     def register_student(self, email: str, password: str, first_name: str,
                          last_name: str, phone: str, student_id: str) -> Optional[Student]:
-        """注册学生 (Acct 1)"""
         if not all([email, password, first_name, last_name, phone, student_id]):
             return None
         if not self.validate_email(email):
@@ -50,7 +43,7 @@ class AuthController:
         return student
 
     def login(self, email: str, password: str) -> Optional[User]:
-        """登录 (Acct 4, Acct 15)"""
+        """login"""
         for s in self.__students:
             if s.get_email() == email and s.verify_password(password):
                 return s
@@ -85,7 +78,7 @@ class AuthController:
 
 
 class BookingController:
-    """<<Controller>> 预定控制器 (Booking Management 1-15)"""
+    """预定控制器 (Booking Management 1-15)"""
 
     def __init__(self) -> None:
         self.__rooms: List[Room] = []
@@ -164,7 +157,7 @@ class BookingController:
 
 
 class PaymentController:
-    """<<Controller>> 支付控制器 (Checkout and Booking Handling 1-11)"""
+    """支付控制器 (Checkout and Booking Handling 1-11)"""
 
     def __init__(self) -> None:
         self.__promo_codes: List[PromoCode] = []
@@ -237,7 +230,7 @@ class PaymentController:
 
 
 class RoomController:
-    """<<Controller>> 房间控制器 (Room Management 1, 3-8)"""
+    """房间控制器 (Room Management 1, 3-8)"""
 
     def __init__(self) -> None:
         self.__rooms: List[Room] = []
@@ -316,7 +309,7 @@ class RoomController:
 
 
 class AccountController:
-    """<<Controller>> 账户控制器 (Account Management 5, 8-12)"""
+    """账户控制器 (Account Management 5, 8-12)"""
 
     def __init__(self) -> None:
         pass
@@ -355,7 +348,7 @@ class AccountController:
 
 
 class AdminController:
-    """<<Controller>> 管理员控制器 (Room Management 2, 9-11)"""
+    """管理员控制器 (Room Management 2, 9-11)"""
 
     def __init__(self) -> None:
         self.__all_bookings: List[Booking] = []

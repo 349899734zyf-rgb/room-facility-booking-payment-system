@@ -6,7 +6,6 @@ from controller_classes import BookingController
 def main():
     """
     Entry point of the booking system.
-    This function simulates a simple booking workflow.
     """
     print("=== Booking System Test ===")
 
@@ -66,8 +65,25 @@ def main():
     print("\nSelected room:")
     print(selected_room.get_room_name())
 
+    # --- Book 15: Make booking ---
+    confirm = input("\nConfirm booking? (y/n): ")
 
-    
+    if confirm.lower() == "y":
+        booking = controller.create_booking(
+            student,
+            selected_room,
+            start_time,
+            end_time,
+            False
+        )
+
+        if booking:
+            print("Booking created successfully:", booking.get_booking_id())
+        else:
+            print("Booking failed.")
+    else:
+        print("Booking cancelled.")
+
 
 if __name__ == "__main__":
     main()
