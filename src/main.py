@@ -1,0 +1,55 @@
+from datetime import datetime
+from entity_classes import Student, Room
+from controller_classes import BookingController
+
+
+def main():
+    """
+    Entry point of the booking system.
+    This function simulates a simple booking workflow.
+    """
+    print("=== Booking System Test ===")
+
+    # Initialize controller
+    controller = BookingController()
+
+    # Create a sample student
+    student = Student(
+        "test@student.monash.edu",
+        "Password1",
+        "Yan",
+        "Student",
+        "0412345678",
+        "S001"
+    )
+
+    # Create a sample room
+    room = Room("R001", "Study Room 1", "Building A", 4, 15.0, "09:00-18:00")
+
+    # Set available time slots for the room
+    room.set_available_time_slots([
+        "2026-05-06 10:00-2026-05-06 12:00"
+    ])
+
+    # Add room to controller
+    controller.get_rooms().append(room)
+
+    # --- Book 1: Filter rooms by criteria ---
+    building = input("Enter building: ")
+    start_time_str = input("Enter start time (YYYY-MM-DD HH:MM): ")
+    end_time_str = input("Enter end time (YYYY-MM-DD HH:MM): ")
+
+    rooms = controller.search_rooms(building, start_time_str, end_time_str)
+
+    if not rooms:
+        print("No available rooms found.")
+        return
+
+    print("\nAvailable rooms:")
+    for i, room in enumerate(rooms):
+        print(f"{i + 1}. {room.get_room_name()}")
+
+
+
+if __name__ == "__main__":
+    main()
