@@ -1,89 +1,109 @@
-from datetime import datetime
+import sys
+from file_handler import FileHandler
+from controller_classes import AuthController, BookingController
+from boundary_classes import LoginUI, RegistrationUI, BookingUI
 from entity_classes import Student, Room
-from controller_classes import BookingController
-
 
 def main():
-    """
-    Entry point of the booking system.
-    """
-    print("=== Booking System Test ===")
+    student_file = "students.csv"
 
-    # Initialize controller
-    controller = BookingController()
+    #Initialise Layers
+    auth_ctrl = AuthController()
+    book_ctrl = BookingController()
 
-    # Create a sample student
-    student = Student(
-        "test@student.monash.edu",
-        "Password1",
-        "Yan",
-        "Student",
-        "0412345678",
-        "S001"
-    )
+    login_ui = LoginUI()
+    reg_ui = RegistrationUI()
+    book_ui = BookingUI()
 
-    # Create a sample room
-    room = Room("R001", "Study Room 1", "Building A", 4, 15.0, "09:00-18:00")
+    #Load existing students from CSV into the system
+    existing_students = FileHandler.load_students(student_file)
+    auth_ctrl.get_students().extend(existing_students)
 
-    # Set available time slots for the room
-    room.set_available_time_slots([
-        "2026-05-06 10:00-2026-05-06 12:00"
-    ])
+    #Test Accounts
+    test_users = [
+        ("Student", "One", "00000001", "0461812001", "student1@student.monash.edu", "123456"),
+        ("Student", "Two", "00000002", "0461812002", "student2@student.monash.edu", "123456")
+    ]
 
-    # Add room to controller
-    controller.get_rooms().append(room)
+    emails_in_system = [s.get_email() for s in auth_ctrl.get_students()]
 
-    # --- Book 1: Filter rooms by criteria ---
-    building = input("Enter building: ")
-    start_time_str = input("Enter start time (YYYY-MM-DD HH:MM): ")
-    end_time_str = input("Enter end time (YYYY-MM-DD HH:MM): ")
+    for firstName, lastName, sID, phone, email, password in test_users:
+        if email not in emails_in_system:
+            new_s = Student(firstName, lastName, sID, phone, email, password)
+            auth_ctrl.get_students().append(new_s)
+            FileHandler.save_student(student_file, new_s)
 
-    rooms = controller.search_rooms(building, start_time_str, end_time_str)
+    #Main Menu Loop
+    while True:
+        print()
+        print("=== Monash Smart Study Room Booking System (MSSRB) ===")
+        print("1. Login")
+        print("2. Register")
+        print("3. Exit")
 
-    if not rooms:
-        print("No available rooms found.")
-        return
+        print()
+        choice = input("Selection: ")
 
-    print("\nAvailable rooms:")
-    for i, room in enumerate(rooms):
-        print(f"{i + 1}. {room.get_room_name()}")
+        if choice == "1":
+            #Login
+            creds = login_ui.get_login_credentials()
+            user = auth_ctrl.login(creds['email'], creds['password'])
 
-    # --- Book 5: Create a new booking draft ---
-    start_time = datetime.strptime(start_time_str, "%Y-%m-%d %H:%M")
-    end_time = datetime.strptime(end_time_str, "%Y-%m-%d %H:%M")
+            if user:
+                login_ui.display_login_success(user.get_role())
+                if isinstance(user, Student):
+                    student_menu(user, book_ctrl, book_ui)
+                else:
+                    print("Staff/Admin portal not yet implemented.")
+            else:
+                login_ui.display_invalid_credentials_message()
 
-    print("\nBooking Summary:")
-    print("Room:", selected_room.get_room_name())
-    print("Building:", selected_room.get_building())
-    print("Start time:", start_time_str)
-    print("End time:", end_time_str)
+        elif choice == "2":
+            #Registration
+            data = reg_ui.get_registration_input()
+            new_student = auth_ctrl.register_student(data['firstName'], data['lastName'], data['sID'], data['phone'], data['email'], data['password'])
 
-    # --- Book 9: Select an available room ---
-    choice = int(input("\nSelect a room number: ")) - 1
-    selected_room = rooms[choice]
+            if new_student:
+                FileHandler.save_student(student_file, new_student)
+                reg_ui.display_success_message()
+            else:
+                reg_ui.display_error_message("Registration Failed!")
 
-    print("\nSelected room:")
-    print(selected_room.get_room_name())
+        elif choice == "3":
+            print()
+            print("Thank you for using MSSRB!")
+            sys.exit()
 
-    # --- Book 15: Make booking ---
-    confirm = input("\nConfirm booking? (y/n): ")
+def student_menu(student, book_ctrl, book_ui):
+    while True:
+        print()
+        print("--- Welcome, {} ---".format(student.get_first_name()))
+        print("Student ID: {}".format(student.get_student_id()))
+        print("Balance: ${}".format(student.get_balance()))
+        print()
+        print("1. Search & Filter Rooms")
+        print("2. Logout")
 
-    if confirm.lower() == "y":
-        booking = controller.create_booking(
-            student,
-            selected_room,
-            start_time,
-            end_time,
-            False
-        )
+        print()
+        choice = input("Selection: ")
 
-        if booking:
-            print("Booking created successfully:", booking.get_booking_id())
-        else:
-            print("Booking failed.")
-    else:
-        print("Booking cancelled.")
+        if choice == "1":
+            #Search Logic
+            criteria = book_ui.get_search_criteria()
+            # Controller finds the rooms based on UI input
+            rooms = book_ctrl.search_rooms(
+                criteria['building'],
+                criteria['start'],
+                criteria['end']
+            )
+            # UI displays the list of room objects
+            book_ui.display_available_rooms(rooms)
 
+        elif choice == "2":
+            print()
+            print("Logging Out...")
+            break
 
+#The main() function only runs if this specific file is executed
 if __name__ == "__main__":
     main()
