@@ -92,4 +92,189 @@ if __name__ == "__main__":
 
 
 
+def main_admin_room_management():
+    """Room Management Main Program - Admin Operations"""
+
+    # Create controller and UI
+    room_controller = RoomController()
+    room_ui = RoomManagementUI(room_controller)
+
+    while True:
+        # Display menu
+        room_ui.display_room_management_menu()
+        choice = room_ui.get_management_choice()
+
+        if choice == "1":
+            # ============ 1. Add New Room ============
+            details = room_ui.get_room_details_input()
+            if details:
+                try:
+                    room = room_controller.add_room(
+                        name=details['name'],
+                        building=details['building'],
+                        capacity=int(details['capacity']),
+                        price=float(details['price']),
+                        opening_hours=details['opening_hours']
+                    )
+                    if room:
+                        room_ui.display_add_room_success()
+                    else:
+                        room_ui.display_invalid_input_message()
+                except Exception as e:
+                    print(f"❌ Error: {str(e)}")
+
+        elif choice == "2":
+            # ============ 2. View All Rooms ============
+            rooms = room_controller.get_rooms()
+            room_ui.display_room_list(rooms)
+
+        elif choice == "3":
+            # ============ 3. Delete Room ============
+            rooms = room_controller.get_rooms()
+            room_ui.display_room_list(rooms)
+            room_id = room_ui.get_room_number_input()
+
+            if room_controller.find_room(room_id) is None:
+                room_ui.display_room_not_found_message()
+            else:
+                if room_controller.remove_room(room_id):
+                    room_ui.display_remove_success()
+                else:
+                    room_ui.display_invalid_input_message()
+
+        elif choice == "4":
+            # ============ 4. Update Room Information ============
+            rooms = room_controller.get_rooms()
+            room_ui.display_room_list(rooms)
+            room_id = room_ui.get_room_number_input()
+            room = room_controller.find_room(room_id)
+
+            if room is None:
+                room_ui.display_room_not_found_message()
+            else:
+                room_ui.display_current_room_details(room)
+                updates = room_ui.get_room_update_input()
+
+                if updates:
+                    # Convert string values to appropriate types
+                    updates_dict = {}
+                    for key, value in updates.items():
+                        if key == 'capacity':
+                            updates_dict[key] = int(value)
+                        elif key == 'price':
+                            updates_dict[key] = float(value)
+                        else:
+                            updates_dict[key] = value
+
+                    if room_controller.update_room_info(room_id, updates_dict):
+                        room_ui.display_update_success()
+                        updated_room = room_controller.find_room(room_id)
+                        room_ui.display_current_room_details(updated_room)
+                    else:
+                        room_ui.display_invalid_input_message()
+
+        elif choice == "5":
+            # ============ 5. Update Room Status ============
+            rooms = room_controller.get_rooms()
+            room_ui.display_room_list(rooms)
+            room_id = room_ui.get_room_number_input()
+            room = room_controller.find_room(room_id)
+
+            if room is None:
+                room_ui.display_room_not_found_message()
+            else:
+                status = room_ui.get_usage_status_input()
+
+                if status:
+                    is_student_in = status['is_student_in'] == 'y'
+                    is_equipment_rented = status['is_equipment_rented'] == 'y'
+
+                    if room_controller.update_room_usage_status(
+                            room_id,
+                            is_student_in,
+                            is_equipment_rented
+                    ):
+                        print("\n✅ Room status updated successfully")
+                    else:
+                        room_ui.display_invalid_input_message()
+
+        elif choice == "6":
+            # ============ 6. Update Time Slots ============
+            rooms = room_controller.get_rooms()
+            room_ui.display_room_list(rooms)
+            room_id = room_ui.get_room_number_input()
+            room = room_controller.find_room(room_id)
+
+            if room is None:
+                room_ui.display_room_not_found_message()
+            else:
+                # Display current slots
+                current_slots = room.get_available_time_slots()
+                if current_slots:
+                    print(f"\nCurrent time slots for {room_id}:")
+                    for i, slot in enumerate(current_slots, 1):
+                        print(f"  {i}. {slot}")
+                else:
+                    print(f"\nNo time slots available for {room_id}")
+
+                # Get new time slots
+                print("\nEnter new time slots (format: 09:00-10:00), one per line")
+                print("Enter blank line to finish")
+
+                time_slots = []
+                while True:
+                    slot = input("Time slot: ").strip()
+
+                    if not slot:
+                        break
+
+                    if '-' not in slot:
+                        print("❌ Format error, should be HH:MM-HH:MM")
+                        continue
+
+                    parts = slot.split('-')
+                    if len(parts) != 2:
+                        print("❌ Format error, should be HH:MM-HH:MM")
+                        continue
+
+                    time_slots.append(slot)
+
+                if time_slots:
+                    if room_controller.update_room_time_slots(room_id, time_slots):
+                        print("\n✅ Time slots updated successfully")
+                    else:
+                        room_ui.display_invalid_input_message()
+                else:
+                    print("❌ Please enter at least one time slot")
+
+        elif choice == "7":
+            # ============ 7. View Predicted Income ============
+            rooms = room_controller.get_rooms()
+            room_ui.display_room_list(rooms)
+            room_id = room_ui.get_room_number_input()
+            room = room_controller.find_room(room_id)
+
+            if room is None:
+                room_ui.display_room_not_found_message()
+            else:
+                income = room_controller.get_predicted_income(room_id)
+                booked_slots = room.get_available_time_slots()
+                room_ui.display_room_usage_status(booked_slots, income)
+
+        elif choice == "8":
+            # ============ 8. Return to Main Menu ============
+            print("\n✅ Returning to main menu")
+            break
+
+        else:
+            room_ui.display_invalid_input_message()
+
+        room_ui.pause()
+
+
+# Call in main.py's if __name__ == "__main__":
+if __name__ == "__main__":
+    main_admin_room_management()
+
+
 
