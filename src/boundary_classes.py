@@ -123,23 +123,242 @@ class AdminUI:
     def display_promotion_recorded(self) -> None: pass
 
 
+
+
 class RoomManagementUI:
-    """房间管理界面 (Room Management 1, 3-8)"""
-    def display_room_list(self, rooms: list) -> None: pass
-    def display_room_management_menu(self) -> None: pass
-    def get_management_choice(self) -> str: return ""
-    def get_room_details_input(self) -> Dict[str, str]: return {}
-    def display_add_room_success(self) -> None: pass
-    def get_room_number_input(self) -> str: return ""
-    def display_remove_success(self) -> None: pass
-    def display_room_not_found_message(self) -> None: pass
-    def display_invalid_input_message(self) -> None: pass
-    def display_current_room_details(self, room: object) -> None: pass
-    def get_room_update_input(self) -> Dict[str, str]: return {}
-    def display_update_success(self) -> None: pass
-    def display_room_usage_status(self, booked_slots: list, predicted_income: float) -> None: pass
-    def get_usage_status_input(self) -> Dict[str, str]: return {}
-    def display_predicted_income(self, income: float) -> None: pass
+    """Room Management UI (Room Management 1, 3-8)"""
+
+    def __init__(self, room_controller: 'RoomController') -> None:
+        """Initialize UI with room controller"""
+        self.room_controller = room_controller
+
+    def display_room_list(self, rooms: list) -> None:
+        """Display all rooms in a table format"""
+        if not rooms:
+            print("\n❌ No rooms available")
+            return
+
+        print("\n" + "="*120)
+        print("                                             Room List")
+        print("="*120)
+        print(f"{'Room ID':<12} {'Room Name':<15} {'Building':<12} {'Capacity':<10} {'Price':<12} {'Hours':<15}")
+        print("-"*120)
+
+        for room in rooms:
+            print(f"{room.get_room_id():<12} {room.get_room_name():<15} "
+                  f"{room.get_building():<12} {room.get_capacity():<10} "
+                  f"${room.get_price_per_hour():<11.2f} {room.get_opening_hours():<15}")
+
+        print("="*120)
+
+    def display_room_management_menu(self) -> None:
+        """Display room management menu"""
+        print("\n" + "="*60)
+        print("                    Room Management Menu")
+        print("="*60)
+        print("1. Add New Room")
+        print("2. View All Rooms")
+        print("3. Delete Room")
+        print("4. Update Room Information")
+        print("5. Update Room Status (Student/Equipment)")
+        print("6. Update Available Time Slots")
+        print("7. View Room Predicted Income")
+        print("8. Return to Main Menu")
+        print("="*60)
+
+    def get_management_choice(self) -> str:
+        """Get user menu choice"""
+        return input("Please select an option (1-8): ").strip()
+
+    def get_room_details_input(self) -> Dict[str, str]:
+        """Get room details input for adding new room"""
+        print("\n" + "="*60)
+        print("                    Add New Room")
+        print("="*60)
+
+        try:
+            room_name = input("Room Name (e.g., Study Room A): ").strip()
+            if not room_name:
+                print("❌ Room name cannot be empty")
+                return {}
+
+            building = input("Building (e.g., Building A): ").strip()
+            if not building:
+                print("❌ Building cannot be empty")
+                return {}
+
+            capacity_str = input("Capacity (number of students): ").strip()
+            try:
+                capacity = int(capacity_str)
+                if capacity <= 0:
+                    print("❌ Capacity must be greater than 0")
+                    return {}
+            except ValueError:
+                print("❌ Capacity must be an integer")
+                return {}
+
+            price_str = input("Price per hour (e.g., 25.0): ").strip()
+            try:
+                price = float(price_str)
+                if price <= 0:
+                    print("❌ Price must be greater than 0")
+                    return {}
+            except ValueError:
+                print("❌ Price must be a number")
+                return {}
+
+            opening_hours = input("Opening Hours (e.g., 9:00-18:00): ").strip()
+            if not opening_hours:
+                print("❌ Opening hours cannot be empty")
+                return {}
+
+            return {
+                'name': room_name,
+                'building': building,
+                'capacity': str(capacity),
+                'price': str(price),
+                'opening_hours': opening_hours
+            }
+
+        except Exception as e:
+            print(f"❌ Input error: {str(e)}")
+            return {}
+
+    def display_add_room_success(self) -> None:
+        """Display room added successfully message"""
+        print("\n✅ Room added successfully!")
+
+    def get_room_number_input(self) -> str:
+        """Get room ID input"""
+        return input("\nEnter room ID (e.g., RM0001): ").strip()
+
+    def display_remove_success(self) -> None:
+        """Display room deleted successfully message"""
+        print("\n✅ Room deleted successfully")
+
+    def display_room_not_found_message(self) -> None:
+        """Display room not found message"""
+        print("\n❌ Room not found")
+
+    def display_invalid_input_message(self) -> None:
+        """Display invalid input message"""
+        print("\n❌ Invalid input")
+
+    def display_current_room_details(self, room: object) -> None:
+        """Display current room information"""
+        print("\n" + "-"*60)
+        print("                  Current Room Information")
+        print("-"*60)
+        print(f"Room ID:        {room.get_room_id()}")
+        print(f"Room Name:      {room.get_room_name()}")
+        print(f"Building:       {room.get_building()}")
+        print(f"Capacity:       {room.get_capacity()} students")
+        print(f"Price:          ${room.get_price_per_hour():.2f}/hour")
+        print(f"Opening Hours:  {room.get_opening_hours()}")
+        print("-"*60)
+
+    def get_room_update_input(self) -> Dict[str, str]:
+        """Get room information to update"""
+        print("\nEnter information to update (leave blank to skip)")
+
+        updates = {}
+
+        room_name = input("New room name: ").strip()
+        if room_name:
+            updates['name'] = room_name
+
+        building = input("New building: ").strip()
+        if building:
+            updates['building'] = building
+
+        capacity_str = input("New capacity: ").strip()
+        if capacity_str:
+            try:
+                capacity = int(capacity_str)
+                if capacity <= 0:
+                    print("❌ Capacity must be greater than 0")
+                    return {}
+                updates['capacity'] = str(capacity)
+            except ValueError:
+                print("❌ Capacity must be an integer")
+                return {}
+
+        price_str = input("New price: ").strip()
+        if price_str:
+            try:
+                price = float(price_str)
+                if price <= 0:
+                    print("❌ Price must be greater than 0")
+                    return {}
+                updates['price'] = str(price)
+            except ValueError:
+                print("❌ Price must be a number")
+                return {}
+
+        opening_hours = input("New opening hours: ").strip()
+        if opening_hours:
+            updates['opening_hours'] = opening_hours
+
+        if not updates:
+            print("❌ No information entered to update")
+            return {}
+
+        return updates
+
+    def display_update_success(self) -> None:
+        """Display room updated successfully message"""
+        print("\n✅ Room information updated successfully")
+
+    def display_room_usage_status(self, booked_slots: list, predicted_income: float) -> None:
+        """Display room usage status with booked slots and predicted income"""
+        print("\n" + "-"*60)
+        print("                  Room Usage Status")
+        print("-"*60)
+        print(f"Available Time Slots: {len(booked_slots)}")
+
+        if booked_slots:
+            print("Time Slots:")
+            for i, slot in enumerate(booked_slots, 1):
+                print(f"  {i}. {slot}")
+        else:
+            print("  (No time slots available)")
+
+        print(f"Predicted Income: ${predicted_income:.2f}")
+        print("-"*60)
+
+    def get_usage_status_input(self) -> Dict[str, str]:
+        """Get room usage status input"""
+        print("\n" + "-"*60)
+        print("                  Update Room Status")
+        print("-"*60)
+
+        try:
+            student_input = input("Is there a student in the room? (y/n): ").strip().lower()
+            is_student_in = 'y' if student_input in ['y', 'yes'] else 'n'
+
+            equipment_input = input("Is equipment rented? (y/n): ").strip().lower()
+            is_equipment_rented = 'y' if equipment_input in ['y', 'yes'] else 'n'
+
+            return {
+                'is_student_in': is_student_in,
+                'is_equipment_rented': is_equipment_rented
+            }
+        except Exception:
+            print("❌ Input error")
+            return {}
+
+    def display_predicted_income(self, income: float) -> None:
+        """Display room predicted income"""
+        print("\n" + "-"*60)
+        print("                  Predicted Income")
+        print("-"*60)
+        print(f"Predicted Income: ${income:.2f}")
+        print("-"*60)
+
+    def pause(self) -> None:
+        """Pause and wait for user to press Enter"""
+        input("\nPress Enter to continue...")
+
 
 
 class BookingStatusUI:
