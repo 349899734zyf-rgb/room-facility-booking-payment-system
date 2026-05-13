@@ -33,12 +33,12 @@ class FileHandler:
             reader = csv.DictReader(file)
             for row in reader:
                 s = Student(
+                    row['email'],
+                    row['password'],
                     row['firstName'],
                     row['lastName'],
-                    row['sID'],
                     row['phone'],
-                    row['email'],
-                    row['password']
+                    row['sID']
                 )
                 s.set_balance(float(row['balance']))
                 students.append(s)

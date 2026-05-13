@@ -1,0 +1,3 @@
+firstName,lastName,sID,phone,email,password,balance
+Student A,One,00000001,0461812001,student1@student.monash.edu,Password123,0.0
+Student B,Two,00000002,0461812002,student2@student.monash.edu,Password123,0.0
