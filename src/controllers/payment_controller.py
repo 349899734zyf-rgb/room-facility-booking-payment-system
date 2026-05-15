@@ -1,12 +1,21 @@
 from typing import List, Optional
 
-from entities.entity_classes import (
-    Student,
-    PromoCode,
-    DealPackage,
-    Booking,
-    Order
-)
+try:
+    from src.entity_classes import (
+        Student,
+        PromoCode,
+        DealPackage,
+        Booking,
+        Order
+    )
+except ModuleNotFoundError:
+    from entity_classes import (
+        Student,
+        PromoCode,
+        DealPackage,
+        Booking,
+        Order
+    )
 
 class PaymentController:
     """Checkout and Payment Controller"""
