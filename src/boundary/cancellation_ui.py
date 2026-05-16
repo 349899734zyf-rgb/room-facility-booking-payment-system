@@ -1,6 +1,7 @@
-from datetime import datetime
+﻿from datetime import datetime
 from typing import List
 
+from booking_constants import CANCELLATION_LATE, CANCELLATION_REGULAR, CANCELLATION_STOPPED
 from boundary.booking_ui import BookingUI
 
 
@@ -33,11 +34,11 @@ class CancellationUI:
 
     def display_cancellation_result(self, cancel_type: str, refund: float) -> None:
         """Display the final result after cancellation."""
-        if cancel_type == "regular_cancellation":
+        if cancel_type == CANCELLATION_REGULAR:
             print(f"Booking cancelled successfully. Refund returned: ${refund:.2f}")
-        elif cancel_type == "late_cancellation":
+        elif cancel_type == CANCELLATION_LATE:
             print("Booking cancelled as a late cancellation. No refund was returned.")
-        elif cancel_type == "cancellation_stopped":
+        elif cancel_type == CANCELLATION_STOPPED:
             print("Cancellation stopped. The original booking remains unchanged.")
         else:
             print("Cancellation finished.")

@@ -1,4 +1,16 @@
-from typing import Dict, List
+﻿from typing import Dict, List
+
+from booking_constants import (
+    END_TIME_DISPLAY_FORMAT,
+    REASON_BANNED,
+    REASON_BOOKING_LIMIT_REACHED,
+    REASON_DEAL_PACKAGE_EQUIPMENT_RESTRICTED,
+    REASON_INSUFFICIENT_BALANCE,
+    REASON_INSUFFICIENT_DEAL_HOURS,
+    REASON_INVALID_DURATION,
+    REASON_INVALID_PAYMENT_METHOD,
+    REASON_ROOM_UNAVAILABLE,
+)
 
 
 class BookingUI:
@@ -90,7 +102,7 @@ class BookingUI:
         print(
             f"{booking.get_booking_id()} | "
             f"{room.get_building()} {room.get_room_id()} {room.get_room_name()} | "
-            f"{booking.get_start_time():%Y-%m-%d %H:%M} - {booking.get_end_time():%H:%M} | "
+            f"{booking.get_start_time():%Y-%m-%d %H:%M} - {booking.get_end_time():{END_TIME_DISPLAY_FORMAT}} | "
             f"Equipment: {equipment} | Price: ${booking.get_total_price():.2f}"
         )
 
@@ -112,13 +124,13 @@ class BookingUI:
     def display_booking_failure_message(self, reason: str) -> None:
         """Display a friendly message for common booking failure reasons."""
         messages = {
-            "banned": "Booking failed because the student is banned.",
-            "booking_limit_reached": "Booking failed because the student already has 3 active bookings.",
-            "invalid_duration": "Booking failed because the duration rule was not met.",
-            "room_unavailable": "Booking failed because the room is no longer available.",
-            "insufficient_balance": "Booking failed because the account balance is insufficient.",
-            "insufficient_deal_hours": "Booking failed because deal package hours are insufficient.",
-            "deal_package_equipment_restricted": "Deal package cannot be used with equipment rental.",
-            "invalid_payment_method": "Booking failed because the payment method is invalid.",
+            REASON_BANNED: "Booking failed because the student is banned.",
+            REASON_BOOKING_LIMIT_REACHED: "Booking failed because the student already has 3 active bookings.",
+            REASON_INVALID_DURATION: "Booking failed because the duration rule was not met.",
+            REASON_ROOM_UNAVAILABLE: "Booking failed because the room is no longer available.",
+            REASON_INSUFFICIENT_BALANCE: "Booking failed because the account balance is insufficient.",
+            REASON_INSUFFICIENT_DEAL_HOURS: "Booking failed because deal package hours are insufficient.",
+            REASON_DEAL_PACKAGE_EQUIPMENT_RESTRICTED: "Deal package cannot be used with equipment rental.",
+            REASON_INVALID_PAYMENT_METHOD: "Booking failed because the payment method is invalid.",
         }
         print(messages.get(reason, "Booking failed."))

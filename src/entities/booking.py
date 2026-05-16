@@ -1,5 +1,15 @@
-from datetime import datetime, timedelta
+﻿from datetime import datetime, timedelta
 from typing import Optional
+
+from booking_constants import (
+    BOOKING_STATUS_CANCELLED,
+    BOOKING_STATUS_CONFIRMED,
+    CANCELLATION_LATE,
+    CANCELLATION_REGULAR,
+    DISPLAY_TIME_FORMAT,
+    LATE_CANCELLATION_MINUTES,
+    SECONDS_PER_HOUR,
+)
 
 
 class Booking:
@@ -24,7 +34,7 @@ class Booking:
         self.__equipment_rental = equipment_rental
         self.__total_price = total_price
         self.__equipment_deposit = equipment_deposit
-        self.__status = "confirmed"
+        self.__status = BOOKING_STATUS_CONFIRMED
         self.__payment_method: Optional[str] = None
 
     def get_booking_id(self) -> str:
@@ -68,23 +78,23 @@ class Booking:
 
     def calculate_duration_hours(self) -> float:
         duration = self.__end_time - self.__start_time
-        return duration.total_seconds() / 3600
+        return duration.total_seconds() / SECONDS_PER_HOUR
 
     def is_late_cancellation(self, current_time: Optional[datetime] = None) -> bool:
         check_time = current_time or datetime.now()
         time_before_start = self.__start_time - check_time
-        return timedelta(0) <= time_before_start <= timedelta(minutes=30)
+        return timedelta(0) <= time_before_start <= timedelta(minutes=LATE_CANCELLATION_MINUTES)
 
     def cancel(self, current_time: Optional[datetime] = None) -> str:
-        self.__status = "cancelled"
+        self.__status = BOOKING_STATUS_CANCELLED
         if self.is_late_cancellation(current_time):
-            return "late_cancellation"
-        return "regular_cancellation"
+            return CANCELLATION_LATE
+        return CANCELLATION_REGULAR
 
     def __str__(self) -> str:
         room_id = self.__room.get_room_id() if hasattr(self.__room, "get_room_id") else "unknown room"
         return (
             f"{self.__booking_id} | {room_id} | "
-            f"{self.__start_time:%Y-%m-%d %H:%M} - {self.__end_time:%Y-%m-%d %H:%M} | "
+            f"{self.__start_time:{DISPLAY_TIME_FORMAT}} - {self.__end_time:{DISPLAY_TIME_FORMAT}} | "
             f"{self.__status}"
         )
