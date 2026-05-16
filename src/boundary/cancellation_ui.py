@@ -1,4 +1,9 @@
-﻿from datetime import datetime
+﻿"""
+This file defines the CancellationUI class, which handles text-based input and output
+for reviewing bookings and confirming or stopping cancellation requests.
+"""
+
+from datetime import datetime
 from typing import List
 
 from booking_constants import CANCELLATION_LATE, CANCELLATION_REGULAR, CANCELLATION_STOPPED
@@ -54,3 +59,5 @@ class CancellationUI:
 
     def display_ban_applied_message(self) -> None:
         print("A booking ban has been applied because the late cancellation threshold was reached.")
+
+

@@ -1,4 +1,9 @@
-﻿from datetime import datetime, timedelta
+﻿"""
+This file defines the Booking entity class used to store booking details,
+calculate booking duration, and determine cancellation type.
+"""
+
+from datetime import datetime, timedelta
 from typing import Optional
 
 from booking_constants import (
@@ -98,3 +103,5 @@ class Booking:
             f"{self.__start_time:{DISPLAY_TIME_FORMAT}} - {self.__end_time:{DISPLAY_TIME_FORMAT}} | "
             f"{self.__status}"
         )
+
+

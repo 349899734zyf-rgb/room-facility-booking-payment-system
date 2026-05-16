@@ -1,4 +1,9 @@
-﻿from datetime import datetime, timedelta
+﻿"""
+This file contains simple test cases for the booking module, including room search,
+booking creation, duration validation, booking limits, and cancellation rules.
+"""
+
+from datetime import datetime, timedelta
 
 from booking_constants import (
     BOOKING_STATUS_CONFIRMED,
@@ -186,3 +191,5 @@ def run_all_tests() -> None:
 
 if __name__ == "__main__":
     run_all_tests()
+
+

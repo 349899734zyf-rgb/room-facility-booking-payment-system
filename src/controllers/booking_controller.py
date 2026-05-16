@@ -1,4 +1,9 @@
-﻿from datetime import datetime
+﻿"""
+This file defines the BookingController class, which manages booking search,
+eligibility checks, booking creation, and booking cancellation workflows.
+"""
+
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from booking_constants import (
@@ -271,3 +276,5 @@ class BookingController:
             "available_slot_count": available_slot_count,
             "current_bookings": student.get_active_bookings(),
         }
+
+

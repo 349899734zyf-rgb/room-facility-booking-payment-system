@@ -1,4 +1,9 @@
-﻿from typing import Dict, List
+﻿"""
+This file defines the BookingUI class, which handles text-based input and output
+for room search, room selection, equipment selection, and booking display.
+"""
+
+from typing import Dict, List
 
 from booking_constants import (
     END_TIME_DISPLAY_FORMAT,
@@ -134,3 +139,5 @@ class BookingUI:
             REASON_INVALID_PAYMENT_METHOD: "Booking failed because the payment method is invalid.",
         }
         print(messages.get(reason, "Booking failed."))
+
+
