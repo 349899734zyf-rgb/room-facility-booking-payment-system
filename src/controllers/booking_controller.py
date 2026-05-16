@@ -1,4 +1,4 @@
-﻿"""
+"""
 This file defines the BookingController class, which manages booking search,
 eligibility checks, booking creation, and booking cancellation workflows.
 """
@@ -41,15 +41,18 @@ class BookingController:
     """Controller class for Booking Management user stories 3.1 to 3.15."""
 
     def __init__(self) -> None:
+        """Create an empty booking controller with default settings."""
         self.__rooms: List[Room] = []
         self.__all_bookings: List[Booking] = []
         self.__booking_counter = 0
         self.__equipment_deposit = DEFAULT_EQUIPMENT_DEPOSIT
 
     def get_rooms(self) -> List[Room]:
+        """Return rooms managed by this controller."""
         return self.__rooms
 
     def get_all_bookings(self) -> List[Booking]:
+        """Return all bookings created through this controller."""
         return self.__all_bookings
 
     def add_room(self, room: Room) -> None:
@@ -57,9 +60,11 @@ class BookingController:
         self.__rooms.append(room)
 
     def get_equipment_deposit(self) -> float:
+        """Return the current equipment deposit amount."""
         return self.__equipment_deposit
 
     def set_equipment_deposit(self, amount: float) -> bool:
+        """Update the equipment deposit when the amount is valid."""
         if amount <= 0:
             return False
         self.__equipment_deposit = amount
@@ -76,21 +81,44 @@ class BookingController:
         """Keep the same time format used by Room.available_time_slots."""
         return time_value.strftime(TIME_FORMAT)
 
-    def validate_search_criteria(self, building: str, start_time: str, end_time: str) -> Dict[str, object]:
+    def validate_search_criteria(
+        self,
+        building: str,
+        start_time: str,
+        end_time: str,
+    ) -> Dict[str, object]:
         """Validate building code and time input before searching rooms."""
         start_dt = self.parse_time(start_time)
         end_dt = self.parse_time(end_time)
+        invalid_time_range = (
+            start_dt is None
+            or end_dt is None
+            or end_dt <= start_dt
+        )
 
-        if not building.strip() or start_dt is None or end_dt is None or end_dt <= start_dt:
+        if not building.strip() or invalid_time_range:
             return {"valid": False, "start_time": None, "end_time": None}
 
         return {"valid": True, "start_time": start_dt, "end_time": end_dt}
 
-    def search_rooms(self, building: str, start_time: str, end_time: str) -> Dict[str, object]:
-        """Book 3.1: search available rooms by building and time period."""
-        criteria = self.validate_search_criteria(building, start_time, end_time)
+    def search_rooms(
+        self,
+        building: str,
+        start_time: str,
+        end_time: str,
+    ) -> Dict[str, object]:
+        """Book 3.1: search rooms by building and time period."""
+        criteria = self.validate_search_criteria(
+            building,
+            start_time,
+            end_time,
+        )
         if not criteria["valid"]:
-            return {"success": False, "reason": REASON_INVALID_INPUT, "rooms": []}
+            return {
+                "success": False,
+                "reason": REASON_INVALID_INPUT,
+                "rooms": [],
+            }
 
         available_rooms = []
         for room in self.__rooms:
@@ -101,15 +129,27 @@ class BookingController:
         if not available_rooms:
             return {"success": False, "reason": REASON_NO_ROOMS, "rooms": []}
 
-        return {"success": True, "reason": REASON_ROOMS_FOUND, "rooms": available_rooms}
+        return {
+            "success": True,
+            "reason": REASON_ROOMS_FOUND,
+            "rooms": available_rooms,
+        }
 
-    def validate_duration(self, start_time: datetime, end_time: datetime) -> bool:
-        """Book 3.8: booking duration must be at least 1 hour and in 30-minute blocks."""
-        duration_minutes = int((end_time - start_time).total_seconds() / SECONDS_PER_MINUTE)
-        return duration_minutes >= MINIMUM_BOOKING_MINUTES and duration_minutes % BOOKING_INCREMENT_MINUTES == 0
+    def validate_duration(
+        self,
+        start_time: datetime,
+        end_time: datetime,
+    ) -> bool:
+        """Book 3.8: check minimum duration and 30-minute blocks."""
+        duration_minutes = int(
+            (end_time - start_time).total_seconds() / SECONDS_PER_MINUTE,
+        )
+        long_enough = duration_minutes >= MINIMUM_BOOKING_MINUTES
+        follows_increment = duration_minutes % BOOKING_INCREMENT_MINUTES == 0
+        return long_enough and follows_increment
 
     def check_eligibility(self, student: Student) -> Dict[str, object]:
-        """Book 3.7 and 3.10: check ban status and active booking limit."""
+        """Book 3.7 and 3.10: check ban status and booking limit."""
         is_banned = student.get_booking_ban_status()
         has_reached_limit = student.has_reached_booking_limit()
 
@@ -120,19 +160,37 @@ class BookingController:
             "active_bookings": student.get_active_bookings(),
         }
 
-    def select_room(self, available_rooms: List[Room], room_id: str) -> Optional[Room]:
-        """Book 3.9: select a room only from the displayed available room list."""
+    def select_room(
+        self,
+        available_rooms: List[Room],
+        room_id: str,
+    ) -> Optional[Room]:
+        """Book 3.9: select a room from the displayed room list."""
         for room in available_rooms:
             if room.get_room_id() == room_id:
                 return room
         return None
 
-    def calculate_booking_price(self, room: Room, start_time: datetime, end_time: datetime) -> float:
-        duration_hours = (end_time - start_time).total_seconds() / SECONDS_PER_HOUR
+    def calculate_booking_price(
+        self,
+        room: Room,
+        start_time: datetime,
+        end_time: datetime,
+    ) -> float:
+        """Calculate the room price for the selected booking duration."""
+        duration_hours = (
+            (end_time - start_time).total_seconds() / SECONDS_PER_HOUR
+        )
         return duration_hours * room.get_price_per_hour()
 
-    def calculate_total_required(self, room: Room, start_time: datetime, end_time: datetime,
-                                 equipment_rental: bool) -> float:
+    def calculate_total_required(
+        self,
+        room: Room,
+        start_time: datetime,
+        end_time: datetime,
+        equipment_rental: bool,
+    ) -> float:
+        """Calculate total required payment including equipment deposit."""
         room_price = self.calculate_booking_price(room, start_time, end_time)
         if equipment_rental:
             return room_price + self.__equipment_deposit
@@ -147,7 +205,7 @@ class BookingController:
         equipment_rental: bool,
         payment_method: str = PAYMENT_METHOD_BALANCE,
     ) -> Dict[str, object]:
-        """Book 3.4, 3.5 and 3.15: create a booking after all rules are satisfied."""
+        """Book 3.4, 3.5 and 3.15: create a valid booking."""
         eligibility = self.check_eligibility(student)
         if eligibility["is_banned"]:
             return {"success": False, "reason": REASON_BANNED}
@@ -167,21 +225,35 @@ class BookingController:
 
         if payment_method == PAYMENT_METHOD_BALANCE:
             if student.get_balance() < total_required:
-                return {"success": False, "reason": REASON_INSUFFICIENT_BALANCE}
+                return {
+                    "success": False,
+                    "reason": REASON_INSUFFICIENT_BALANCE,
+                }
             student.deduct_balance(total_required)
         elif payment_method == PAYMENT_METHOD_DEAL_PACKAGE:
             if equipment_rental:
-                return {"success": False, "reason": REASON_DEAL_PACKAGE_EQUIPMENT_RESTRICTED}
+                return {
+                    "success": False,
+                    "reason": REASON_DEAL_PACKAGE_EQUIPMENT_RESTRICTED,
+                }
 
-            duration_hours = (end_time - start_time).total_seconds() / SECONDS_PER_HOUR
+            duration_hours = (
+                (end_time - start_time).total_seconds() / SECONDS_PER_HOUR
+            )
             if student.get_deal_package_hours() < duration_hours:
-                return {"success": False, "reason": REASON_INSUFFICIENT_DEAL_HOURS}
+                return {
+                    "success": False,
+                    "reason": REASON_INSUFFICIENT_DEAL_HOURS,
+                }
             student.deduct_deal_package_hours(duration_hours)
         else:
             return {"success": False, "reason": REASON_INVALID_PAYMENT_METHOD}
 
         self.__booking_counter += 1
-        booking_id = f"{BOOKING_ID_PREFIX}{self.__booking_counter:0{BOOKING_ID_DIGITS}d}"
+        booking_id = (
+            f"{BOOKING_ID_PREFIX}"
+            f"{self.__booking_counter:0{BOOKING_ID_DIGITS}d}"
+        )
         booking = Booking(
             booking_id,
             student,
@@ -198,20 +270,33 @@ class BookingController:
         student.add_booking(booking)
         room.update_availability(f"{start_text}-{end_text}", False)
 
-        return {"success": True, "reason": REASON_BOOKING_CREATED, "booking": booking}
+        return {
+            "success": True,
+            "reason": REASON_BOOKING_CREATED,
+            "booking": booking,
+        }
 
     def get_student_bookings(self, student: Student) -> List[Booking]:
-        """Book 3.11, 3.12 and 3.13: return active bookings for display."""
+        """Book 3.11, 3.12 and 3.13: return active bookings."""
         return student.get_active_bookings()
 
-    def find_student_booking(self, student: Student, booking_id: str) -> Optional[Booking]:
+    def find_student_booking(
+        self,
+        student: Student,
+        booking_id: str,
+    ) -> Optional[Booking]:
+        """Find one active booking owned by the student."""
         for booking in student.get_active_bookings():
             if booking.get_booking_id() == booking_id:
                 return booking
         return None
 
-    def review_booking_before_cancel(self, student: Student, booking_id: str) -> Dict[str, object]:
-        """Book 3.11: show selected booking details before cancellation."""
+    def review_booking_before_cancel(
+        self,
+        student: Student,
+        booking_id: str,
+    ) -> Dict[str, object]:
+        """Book 3.11: show booking details before cancellation."""
         if not booking_id.strip():
             return {"success": False, "reason": REASON_INVALID_INPUT}
 
@@ -234,22 +319,33 @@ class BookingController:
         confirm_cancel: bool,
         current_time: Optional[datetime] = None,
     ) -> Dict[str, object]:
-        """Book 3.2, 3.3, 3.6 and 3.14: cancel or stop a cancellation request."""
+        """Book 3.2, 3.3, 3.6 and 3.14: handle cancellation."""
         booking = self.find_student_booking(student, booking_id)
         if booking is None:
             return {"success": False, "reason": REASON_BOOKING_NOT_FOUND}
 
         if not confirm_cancel:
-            return {"success": True, "reason": CANCELLATION_STOPPED, "booking": booking, "refund": 0.0}
+            return {
+                "success": True,
+                "reason": CANCELLATION_STOPPED,
+                "booking": booking,
+                "refund": 0.0,
+            }
 
         cancel_type = booking.cancel(current_time)
         start_text = self.format_time(booking.get_start_time())
         end_text = self.format_time(booking.get_end_time())
-        booking.get_room().update_availability(f"{start_text}-{end_text}", True)
+        booking.get_room().update_availability(
+            f"{start_text}-{end_text}",
+            True,
+        )
 
         refund = 0.0
         if cancel_type == CANCELLATION_REGULAR:
-            refund = booking.get_total_price() + booking.get_equipment_deposit()
+            refund = (
+                booking.get_total_price()
+                + booking.get_equipment_deposit()
+            )
             student.add_funds(refund)
         else:
             student.record_late_cancellation()
@@ -265,9 +361,11 @@ class BookingController:
         }
 
     def get_booking_system_status(self, student: Student) -> Dict[str, object]:
-        """Book 3.7 and 3.12: provide booking status when entering the booking system."""
+        """Book 3.7 and 3.12: return booking system status."""
         eligibility = self.check_eligibility(student)
-        available_slot_count = sum(len(room.get_available_time_slots()) for room in self.__rooms)
+        available_slot_count = sum(
+            len(room.get_available_time_slots()) for room in self.__rooms
+        )
 
         return {
             "can_make_booking": eligibility["can_make_booking"],
@@ -276,5 +374,4 @@ class BookingController:
             "available_slot_count": available_slot_count,
             "current_bookings": student.get_active_bookings(),
         }
-
 

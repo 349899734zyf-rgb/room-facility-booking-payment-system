@@ -1,6 +1,7 @@
-﻿"""
-This file defines the BookingUI class, which handles text-based input and output
-for room search, room selection, equipment selection, and booking display.
+"""
+This file defines the BookingUI class, which handles text-based input and
+output for room search, room selection, equipment selection, and booking
+display.
 """
 
 from typing import Dict, List
@@ -19,7 +20,7 @@ from booking_constants import (
 
 
 class BookingUI:
-    """Boundary class for booking search, room selection and booking display."""
+    """Boundary class for booking search, selection, and display."""
 
     def display_booking_options(self) -> None:
         """Show the main booking menu."""
@@ -46,14 +47,17 @@ class BookingUI:
         for room in rooms:
             print(
                 f"{room.get_room_id()} | {room.get_room_name()} | "
-                f"Building: {room.get_building()} | Capacity: {room.get_capacity()} | "
+                f"Building: {room.get_building()} | "
+                f"Capacity: {room.get_capacity()} | "
                 f"${room.get_price_per_hour():.2f}/hour"
             )
 
     def display_no_rooms_message(self) -> None:
+        """Show a message when no rooms match the search."""
         print("No rooms are available during the selected time period.")
 
     def display_invalid_input_message(self) -> None:
+        """Show a message when the search input is invalid."""
         print("Invalid input. Please check the building code and time format.")
 
     def get_room_selection(self) -> str:
@@ -61,6 +65,7 @@ class BookingUI:
         return input("Enter the room ID you want to book: ").strip()
 
     def display_room_selection_error(self) -> None:
+        """Show a message when the selected room is invalid."""
         print("The selected room is not in the available room list.")
 
     def display_equipment_options(self) -> None:
@@ -79,9 +84,11 @@ class BookingUI:
         raise ValueError("Invalid equipment choice.")
 
     def display_deposit_requirement(self, amount: float) -> None:
+        """Show the equipment deposit amount."""
         print(f"Equipment deposit required: ${amount:.2f}")
 
     def display_booking_limit_message(self) -> None:
+        """Show a message when the active booking limit is reached."""
         print("You have reached the limit of 3 active bookings.")
 
     def display_booking_ban_info(self, bookings: List[object]) -> None:
@@ -104,14 +111,22 @@ class BookingUI:
         """Display one booking in a readable format."""
         room = booking.get_room()
         equipment = "Yes" if booking.get_equipment_rental() else "No"
+        start_text = booking.get_start_time().strftime("%Y-%m-%d %H:%M")
+        end_text = booking.get_end_time().strftime(END_TIME_DISPLAY_FORMAT)
         print(
             f"{booking.get_booking_id()} | "
-            f"{room.get_building()} {room.get_room_id()} {room.get_room_name()} | "
-            f"{booking.get_start_time():%Y-%m-%d %H:%M} - {booking.get_end_time():{END_TIME_DISPLAY_FORMAT}} | "
-            f"Equipment: {equipment} | Price: ${booking.get_total_price():.2f}"
+            f"{room.get_building()} {room.get_room_id()} "
+            f"{room.get_room_name()} | "
+            f"{start_text} - {end_text} | "
+            f"Equipment: {equipment} | "
+            f"Price: ${booking.get_total_price():.2f}"
         )
 
-    def display_eligibility_status(self, is_banned: bool, available_slots: int) -> None:
+    def display_eligibility_status(
+        self,
+        is_banned: bool,
+        available_slots: int,
+    ) -> None:
         """Show whether the student can make a booking."""
         if is_banned:
             print("Booking status: banned from new bookings.")
@@ -120,9 +135,12 @@ class BookingUI:
         print(f"Available slot groups: {available_slots}")
 
     def display_duration_rule_message(self) -> None:
-        print("Booking duration must be at least 1 hour and must use 30-minute increments.")
+        """Show the booking duration rule."""
+        print("Booking duration must be at least 1 hour.")
+        print("Booking duration must use 30-minute increments.")
 
     def display_booking_confirmation(self, booking: object) -> None:
+        """Show confirmation after a booking is created."""
         print("Booking confirmed.")
         self.display_booking_line(booking)
 
@@ -130,14 +148,27 @@ class BookingUI:
         """Display a friendly message for common booking failure reasons."""
         messages = {
             REASON_BANNED: "Booking failed because the student is banned.",
-            REASON_BOOKING_LIMIT_REACHED: "Booking failed because the student already has 3 active bookings.",
-            REASON_INVALID_DURATION: "Booking failed because the duration rule was not met.",
-            REASON_ROOM_UNAVAILABLE: "Booking failed because the room is no longer available.",
-            REASON_INSUFFICIENT_BALANCE: "Booking failed because the account balance is insufficient.",
-            REASON_INSUFFICIENT_DEAL_HOURS: "Booking failed because deal package hours are insufficient.",
-            REASON_DEAL_PACKAGE_EQUIPMENT_RESTRICTED: "Deal package cannot be used with equipment rental.",
-            REASON_INVALID_PAYMENT_METHOD: "Booking failed because the payment method is invalid.",
+            REASON_BOOKING_LIMIT_REACHED: (
+                "Booking failed because the student already has 3 bookings."
+            ),
+            REASON_INVALID_DURATION: (
+                "Booking failed because the duration rule was not met."
+            ),
+            REASON_ROOM_UNAVAILABLE: (
+                "Booking failed because the room is no longer available."
+            ),
+            REASON_INSUFFICIENT_BALANCE: (
+                "Booking failed because the account balance is insufficient."
+            ),
+            REASON_INSUFFICIENT_DEAL_HOURS: (
+                "Booking failed because deal package hours are insufficient."
+            ),
+            REASON_DEAL_PACKAGE_EQUIPMENT_RESTRICTED: (
+                "Deal package cannot be used with equipment rental."
+            ),
+            REASON_INVALID_PAYMENT_METHOD: (
+                "Booking failed because the payment method is invalid."
+            ),
         }
         print(messages.get(reason, "Booking failed."))
-
 

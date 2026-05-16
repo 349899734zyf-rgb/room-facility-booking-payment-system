@@ -1,6 +1,7 @@
-﻿"""
-This file contains simple test cases for the booking module, including room search,
-booking creation, duration validation, booking limits, and cancellation rules.
+"""
+This file contains simple test cases for the booking module, including room
+search, booking creation, duration validation, booking limits, and cancellation
+rules.
 """
 
 from datetime import datetime, timedelta
@@ -59,7 +60,14 @@ def make_student(balance: float = TEST_BALANCE) -> Student:
 
 def make_room(room_id: str = TEST_ROOM_ID) -> Room:
     """Create a sample room for booking tests."""
-    return Room(room_id, TEST_ROOM_NAME, TEST_BUILDING, TEST_CAPACITY, TEST_PRICE_PER_HOUR, TEST_OPENING_HOURS)
+    return Room(
+        room_id,
+        TEST_ROOM_NAME,
+        TEST_BUILDING,
+        TEST_CAPACITY,
+        TEST_PRICE_PER_HOUR,
+        TEST_OPENING_HOURS,
+    )
 
 
 def slot_text(start_time: datetime, end_time: datetime) -> str:
@@ -74,7 +82,11 @@ def test_search_available_room() -> None:
     room.set_available_time_slots([slot_text(BASE_START_TIME, BASE_END_TIME)])
     controller.add_room(room)
 
-    result = controller.search_rooms(TEST_BUILDING, SEARCH_START_TEXT, SEARCH_END_TEXT)
+    result = controller.search_rooms(
+        TEST_BUILDING,
+        SEARCH_START_TEXT,
+        SEARCH_END_TEXT,
+    )
 
     assert result["success"] is True
     assert result["rooms"] == [room]
@@ -87,7 +99,13 @@ def test_create_booking_success() -> None:
     room = make_room()
     room.set_available_time_slots([slot_text(BASE_START_TIME, BASE_END_TIME)])
 
-    result = controller.create_booking(student, room, BASE_START_TIME, BASE_END_TIME, False)
+    result = controller.create_booking(
+        student,
+        room,
+        BASE_START_TIME,
+        BASE_END_TIME,
+        False,
+    )
 
     assert result["success"] is True
     assert result["booking"].get_status() == BOOKING_STATUS_CONFIRMED
@@ -101,7 +119,13 @@ def test_invalid_duration_fails() -> None:
     room = make_room()
     room.set_available_time_slots([slot_text(BASE_START_TIME, SHORT_END_TIME)])
 
-    result = controller.create_booking(student, room, BASE_START_TIME, SHORT_END_TIME, False)
+    result = controller.create_booking(
+        student,
+        room,
+        BASE_START_TIME,
+        SHORT_END_TIME,
+        False,
+    )
 
     assert result["success"] is False
     assert result["reason"] == REASON_INVALID_DURATION
@@ -116,12 +140,30 @@ def test_booking_limit_fails() -> None:
     for index in range(BOOKING_LIMIT_COUNT):
         start_time = datetime(2026, 5, 12 + index, 10, 0)
         end_time = datetime(2026, 5, 12 + index, 12, 0)
-        room.set_available_time_slots(room.get_available_time_slots() + [slot_text(start_time, end_time)])
-        result = controller.create_booking(student, room, start_time, end_time, False)
+        current_slots = room.get_available_time_slots()
+        room.set_available_time_slots(
+            current_slots + [slot_text(start_time, end_time)],
+        )
+        result = controller.create_booking(
+            student,
+            room,
+            start_time,
+            end_time,
+            False,
+        )
         assert result["success"] is True
 
-    room.set_available_time_slots(room.get_available_time_slots() + [slot_text(FOURTH_BOOKING_START, FOURTH_BOOKING_END)])
-    result = controller.create_booking(student, room, FOURTH_BOOKING_START, FOURTH_BOOKING_END, False)
+    room.set_available_time_slots(
+        room.get_available_time_slots()
+        + [slot_text(FOURTH_BOOKING_START, FOURTH_BOOKING_END)],
+    )
+    result = controller.create_booking(
+        student,
+        room,
+        FOURTH_BOOKING_START,
+        FOURTH_BOOKING_END,
+        False,
+    )
 
     assert result["success"] is False
     assert result["reason"] == REASON_BOOKING_LIMIT_REACHED
@@ -134,7 +176,13 @@ def test_regular_cancellation_refunds_balance() -> None:
     room = make_room()
     room.set_available_time_slots([slot_text(BASE_START_TIME, BASE_END_TIME)])
 
-    booking_result = controller.create_booking(student, room, BASE_START_TIME, BASE_END_TIME, False)
+    booking_result = controller.create_booking(
+        student,
+        room,
+        BASE_START_TIME,
+        BASE_END_TIME,
+        False,
+    )
     booking = booking_result["booking"]
     balance_after_payment = student.get_balance()
 
@@ -148,7 +196,9 @@ def test_regular_cancellation_refunds_balance() -> None:
     assert cancel_result["success"] is True
     assert cancel_result["reason"] == CANCELLATION_REGULAR
     assert cancel_result["refund"] == booking.get_total_price()
-    assert student.get_balance() == balance_after_payment + booking.get_total_price()
+    assert student.get_balance() == (
+        balance_after_payment + booking.get_total_price()
+    )
 
 
 def test_late_cancellation_has_no_refund() -> None:
@@ -156,11 +206,18 @@ def test_late_cancellation_has_no_refund() -> None:
     controller = BookingController()
     student = make_student()
     room = make_room()
-    start_time = datetime.now().replace(second=0, microsecond=0) + timedelta(minutes=LATE_CANCELLATION_START_OFFSET)
+    start_time = datetime.now().replace(second=0, microsecond=0)
+    start_time += timedelta(minutes=LATE_CANCELLATION_START_OFFSET)
     end_time = start_time + timedelta(hours=1)
     room.set_available_time_slots([slot_text(start_time, end_time)])
 
-    booking_result = controller.create_booking(student, room, start_time, end_time, False)
+    booking_result = controller.create_booking(
+        student,
+        room,
+        start_time,
+        end_time,
+        False,
+    )
     booking = booking_result["booking"]
     balance_after_payment = student.get_balance()
 
@@ -168,7 +225,8 @@ def test_late_cancellation_has_no_refund() -> None:
         student,
         booking.get_booking_id(),
         True,
-        current_time=start_time - timedelta(minutes=LATE_CANCELLATION_CHECK_OFFSET),
+        current_time=start_time
+        - timedelta(minutes=LATE_CANCELLATION_CHECK_OFFSET),
     )
 
     assert cancel_result["success"] is True
@@ -191,5 +249,4 @@ def run_all_tests() -> None:
 
 if __name__ == "__main__":
     run_all_tests()
-
 
