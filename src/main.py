@@ -1,6 +1,13 @@
-from datetime import datetime
+import datetime
 from entity_classes import Student, Room
-from controller_classes import BookingController
+from controller_classes import BookingController, RoomController, AdminController
+from boundary_classes import (
+    RoomManagementUI,
+    AdminUI,
+    BookingStatusUI,
+    BanStudentUI,
+    EquipmentDepositUI
+)
 
 
 def main():
@@ -271,6 +278,190 @@ def main_admin_room_management():
 
         room_ui.pause()
 
+def main_admin_login():
+    """
+    Story 1.15: Admin Login
+    Administrator wants to log in so they can manage rooms and system settings
+    """
+    print("\n" + "=" * 80)
+    print(" " * 25 + "ADMIN LOGIN")
+    print("=" * 80)
+
+    username = input("Enter admin username: ").strip()
+    password = input("Enter admin password: ").strip()
+
+    # TODO: Call auth_controller to verify credentials
+    # If verification succeeds, return admin object
+    print("Success: Admin logged in successfully!")
+    return True
+
+
+def main_admin_booking_status(booking_controller, booking_status_ui):
+    """
+    Story 2.9: Update Booking Status
+    Administrator wants to update booking status for accurate records
+    """
+
+    while True:
+        print("\n" + "=" * 80)
+        print(" " * 20 + "UPDATE BOOKING STATUS")
+        print("=" * 80)
+
+        # Display all bookings
+        bookings = booking_controller.get_all_bookings()
+        booking_status_ui.display_booking_records(bookings)
+
+        # Get booking to update
+        booking_id = booking_status_ui.get_booking_selection()
+
+        booking = booking_controller.find_booking(booking_id)
+
+        if booking is None:
+            print("Error: Booking not found")
+        else:
+            # Display booking details (if method exists)
+            if hasattr(booking_status_ui, 'display_booking_details'):
+                booking_status_ui.display_booking_details(booking)
+
+            # Get new status
+            new_status = booking_status_ui.get_new_status()
+
+            if new_status:
+                if booking_controller.update_booking_status(booking_id, new_status):
+                    booking_status_ui.display_status_update_success()
+                else:
+                    print("Error: Failed to update booking status")
+
+        # Ask to continue
+        continue_choice = input("\nUpdate another booking? (y/n): ").strip().lower()
+        if continue_choice not in ['y', 'yes']:
+            break
+
+def main_admin_ban_student(admin_controller, ban_student_ui):
+    """
+    Story 2.10: Ban Student
+    Administrator wants to ban a student for inappropriate behavior
+    """
+
+    while True:
+        print("\n" + "=" * 80)
+        print(" " * 25 + "BAN STUDENT")
+        print("=" * 80)
+
+        # Display all students
+        students = admin_controller.get_all_students()
+
+        if hasattr(ban_student_ui, 'display_students'):
+            ban_student_ui.display_students(students)
+
+        # Get student selection
+        student_id = ban_student_ui.get_student_selection()
+
+        student = admin_controller.find_student(student_id)
+
+        if student is None:
+            ban_student_ui.display_student_not_found_message()
+        else:
+            is_banned = student.is_banned()
+            ban_student_ui.display_student_info(student_id, is_banned)
+
+            if is_banned:
+                # If already banned, ask to unban
+                if ban_student_ui.get_unban_confirmation():
+                    if admin_controller.unban_student(student_id):
+                        ban_student_ui.display_unban_success()
+            else:
+                # If not banned, ask to ban
+                if ban_student_ui.get_ban_confirmation():
+                    if admin_controller.ban_student(student_id):
+                        ban_student_ui.display_ban_success()
+
+        continue_choice = input("\nManage another student? (y/n): ").strip().lower()
+        if continue_choice not in ['y', 'yes']:
+            break
+
+def main_admin_equipment_deposit(admin_controller, equipment_deposit_ui):
+    """
+    Story 2.11: Set Equipment Deposit
+    Administrator wants to set deposit amounts for equipment packages
+    """
+
+    while True:
+        print("\n" + "=" * 80)
+        print(" " * 20 + "SET EQUIPMENT DEPOSIT")
+        print("=" * 80)
+
+        # Display all equipment
+        equipments = admin_controller.get_all_equipment()
+        equipment_deposit_ui.display_equipment_list(equipments)
+
+        # Get equipment selection
+        equipment_id = equipment_deposit_ui.get_equipment_selection()
+
+        equipment = admin_controller.find_equipment(equipment_id)
+
+        if equipment is None:
+            print("Error: Equipment not found")
+        else:
+            current_deposit = equipment.get_deposit_amount()
+            equipment_deposit_ui.display_current_deposit(equipment_id, current_deposit)
+
+            # Get deposit amount
+            amount = equipment_deposit_ui.get_deposit_amount_input()
+
+            if amount > 0:
+                if equipment_deposit_ui.get_deposit_confirmation():
+                    if admin_controller.set_equipment_deposit(equipment_id, amount):
+                        equipment_deposit_ui.display_deposit_set_success(amount)
+                    else:
+                        print("Error: Failed to set equipment deposit")
+
+        continue_choice = input("\nSet deposit for another equipment? (y/n): ").strip().lower()
+        if continue_choice not in ['y', 'yes']:
+            break
+
+def main_admin_menu(admin_controller, room_controller, booking_controller):
+    """
+    Main Admin Menu - Integrates all admin management functions
+    This is the main entry point for admin operations
+    """
+
+    # Initialize all UI instances
+    room_ui = RoomManagementUI(room_controller)
+    admin_ui = AdminUI(admin_controller)
+    booking_status_ui = BookingStatusUI(booking_controller)
+    ban_student_ui = BanStudentUI(admin_controller)
+    equipment_deposit_ui = EquipmentDepositUI(admin_controller)
+
+    while True:
+        # Display admin home menu
+        admin_ui.display_admin_home()
+
+        choice = input("Select an option (1-5): ").strip()
+
+        if choice == "1":
+            # Room Management
+            main_admin_room_management()
+
+        elif choice == "2":
+            # Update Booking Status
+            main_admin_booking_status(booking_controller, booking_status_ui)
+
+        elif choice == "3":
+            # Ban Student
+            main_admin_ban_student(admin_controller, ban_student_ui)
+
+        elif choice == "4":
+            # Set Equipment Deposit
+            main_admin_equipment_deposit(admin_controller, equipment_deposit_ui)
+
+        elif choice == "5":
+            # Logout
+            print("\nSuccess: Admin logged out successfully")
+            break
+
+        else:
+            print("\nError: Invalid choice")
 
 # Call in main.py's if __name__ == "__main__":
 if __name__ == "__main__":
