@@ -7,8 +7,11 @@ import unittest
 import sys
 sys.path.insert(0, r"d:\5136\project 2\src")
 
-from entity_classes import Student, Room, Booking, Equipment
-from controller_classes import BookingController
+from entities.student import Student
+from entities.room import Room
+from entities.booking import Booking
+from entities.equipment import Equipment
+from controllers.booking_controller import BookingController
 from datetime import datetime, timedelta
 
 

@@ -7,8 +7,12 @@ import unittest
 import sys
 sys.path.insert(0, r"d:\5136\project 2\src")
 
-from entity_classes import Student, Admin, User
-from controller_classes import AuthController, AccountController, AdminController
+from entities.student import Student
+from entities.admin import Admin
+from entities.user import User
+from controllers.auth_controller import AuthController
+from controllers.account_controller import AccountController
+from controllers.admin_controller import AdminController
 
 
 # ============================================================

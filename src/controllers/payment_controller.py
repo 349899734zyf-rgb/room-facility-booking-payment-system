@@ -5,23 +5,6 @@ from entities.order import Order
 from entities.student import Student
 from entities.booking import Booking
 
-try:
-    from src.entity_classes import (
-        Booking,
-        DealPackage,
-        Order,
-        PromoCode,
-        Student
-    )
-except ModuleNotFoundError:
-    from entity_classes import (
-        Booking,
-        DealPackage,
-        Order,
-        PromoCode,
-        Student
-    )
-
 class PaymentController:
     """Checkout and Payment Controller"""
 
