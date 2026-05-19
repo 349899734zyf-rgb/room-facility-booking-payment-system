@@ -19,13 +19,14 @@ class EquipmentDepositUI:
         print("\n" + "=" * 120)
         print(" " * 45 + "EQUIPMENT LIST")
         print("=" * 120)
-        print(f"{'Equipment ID':<15} {'Name':<20} {'Current Deposit':<20} {'Category':<20}")
+        print(f"{'Equipment ID':<15} {'Current Deposit':<20} {'Available':<15}")
         print("-" * 120)
 
         for equipment in equipments:
             deposit = equipment.get_deposit_amount()
-            print(f"{equipment.get_equipment_id():<15} {equipment.get_name():<20} "
-                  f"${deposit:<19.2f} {equipment.get_category():<20}")
+            available = 'Yes' if equipment.get_is_available() else 'No'
+            print(f"{equipment.get_equipment_id():<15} "
+                  f"${deposit:<19.2f} {available:<15}")
 
         print("=" * 120)
 
