@@ -42,6 +42,7 @@ class Booking:
         self.__equipment_deposit = equipment_deposit
         self.__status = BOOKING_STATUS_CONFIRMED
         self.__payment_method: Optional[str] = None
+        self.__promo_code_used: Optional[str] = None
 
     def get_booking_id(self) -> str:
         """Return the unique booking ID."""
@@ -83,6 +84,10 @@ class Booking:
         """Return the payment method used for this booking."""
         return self.__payment_method
 
+    def get_promo_code_used(self) -> Optional[str]:
+        """Return the promo code used for this booking."""
+        return self.__promo_code_used
+
     def set_status(self, status: str) -> None:
         """Update the current booking status."""
         self.__status = status
@@ -90,6 +95,10 @@ class Booking:
     def set_payment_method(self, payment_method: str) -> None:
         """Store the payment method used for this booking."""
         self.__payment_method = payment_method
+
+    def set_promo_code_used(self, code: str) -> None:
+        """Record which promo code was applied to this booking."""
+        self.__promo_code_used = code
 
     def set_total_price(self, total_price: float) -> None:
         """Update the room booking price."""
