@@ -5,7 +5,7 @@ Covers: Room 11
 
 
 class Equipment:
-    """设备实体类 (Booking Management 4, Room Management 5, 11)"""
+    """Equipment entity (Booking Management 4, Room Management 5, 11)"""
 
     def __init__(self, equipment_id: str, deposit_amount: float) -> None:
         self.__equipment_id: str = equipment_id
@@ -34,6 +34,6 @@ class Equipment:
 
     # --- Business Methods ---
     def refund_deposit(self) -> float:
-        """退还押金 (Room Management 11)"""
+        """Refund deposit (Room Management 11)"""
         return self.__deposit_amount
 

@@ -10,7 +10,7 @@ from entities.admin import Admin
 
 
 class AdminController:
-    """管理员控制器 (Room Management 2, 9-11)"""
+    """Admin Controller (Room Management 2, 9-11)"""
 
     def __init__(self) -> None:
         self.__all_bookings: List[Booking] = []
@@ -26,7 +26,7 @@ class AdminController:
         return self.__equipments
 
     def get_admin_info(self, admin: Admin) -> Dict[str, str]:
-        """获取管理员信息 (Account Management 14)"""
+        """Get admin info (Account Management 14)"""
         return {
             "email": admin.get_email(),
             "first_name": admin.get_first_name(),
@@ -35,11 +35,11 @@ class AdminController:
         }
 
     def record_promotion_idea(self, admin: Admin, idea: str) -> bool:
-        """记录推广创意 (Room Management 2)"""
+        """Record promotion idea (Room Management 2)"""
         return admin.record_promotion_idea(idea)
 
     def update_booking_status(self, booking_id: str, new_status: str) -> bool:
-        """更新预定状态 (Room Management 9)"""
+        """Update booking status (Room Management 9)"""
         for b in self.__all_bookings:
             if b.get_booking_id() == booking_id:
                 b.set_status(new_status)
@@ -47,28 +47,28 @@ class AdminController:
         return False
 
     def ban_student(self, student: Student) -> bool:
-        """封禁学生预定资格 (Room Management 10)"""
+        """Ban student booking eligibility (Room Management 10)"""
         if not student.get_booking_ban_status():
             student.set_booking_ban_status(True)
             return True
         return False
 
     def unban_student(self, student: Student) -> bool:
-        """解除学生封禁 (Room Management 10)"""
+        """Unban student (Room Management 10)"""
         if student.get_booking_ban_status():
             student.set_booking_ban_status(False)
             return True
         return False
 
     def set_equipment_deposit(self, equipment: Equipment, amount: float) -> bool:
-        """设置设备押金金额 (Room Management 11)"""
+        """Set equipment deposit amount (Room Management 11)"""
         if amount <= 0:
             return False
         equipment.set_deposit_amount(amount)
         return True
 
     def refund_equipment_deposit(self, equipment: Equipment, student: Student) -> bool:
-        """退还设备押金 (Room Management 11)"""
+        """Refund equipment deposit (Room Management 11)"""
         refund = equipment.refund_deposit()
         student.add_funds(refund)
         return True

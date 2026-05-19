@@ -7,13 +7,13 @@ from entities.student import Student
 
 
 class AccountController:
-    """账户控制器 (Account Management 5, 8-12)"""
+    """Account Controller (Account Management 5, 8-12)"""
 
     def __init__(self) -> None:
         pass
 
     def get_profile_info(self, student: Student) -> Dict[str, object]:
-        """获取个人资料 (Acct 5)"""
+        """Get profile info (Acct 5)"""
         return {
             "first_name": student.get_first_name(),
             "last_name": student.get_last_name(),
@@ -24,7 +24,7 @@ class AccountController:
         }
 
     def get_usage_status(self, student: Student) -> Dict[str, object]:
-        """获取使用状态 (Acct 8)"""
+        """Get usage status (Acct 8)"""
         return {
             "current_bookings": student.get_active_bookings(),
             "ban_status": student.get_booking_ban_status(),
@@ -33,14 +33,14 @@ class AccountController:
         }
 
     def get_activity_history(self, student: Student, page: int) -> List:
-        """获取活动历史 (Acct 9-1.10)"""
+        """Get activity history (Acct 9-10)"""
         return student.get_activity_history_page(page)
 
     def get_funds_summary(self, student: Student) -> Dict[str, float]:
-        """获取资金摘要 (Acct 11)"""
+        """Get funds summary (Acct 11)"""
         return {"balance": student.get_balance()}
 
     def add_funds(self, student: Student, amount: float) -> bool:
-        """充值 (Acct 12)"""
+        """Add funds (Acct 12)"""
         return student.add_funds(amount)
 

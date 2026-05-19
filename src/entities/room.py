@@ -6,7 +6,7 @@ from typing import List
 
 
 class Room:
-    """房间实体类 (Room Management 1, 4-8, Booking Management 1)"""
+    """Room entity (Room Management 1, 4-8, Booking Management 1)"""
 
     def __init__(self, room_id: str, room_name: str, building: str,
                  capacity: int, price_per_hour: float, opening_hours: str) -> None:
@@ -78,12 +78,12 @@ class Room:
 
     # --- Business Methods ---
     def is_available(self, start_time: str, end_time: str) -> bool:
-        """检查房间在指定时段是否可用 (Book 1)"""
+        """Check if the room is available in specified time slot (Book 1)"""
         time_slot = f"{start_time}-{end_time}"
         return time_slot in self.__available_time_slots
 
     def calculate_predicted_income(self) -> float:
-        """计算预测收入 (Room 7)"""
+        """Calculate predicted income (Room 7)"""
         booked_slots = len(self.__available_time_slots)
         income = booked_slots * self.__price_per_hour
         if self.__is_equipment_rented:
@@ -91,7 +91,7 @@ class Room:
         return income
 
     def update_availability(self, time_slot: str, available: bool) -> None:
-        """更新可用时段 (Room 5/6)"""
+        """Update availability time slot (Room 5/6)"""
         if available and time_slot not in self.__available_time_slots:
             self.__available_time_slots.append(time_slot)
         elif not available and time_slot in self.__available_time_slots:

@@ -9,7 +9,7 @@ from entities.user import User
 
 
 class AuthController:
-    """认证控制器 (Account Management 1-4, 6-7, 13-15)"""
+    """Auth Controller (Account Management 1-4, 6-7, 13-15)"""
 
     def __init__(self) -> None:
         self.__students: List[Student] = []
@@ -35,7 +35,7 @@ class AuthController:
         return len(mobile) == 10 and mobile.startswith("04") and mobile.isdigit()
 
     def register_student(self, email: str, password: str, first_name: str,
-                         last_name: str, phone: str, student_id: str) -> Optional[Student]:
+                          last_name: str, phone: str, student_id: str) -> Optional[Student]:
         if not all([email, password, first_name, last_name, phone, student_id]):
             return None
         if not self.validate_email(email):
@@ -57,11 +57,11 @@ class AuthController:
         return None
 
     def identify_role(self, user: User) -> str:
-        """角色识别 (Acct 13)"""
+        """Identify role (Acct 13)"""
         return user.get_role()
 
     def change_password(self, user: User, current_pwd: str, new_pwd: str, confirm_pwd: str) -> bool:
-        """修改密码 (Acct 7)"""
+        """Change password (Acct 7)"""
         if not user.verify_password(current_pwd):
             return False
         if new_pwd != confirm_pwd:
@@ -72,7 +72,7 @@ class AuthController:
         return True
 
     def update_mobile(self, user: User, new_mobile: str, confirm_mobile: str) -> bool:
-        """更新手机号 (Acct 6)"""
+        """Update mobile number (Acct 6)"""
         if new_mobile != confirm_mobile:
             return False
         if not self.validate_mobile(new_mobile):

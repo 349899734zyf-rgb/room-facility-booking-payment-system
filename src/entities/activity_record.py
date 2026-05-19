@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 class ActivityRecord:
-    """活动记录实体类 (Account Management 9-10)"""
+    """Activity record entity (Account Management 9-10)"""
 
     def __init__(self, date: datetime, record_type: str, details: str, amount: float) -> None:
         self.__date: datetime = date

@@ -7,7 +7,7 @@ from entities.room import Room
 
 
 class RoomController:
-    """房间控制器 (Room Management 1, 3-8)"""
+    """Room Controller (Room Management 1, 3-8)"""
 
     def __init__(self) -> None:
         self.__rooms: List[Room] = []
@@ -18,7 +18,7 @@ class RoomController:
 
     def add_room(self, name: str, building: str, capacity: int,
                  price: float, opening_hours: str) -> Optional[Room]:
-        """添加房间 (Room 1)"""
+        """Add room (Room 1)"""
         if not all([name, building, opening_hours]) or capacity <= 0 or price <= 0:
             return None
         self.__room_counter += 1
@@ -28,7 +28,7 @@ class RoomController:
         return room
 
     def remove_room(self, room_id: str) -> bool:
-        """移除房间 (Room 4)"""
+        """Remove room (Room 4)"""
         for room in self.__rooms:
             if room.get_room_id() == room_id:
                 self.__rooms.remove(room)
@@ -36,14 +36,14 @@ class RoomController:
         return False
 
     def find_room(self, room_id: str) -> Optional[Room]:
-        """查找房间"""
+        """Find room"""
         for room in self.__rooms:
             if room.get_room_id() == room_id:
                 return room
         return None
 
     def update_room_info(self, room_id: str, updates: Dict[str, object]) -> bool:
-        """更新房间信息 (Room 8)"""
+        """Update room info (Room 8)"""
         room = self.find_room(room_id)
         if room is None:
             return False
@@ -61,7 +61,7 @@ class RoomController:
 
     def update_room_usage_status(self, room_id: str, is_student_in: bool,
                                  is_equipment_rented: bool) -> bool:
-        """更新房间学生/设备在场状态 (Room Management 5)"""
+        """Update room usage status (Room Management 5)"""
         room = self.find_room(room_id)
         if room is None:
             return False
@@ -70,7 +70,7 @@ class RoomController:
         return True
 
     def update_room_time_slots(self, room_id: str, available_slots: List[str]) -> bool:
-        """更新房间可用时段 (Room Management 6)"""
+        """Update room time slots (Room Management 6)"""
         room = self.find_room(room_id)
         if room is None:
             return False
@@ -78,7 +78,7 @@ class RoomController:
         return True
 
     def get_predicted_income(self, room_id: str) -> float:
-        """获取房间预测收入 (Room 7)"""
+        """Get predicted income (Room 7)"""
         room = self.find_room(room_id)
         if room is None:
             return 0.0

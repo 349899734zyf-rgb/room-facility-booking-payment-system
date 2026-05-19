@@ -11,7 +11,7 @@ from entities.activity_record import ActivityRecord
 
 
 class Student(User):
-    """学生实体类 (Account Management 1-13, Booking, Checkout)"""
+    """Student entity (Account Management 1-13, Booking, Checkout)"""
 
     def __init__(self, email: str, password: str, first_name: str, last_name: str,
                  phone: str, student_id: str) -> None:
@@ -78,7 +78,7 @@ class Student(User):
         return "student"
 
     def add_funds(self, amount: float) -> bool:
-        """充值 (Acct 12)"""
+        """Add funds (Acct 12)"""
         if amount <= 0:
             return False
         self.__balance += amount
@@ -86,75 +86,79 @@ class Student(User):
             ActivityRecord(datetime.now(), "recharge", f"Added ${amount}", amount))
         return True
 
+    def deposit_funds(self, amount: float) -> None:
+        """Deposit funds"""
+        self.add_funds(amount)
+
     def deduct_balance(self, amount: float) -> bool:
-        """扣除余额"""
+        """Deduct balance"""
         if self.__balance >= amount:
             self.__balance -= amount
             return True
         return False
 
     def is_eligible_to_book(self) -> bool:
-        """检查预定资格 (Book 7)"""
+        """Check booking eligibility (Book 7)"""
         return not self.__booking_ban_status
 
     def has_reached_booking_limit(self) -> bool:
-        """检查是否达到预定上限 (Book 10): 最多3个"""
+        """Check if booking limit reached (Book 10): max 3"""
         active = [b for b in self.__bookings if b.get_status() == "confirmed"]
         return len(active) >= 3
 
     def add_booking(self, booking: 'Booking') -> None:
-        """添加预定到列表"""
+        """Add booking to list"""
         self.__bookings.append(booking)
         self.__activity_history.append(
             ActivityRecord(datetime.now(), "booking", str(booking), booking.get_total_price()))
 
     def remove_booking(self, booking: 'Booking') -> None:
-        """移除预定"""
+        """Remove booking"""
         if booking in self.__bookings:
             self.__bookings.remove(booking)
 
     def record_late_cancellation(self) -> None:
-        """记录迟到取消 (Book 3)"""
+        """Record late cancellation (Book 3)"""
         self.__late_cancellation_count += 1
         self.__activity_history.append(
             ActivityRecord(datetime.now(), "late_cancellation", "Late cancellation recorded", 0.0))
         self._check_ban_threshold()
 
     def record_no_show(self) -> None:
-        """记录缺席"""
+        """Record no show"""
         self.__no_show_count += 1
         self._check_ban_threshold()
 
     def _check_ban_threshold(self) -> None:
-        """检查是否需要封禁"""
+        """Check if ban threshold reached"""
         if (self.__late_cancellation_count + self.__no_show_count) >= 3:
             self.__booking_ban_status = True
 
     def add_deal_package_hours(self, hours: float) -> None:
-        """添加套餐时长 (Checkout 7)"""
+        """Add deal package hours (Checkout 7)"""
         self.__deal_package_hours += hours
 
     def deduct_deal_package_hours(self, hours: float) -> bool:
-        """扣除套餐时长 (Checkout 5)"""
+        """Deduct deal package hours (Checkout 5)"""
         if self.__deal_package_hours >= hours:
             self.__deal_package_hours -= hours
             return True
         return False
 
     def has_used_promo_code(self, code: str) -> bool:
-        """检查优惠码是否已使用 (Checkout 4)"""
+        """Check if promo code has been used (Checkout 4)"""
         return code in self.__used_promo_codes
 
     def mark_promo_code_used(self, code: str) -> None:
-        """标记优惠码已使用"""
+        """Mark promo code used"""
         self.__used_promo_codes.append(code)
 
     def get_active_bookings(self) -> List['Booking']:
-        """获取有效预定列表"""
+        """Get active bookings list"""
         return [b for b in self.__bookings if b.get_status() == "confirmed"]
 
     def get_activity_history_page(self, page: int, page_size: int = 10) -> List['ActivityRecord']:
-        """分页获取活动历史 (Acct 10)"""
+        """Get activity history page (Acct 10)"""
         start = (page - 1) * page_size
         end = start + page_size
         return self.__activity_history[start:end]

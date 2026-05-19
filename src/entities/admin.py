@@ -9,7 +9,7 @@ from entities.user import User
 
 
 class Admin(User):
-    """管理员实体类 (Account Management 14-15, Room Management 1-11)"""
+    """Admin entity (Account Management 14-15, Room Management 1-11)"""
 
     def __init__(self, email: str, password: str, first_name: str, last_name: str,
                  phone: str, admin_id: str) -> None:
@@ -33,7 +33,7 @@ class Admin(User):
         return "admin"
 
     def record_promotion_idea(self, idea: str) -> bool:
-        """记录推广创意 (Room 2)"""
+        """Record promotion idea (Room 2)"""
         if idea.strip():
             self.__promotion_ideas.append(idea)
             return True
