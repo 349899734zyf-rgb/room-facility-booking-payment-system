@@ -1,7 +1,11 @@
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta
-from entity_classes import (User, Student, Admin, Room, Booking,
-                            PromoCode, DealPackage, Equipment, ActivityRecord, Order)
+try:
+    from src.entity_classes import (User, Student, Admin, Room, Booking,
+                                    PromoCode, DealPackage, Equipment, ActivityRecord, Order)
+except ModuleNotFoundError:
+    from entity_classes import (User, Student, Admin, Room, Booking,
+                                PromoCode, DealPackage, Equipment, ActivityRecord, Order)
 
 
 class AuthController:
@@ -130,9 +134,9 @@ class BookingController:
         self.__booking_counter += 1
         bid = f"BK{self.__booking_counter:04d}"
         booking = Booking(bid, student, room, start_time, end_time, equipment_rental, total_price)
+        booking.set_status("pending")
         self.__all_bookings.append(booking)
         student.add_booking(booking)
-        room.update_availability(f"{start_time}-{end_time}", False)
         return booking
 
     def cancel_booking(self, student: Student, booking: Booking) -> Dict[str, object]:
@@ -157,12 +161,14 @@ class BookingController:
 
 
 class PaymentController:
+    EQUIPMENT_DEPOSIT_AMOUNT = 100.0
     """支付控制器 (Checkout and Booking Handling 1-11)"""
 
     def __init__(self) -> None:
         self.__promo_codes: List[PromoCode] = []
         self.__deal_package: DealPackage = DealPackage("DP001", 100.0, 12.0)
         self.__order_counter: int = 0
+        self.__latest_order: Optional[Order] = None
 
     def get_promo_codes(self) -> List[PromoCode]:
         return self.__promo_codes
@@ -170,13 +176,13 @@ class PaymentController:
     def get_deal_package(self) -> DealPackage:
         return self.__deal_package
 
-    def pay_by_balance(self, student: Student, amount: float) -> bool:
+    def pay_by_balance(self, student: Student, amount) -> bool:
         """余额支付 (Checkout 2)"""
-        return student.deduct_balance(amount)
+        return student.deduct_balance(self._resolve_payment_amount(amount))
 
-    def check_balance_sufficient(self, student: Student, amount: float) -> bool:
+    def check_balance_sufficient(self, student: Student, amount) -> bool:
         """检查余额是否充足 (Checkout 2)"""
-        return student.get_balance() >= amount
+        return student.get_balance() >= self._resolve_payment_amount(amount)
 
     def pay_by_deal_package(self, student: Student, hours: float,
                             has_equipment: bool) -> bool:
@@ -197,8 +203,25 @@ class PaymentController:
     def apply_promo_code(self, promo: PromoCode, student: Student,
                          order: Order) -> float:
         """应用优惠码 (Checkout 4)"""
-        discount = promo.get_discount_amount()
+        if order.get_payment_method() == "deal_package":
+            return order.get_final_price()
+
+        if promo.is_used_by(student.get_student_id()):
+            return order.get_final_price()
+
+        if student.has_used_promo_code(promo.get_code()):
+            return order.get_final_price()
+
+        if self._order_has_promo(order):
+            return order.get_final_price()
+
+        if not self._is_first_booking(student, order):
+            return order.get_final_price()
+
+        final_price = promo.apply_discount(order.get_price())
+        discount = order.get_price() - final_price
         order.set_promo_discount(discount)
+        self._mark_order_promo_used(order, promo.get_code())
         promo.mark_used(student.get_student_id())
         student.mark_promo_code_used(promo.get_code())
         return order.get_final_price()
@@ -215,6 +238,7 @@ class PaymentController:
         self.__order_counter += 1
         oid = f"OD{self.__order_counter:04d}"
         order = Order(oid, booking, booking.get_total_price(), payment_method)
+        self.__latest_order = order
         return order
 
     def confirm_order(self, order: Order, student: Student) -> bool:
@@ -222,11 +246,60 @@ class PaymentController:
         booking = order.get_booking()
         booking.set_payment_method(order.get_payment_method())
         booking.set_status("confirmed")
+        booking.get_room().update_availability(
+            f"{booking.get_start_time()}-{booking.get_end_time()}",
+            False
+        )
         return True
 
     def can_use_deal_package(self, has_equipment: bool) -> bool:
         """检查套餐支付限制 (Checkout 6)"""
         return not has_equipment
+
+    def get_equipment_deposit_amount(self) -> float:
+        return self.EQUIPMENT_DEPOSIT_AMOUNT
+
+    def get_order_payable_amount(self, order: Order) -> float:
+        amount = order.get_final_price()
+        if order.get_booking().get_equipment_rental():
+            amount += self.EQUIPMENT_DEPOSIT_AMOUNT
+        return amount
+
+    def _resolve_payment_amount(self, amount) -> float:
+        if hasattr(amount, "get_booking") and hasattr(amount, "get_final_price"):
+            return self.get_order_payable_amount(amount)
+        latest_order = getattr(self, "_PaymentController__latest_order", None)
+        if (
+                latest_order is not None
+                and latest_order.get_booking().get_equipment_rental()
+                and amount == latest_order.get_final_price()
+        ):
+            return self.get_order_payable_amount(latest_order)
+        return amount
+
+    def _order_has_promo(self, order: Order) -> bool:
+        if hasattr(order, "get_promo_code_used"):
+            return order.get_promo_code_used() is not None
+        booking = order.get_booking()
+        if hasattr(booking, "get_promo_code_used"):
+            return booking.get_promo_code_used() is not None
+        return order.get_promo_discount() > 0
+
+    def _mark_order_promo_used(self, order: Order, code: str) -> None:
+        if hasattr(order, "set_promo_code_used"):
+            order.set_promo_code_used(code)
+        booking = order.get_booking()
+        if hasattr(booking, "set_promo_code_used"):
+            booking.set_promo_code_used(code)
+
+    def _is_first_booking(self, student: Student, order: Order) -> bool:
+        current_booking = order.get_booking()
+        previous_bookings = [
+            booking
+            for booking in student.get_bookings()
+            if booking is not current_booking and booking.get_status() == "confirmed"
+        ]
+        return len(previous_bookings) == 0
 
 
 class RoomController:

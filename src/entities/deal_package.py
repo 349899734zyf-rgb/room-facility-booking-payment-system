@@ -19,3 +19,12 @@ class DealPackage:
 
     def get_hours(self) -> float:
         return self.__hours
+
+    def set_package_id(self, package_id: str) -> None:
+        self.__package_id = package_id
+
+    def set_price(self, price: float) -> None:
+        self.__price = price
+
+    def set_hours(self, hours: float) -> None:
+        self.__hours = hours
