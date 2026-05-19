@@ -23,9 +23,12 @@ class BookingStatusUI:
         print("-" * 150)
 
         for booking in bookings:
-            print(f"{booking.get_booking_id():<15} {booking.get_student_id():<15} "
-                  f"{booking.get_room_id():<15} {booking.get_status():<15} "
-                  f"{booking.get_date():<15}")
+            sid = booking.get_student().get_student_id() if hasattr(booking.get_student(), 'get_student_id') else 'N/A'
+            rid = booking.get_room().get_room_id() if hasattr(booking.get_room(), 'get_room_id') else 'N/A'
+            date_str = str(booking.get_start_time().strftime('%Y-%m-%d %H:%M'))
+            print(f"{booking.get_booking_id():<15} {sid:<15} "
+                  f"{rid:<15} {booking.get_status():<15} "
+                  f"{date_str:<15}")
 
         print("=" * 150)
 
@@ -41,10 +44,12 @@ class BookingStatusUI:
         print("\n" + "-" * 80)
         print("Booking Details:")
         print(f"  Booking ID: {booking.get_booking_id()}")
-        print(f"  Student ID: {booking.get_student_id()}")
-        print(f"  Room ID: {booking.get_room_id()}")
+        sid = booking.get_student().get_student_id() if hasattr(booking.get_student(), 'get_student_id') else 'N/A'
+        rid = booking.get_room().get_room_id() if hasattr(booking.get_room(), 'get_room_id') else 'N/A'
+        print(f"  Student ID: {sid}")
+        print(f"  Room ID: {rid}")
         print(f"  Current Status: {booking.get_status()}")
-        print(f"  Date: {booking.get_date()}")
+        print(f"  Date: {booking.get_start_time().strftime('%Y-%m-%d %H:%M')}")
         print("-" * 80)
 
     def get_new_status(self) -> str:
