@@ -1,6 +1,6 @@
 import csv
 import os
-from entity_classes import Student
+from entities.student import Student
 
 class FileHandler:
     Fields = ['firstName', 'lastName', 'sID', 'phone', 'email', 'password', 'balance']

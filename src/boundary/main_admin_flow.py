@@ -1,13 +1,14 @@
 import datetime
-from entity_classes import Student, Room
-from controller_classes import BookingController, RoomController, AdminController
-from boundary_classes import (
-    RoomManagementUI,
-    AdminUI,
-    BookingStatusUI,
-    BanStudentUI,
-    EquipmentDepositUI
-)
+from entities.student import Student
+from entities.room import Room
+from controllers.booking_controller import BookingController
+from controllers.room_controller import RoomController
+from controllers.admin_controller import AdminController
+from boundary.room_management_ui import RoomManagementUI
+from boundary.admin_ui import AdminUI
+from boundary.booking_status_ui import BookingStatusUI
+from boundary.ban_student_ui import BanStudentUI
+from boundary.equipment_deposit_ui import EquipmentDepositUI
 
 
 def main():

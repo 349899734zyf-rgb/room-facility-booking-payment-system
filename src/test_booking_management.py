@@ -25,7 +25,9 @@ from booking_constants import (
 )
 from controllers.booking_controller import BookingController
 from entities.booking import Booking
-from entity_classes import Equipment, Room, Student
+from entities.equipment import Equipment
+from entities.room import Room
+from entities.student import Student
 
 STUDENT_EMAIL = "s@student.monash.edu"
 STUDENT_PASSWORD = "Pass1234"

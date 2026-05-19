@@ -5,9 +5,12 @@ No new content added.
 """
 import sys
 from file_handler import FileHandler
-from controller_classes import AuthController, BookingController
+from controllers.auth_controller import AuthController
+from controllers.booking_controller import BookingController
 from boundary.account_ui import AccountUI
-from entity_classes import Student, Admin, Room
+from entities.student import Student
+from entities.admin import Admin
+from entities.room import Room
 
 
 def main():
