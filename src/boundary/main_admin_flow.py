@@ -337,7 +337,7 @@ def main_admin_booking_status(booking_controller, booking_status_ui):
         if continue_choice not in ['y', 'yes']:
             break
 
-def main_admin_ban_student(admin_controller, ban_student_ui):
+def main_admin_ban_student(admin_controller, auth_controller, ban_student_ui):
     """
     Story 2.10: Ban Student
     Administrator wants to ban a student for inappropriate behavior
@@ -349,7 +349,7 @@ def main_admin_ban_student(admin_controller, ban_student_ui):
         print("=" * 80)
 
         # Display all students
-        students = admin_controller.get_all_students()
+        students = auth_controller.get_students()
 
         if hasattr(ban_student_ui, 'display_students'):
             ban_student_ui.display_students(students)
@@ -357,23 +357,27 @@ def main_admin_ban_student(admin_controller, ban_student_ui):
         # Get student selection
         student_id = ban_student_ui.get_student_selection()
 
-        student = admin_controller.find_student(student_id)
+        student = None
+        for s in auth_controller.get_students():
+            if s.get_student_id() == student_id:
+                student = s
+                break
 
         if student is None:
             ban_student_ui.display_student_not_found_message()
         else:
-            is_banned = student.is_banned()
+            is_banned = student.get_booking_ban_status()
             ban_student_ui.display_student_info(student_id, is_banned)
 
             if is_banned:
                 # If already banned, ask to unban
                 if ban_student_ui.get_unban_confirmation():
-                    if admin_controller.unban_student(student_id):
+                    if admin_controller.unban_student(student):
                         ban_student_ui.display_unban_success()
             else:
                 # If not banned, ask to ban
                 if ban_student_ui.get_ban_confirmation():
-                    if admin_controller.ban_student(student_id):
+                    if admin_controller.ban_student(student):
                         ban_student_ui.display_ban_success()
 
         continue_choice = input("\nManage another student? (y/n): ").strip().lower()
@@ -392,13 +396,17 @@ def main_admin_equipment_deposit(admin_controller, equipment_deposit_ui):
         print("=" * 80)
 
         # Display all equipment
-        equipments = admin_controller.get_all_equipment()
+        equipments = admin_controller.get_equipments()
         equipment_deposit_ui.display_equipment_list(equipments)
 
         # Get equipment selection
         equipment_id = equipment_deposit_ui.get_equipment_selection()
 
-        equipment = admin_controller.find_equipment(equipment_id)
+        equipment = None
+        for eq in admin_controller.get_equipments():
+            if eq.get_equipment_id() == equipment_id:
+                equipment = eq
+                break
 
         if equipment is None:
             print("Error: Equipment not found")
@@ -411,7 +419,7 @@ def main_admin_equipment_deposit(admin_controller, equipment_deposit_ui):
 
             if amount > 0:
                 if equipment_deposit_ui.get_deposit_confirmation():
-                    if admin_controller.set_equipment_deposit(equipment_id, amount):
+                    if admin_controller.set_equipment_deposit(equipment, amount):
                         equipment_deposit_ui.display_deposit_set_success(amount)
                     else:
                         print("Error: Failed to set equipment deposit")
@@ -420,7 +428,7 @@ def main_admin_equipment_deposit(admin_controller, equipment_deposit_ui):
         if continue_choice not in ['y', 'yes']:
             break
 
-def main_admin_menu(admin_controller, room_controller, booking_controller):
+def main_admin_menu(admin_controller, auth_controller, room_controller, booking_controller):
     """
     Main Admin Menu - Integrates all admin management functions
     This is the main entry point for admin operations
@@ -449,7 +457,7 @@ def main_admin_menu(admin_controller, room_controller, booking_controller):
 
         elif choice == "3":
             # Ban Student
-            main_admin_ban_student(admin_controller, ban_student_ui)
+            main_admin_ban_student(admin_controller, auth_controller, ban_student_ui)
 
         elif choice == "4":
             # Set Equipment Deposit
