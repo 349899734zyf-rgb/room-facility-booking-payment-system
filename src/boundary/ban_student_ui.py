@@ -23,8 +23,8 @@ class BanStudentUI:
         print("-" * 120)
 
         for student in students:
-            status = "BANNED" if student.is_banned() else "ACTIVE"
-            print(f"{student.get_student_id():<15} {student.get_name():<20} "
+            status = "BANNED" if student.get_booking_ban_status() else "ACTIVE"
+            print(f"{student.get_student_id():<15} {student.get_first_name() + ' ' + student.get_last_name():<20} "
                   f"{student.get_email():<30} {status:<15}")
 
         print("=" * 120)
