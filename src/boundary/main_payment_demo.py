@@ -5,9 +5,11 @@ import sys
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from src.boundary.payment_ui import DealPackageUI, PaymentUI
-from src.controllers.payment_controller import PaymentController
-from src.entity_classes import Booking, Room, Student
+from boundary.payment_ui import DealPackageUI, PaymentUI
+from controllers.payment_controller import PaymentController
+from entities.booking import Booking
+from entities.room import Room
+from entities.student import Student
 
 
 def build_sample_booking():
