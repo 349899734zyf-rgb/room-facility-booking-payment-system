@@ -71,6 +71,9 @@ class Student(User):
         self.__used_promo_codes: List[str] = []
 
     # --- Accessors ---
+    def deposit_funds(self, amount: float) -> None:
+        self.add_funds(amount)
+
     def get_student_id(self) -> str:
         return self.__student_id
 

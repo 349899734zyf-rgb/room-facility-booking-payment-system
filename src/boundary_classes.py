@@ -3,41 +3,131 @@ from typing import List, Optional, Dict
 
 class RegistrationUI:
     """注册界面 (Account Management 1-3)"""
-    def display_registration_form(self) -> None: pass
-    def get_registration_input(self) -> Dict[str, str]: return {}
-    def display_success_message(self) -> None: pass
-    def display_error_message(self, message: str) -> None: pass
-    def display_invalid_email_message(self) -> None: pass
-    def display_password_requirement_message(self) -> None: pass
-    def display_incomplete_details_message(self) -> None: pass
+    def display_registration_form(self) -> None:
+        print()
+        print("=== Student Registration ===")
+
+    def get_registration_input(self) -> Dict[str, str]: return {
+        "first_name": input("First Name: ").strip(),
+        "last_name": input("Last Name: ").strip(),
+        "student_id": input("Student ID: ").strip(),
+        "phone": input("Phone Number: ").strip(),
+        "email": input("Email: ").strip(),
+        "password": input("Password: ").strip()
+    }
+
+    def display_success_message(self) -> None:
+        print("Registration Successful!")
+
+    def display_error_message(self, message: str) -> None:
+        print("Error: " + str(message))
+
+    def display_invalid_email_message(self) -> None:
+        print("Error: Invalid email domain! Must use @student.monash.edu!")
+
+    def display_password_requirement_message(self) -> None:
+        print()
+        print("Password Requirement Message:")
+        print("- Password must contain at least 8 characters.")
+        print("- Must contain at least 1 uppercase letter.")
+        print("- Must contain at least 1 number.")
+
+    def display_incomplete_details_message(self) -> None:
+        print("Error: All registration fields are required!")
 
 
 class LoginUI:
     """登录界面 (Account Management 4, 15)"""
-    def display_login_form(self) -> None: pass
-    def get_login_credentials(self) -> Dict[str, str]: return {}
-    def display_login_success(self, role: str) -> None: pass
-    def display_invalid_credentials_message(self) -> None: pass
+    def display_login_form(self) -> None:
+        print()
+        print("=== Account Login ===")
+
+    def get_login_credentials(self) -> Dict[str, str]: return {
+        "email": input("Enter Email: ").strip(),
+        "password": input("Enter Password: ").strip()
+    }
+
+    def display_login_success(self, role: str) -> None:
+        print()
+        print("Login Successful! Welcome to the {} Portal!".format(role.capitalize()))
+
+    def display_invalid_credentials_message(self) -> None:
+        print("Error: Invalid email or password!")
 
 
 class ProfileUI:
     """个人资料界面 (Account Management 5-7)"""
     def display_profile(self, first_name: str, last_name: str, student_id: str,
-                        email: str, phone: str, balance: float) -> None: pass
-    def get_new_mobile_number(self) -> str: return ""
-    def get_confirm_mobile_number(self) -> str: return ""
-    def display_mobile_update_success(self) -> None: pass
-    def display_invalid_mobile_format_message(self) -> None: pass
-    def get_password_change_input(self) -> Dict[str, str]: return {}
-    def display_password_change_success(self) -> None: pass
-    def display_password_requirement_message(self) -> None: pass
+                        email: str, phone: str, balance: float) -> None:
+        print()
+        print("=== Student Profile Information ===")
+        print("First Name:     {}".format(first_name))
+        print("Last Name:      {}".format(last_name))
+        print("Student ID:     {}".format(student_id))
+        print("Email Address:  {}".format(email))
+        print("Mobile Number:  {}".format(phone))
+        print("Account Balance:${:.2f}".format(balance))
+        print("-" * 35)
+        print("1. Update Mobile Number")
+        print("2. Change Password")
+        print("3. Return to Main Menu")
+
+    def get_new_mobile_number(self) -> str:
+        print()
+        print("=== Update Mobile Number ===")
+        print("Type 'CANCEL' to return without saving.")
+        print()
+        return input("Enter New Mobile Number: ").strip()
+
+    def get_confirm_mobile_number(self) -> str:
+        return input("Confirm New Mobile Number: ").strip()
+
+    def display_mobile_update_success(self) -> None:
+        print("Update Result: Mobile number updated successfully!")
+
+    def display_invalid_mobile_format_message(self) -> None:
+        print("Error: Invalid format or mismatch! Follow the 04XXXXXXXX layout.")
+
+    def get_password_change_input(self) -> Dict[str, str]:
+        print()
+        print("=== Change Account Password ===")
+        print("Type 'CANCEL' at any prompt to exit.")
+        print()
+        return {
+            "current": input("Enter Current Password: ").strip(),
+            "new": input("Enter New Password: ").strip(),
+            "confirm": input("Confirm New Password: ").strip()
+        }
+
+    def display_password_change_success(self) -> None:
+        print("Password update result: Password updated successfully!")
+
+    def display_password_requirement_message(self) -> None:
+        print("Error: Passwords must match and contain 8+ characters, 1 uppercase and 1 number.")
 
 
 class UsageStatusUI:
     """使用状态界面 (Account Management 8)"""
     def display_usage_status(self, bookings: list, ban_status: bool,
-                             balance: float, deposit_status: str) -> None: pass
-    def display_return_option(self) -> None: pass
+                             balance: float, deposit_status: str) -> None:
+        print()
+        print("=== Account Usage Status ===")
+
+        bookings_count = len(bookings) if bookings else "None Active"
+        print("Current Bookings:          {}".format(bookings_count))
+
+        ban_text = "Banned" if ban_status else "Clear / Eligible to Book"
+        print("Booking Restriction Status: {}".format(ban_text))
+        print("Equipment Deposit Status:  {}".format(deposit_status))
+
+        if balance > 0:
+            print("Balance Status:            ${:.2f} (Sufficient for next booking slot)".format(balance))
+        else:
+            print("Balance Status:            ${:.2f} (Insufficient funds for upcoming slots)".format(balance))
+        print("-" * 45)
+
+    def display_return_option(self) -> None:
+        input("Press Enter to return to the main portal...")
 
 
 class ActivityHistoryUI:
