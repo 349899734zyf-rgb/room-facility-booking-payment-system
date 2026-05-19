@@ -6,8 +6,7 @@ from typing import Dict, List, Optional
 
 
 class RoomManagementUI:
-    class RoomManagementUI:
-        """Room Management User Interface for administrators"""
+    """Room Management User Interface for administrators"""
 
     def __init__(self, room_controller, admin_controller=None):
         """Initialize RoomManagementUI with controllers"""
