@@ -296,7 +296,7 @@ def main_admin_login():
     return True
 
 
-def main_admin_booking_status(booking_controller, booking_status_ui):
+def main_admin_booking_status(admin_controller, booking_controller, booking_status_ui):
     """
     Story 2.9: Update Booking Status
     Administrator wants to update booking status for accurate records
@@ -314,7 +314,11 @@ def main_admin_booking_status(booking_controller, booking_status_ui):
         # Get booking to update
         booking_id = booking_status_ui.get_booking_selection()
 
-        booking = booking_controller.find_booking(booking_id)
+        booking = None
+        for b in booking_controller.get_all_bookings():
+            if b.get_booking_id() == booking_id:
+                booking = b
+                break
 
         if booking is None:
             print("Error: Booking not found")
@@ -327,7 +331,7 @@ def main_admin_booking_status(booking_controller, booking_status_ui):
             new_status = booking_status_ui.get_new_status()
 
             if new_status:
-                if booking_controller.update_booking_status(booking_id, new_status):
+                if admin_controller.update_booking_status(booking_id, new_status):
                     booking_status_ui.display_status_update_success()
                 else:
                     print("Error: Failed to update booking status")
@@ -453,7 +457,7 @@ def main_admin_menu(admin_controller, auth_controller, room_controller, booking_
 
         elif choice == "2":
             # Update Booking Status
-            main_admin_booking_status(booking_controller, booking_status_ui)
+            main_admin_booking_status(admin_controller, booking_controller, booking_status_ui)
 
         elif choice == "3":
             # Ban Student
