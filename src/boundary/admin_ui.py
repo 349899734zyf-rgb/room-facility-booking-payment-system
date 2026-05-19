@@ -1,7 +1,7 @@
 """
 AdminUI - Admin home screen and admin-specific UI.
 Extracted from QIuerying's boundary_classes.py.
-Covers: Acct 14, Room 2
+Covers: Acct 14
 """
 
 
@@ -32,21 +32,3 @@ class AdminUI:
         print("4. View Reports")
         print("5. Logout")
         print("=" * 80)
-
-    def get_promotion_idea_input(self) -> str:
-        """Get promotion idea input from admin (Story 2.2)"""
-        print("\n" + "-" * 80)
-        print(" " * 20 + "RECORD PROMOTION IDEA")
-        print("-" * 80)
-
-        idea = input("Enter your promotion idea: ").strip()
-
-        if not idea:
-            print("Error: Promotion idea cannot be empty")
-            return ""
-
-        return idea
-
-    def display_promotion_recorded(self) -> None:
-        """Display confirmation that promotion idea was recorded"""
-        print("\nSuccess: Promotion idea recorded successfully!")
