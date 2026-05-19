@@ -91,6 +91,13 @@ class BookingController:
     def get_all_bookings(self) -> List[Booking]:
         return self.__all_bookings
 
+    def find_booking(self, booking_id: str) -> Optional[Booking]:
+        """查找特定预订 (Story 2.9)"""
+        for booking in self.__all_bookings:
+            if booking.get_booking_id() == booking_id:
+                return booking
+        return None
+
     def search_rooms(self, building: str, start_time: str, end_time: str) -> List[Room]:
         """搜索可用房间 (Book 1)"""
         result = []
@@ -350,9 +357,13 @@ class AccountController:
 class AdminController:
     """管理员控制器 (Room Management 2, 9-11)"""
 
+    class AdminController:
+        """管理员控制器 (Room Management 2, 9-11)"""
+
     def __init__(self) -> None:
         self.__all_bookings: List[Booking] = []
         self.__equipments: List[Equipment] = []
+        self.__students: List[Student] = []  # 【新增】
 
     def get_all_bookings(self) -> List[Booking]:
         return self.__all_bookings
@@ -362,6 +373,25 @@ class AdminController:
 
     def get_equipments(self) -> List[Equipment]:
         return self.__equipments
+
+    def get_all_students(self) -> List[Student]:
+        """获取所有学生 (Story 2.10)"""
+        return self.__students
+
+    def set_all_students(self, students: List[Student]) -> None:
+        """设置学生列表"""
+        self.__students = students
+
+    def add_student(self, student: Student) -> None:
+        """添加学生"""
+        self.__students.append(student)
+
+    def find_student(self, student_id: str) -> Optional[Student]:
+        """查找特定学生 (Story 2.10)"""
+        for student in self.__students:
+            if student.get_student_id() == student_id:
+                return student
+        return None
 
     def get_admin_info(self, admin: Admin) -> Dict[str, str]:
         """获取管理员信息 (Account Management 14)"""
@@ -397,6 +427,17 @@ class AdminController:
             student.set_booking_ban_status(False)
             return True
         return False
+
+    def get_all_equipment(self) -> List[Equipment]:
+        """获取所有设备 (Story 2.11)"""
+        return self.__equipments
+
+    def find_equipment(self, equipment_id: str) -> Optional[Equipment]:
+        """查找特定设备 (Story 2.11)"""
+        for equipment in self.__equipments:
+            if equipment.get_equipment_id() == equipment_id:
+                return equipment
+        return None
 
     def set_equipment_deposit(self, equipment: Equipment, amount: float) -> bool:
         """设置设备押金金额 (Room Management 11)"""

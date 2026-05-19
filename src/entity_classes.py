@@ -251,6 +251,7 @@ class Room:
         self.__is_equipment_rented: bool = False
         self.__is_student_in_room: bool = False
 
+
     # --- Accessors ---
     def get_room_id(self) -> str:
         return self.__room_id
@@ -277,6 +278,15 @@ class Room:
         return self.__is_equipment_rented
 
     def get_is_student_in_room(self) -> bool:
+        return self.__is_student_in_room
+
+    # --- Alias Methods (for compatibility with main.py) ---
+    def is_equipment_rented(self) -> bool:
+        """检查设备是否被租赁 (别名方法)"""
+        return self.__is_equipment_rented
+
+    def is_student_in_room(self) -> bool:
+        """检查房间内是否有学生 (别名方法)"""
         return self.__is_student_in_room
 
     # --- Mutators ---
@@ -327,6 +337,8 @@ class Room:
             self.__available_time_slots.append(time_slot)
         elif not available and time_slot in self.__available_time_slots:
             self.__available_time_slots.remove(time_slot)
+
+
 
 
 class Booking:
@@ -484,15 +496,24 @@ class DealPackage:
 
 class Equipment:
     """设备实体类 (Booking Management 4, Room Management 5, 11)"""
-
-    def __init__(self, equipment_id: str, deposit_amount: float) -> None:
+    def __init__(self, equipment_id: str, name: str, category: str, deposit_amount: float) -> None:
         self.__equipment_id: str = equipment_id
+        self.__name: str = name
+        self.__category: str = category
         self.__deposit_amount: float = deposit_amount
         self.__is_available: bool = True
 
     # --- Accessors ---
     def get_equipment_id(self) -> str:
         return self.__equipment_id
+
+    def get_name(self) -> str:
+        """获取设备名称"""
+        return self.__name
+
+    def get_category(self) -> str:
+        """获取设备分类"""
+        return self.__category
 
     def get_deposit_amount(self) -> float:
         return self.__deposit_amount
@@ -504,6 +525,14 @@ class Equipment:
     def set_equipment_id(self, eid: str) -> None:
         self.__equipment_id = eid
 
+    def set_name(self, name: str) -> None:
+        """设置设备名称"""
+        self.__name = name
+
+    def set_category(self, category: str) -> None:
+        """设置设备分类"""
+        self.__category = category
+
     def set_deposit_amount(self, amount: float) -> None:
         self.__deposit_amount = amount
 
@@ -514,6 +543,8 @@ class Equipment:
     def refund_deposit(self) -> float:
         """退还押金 (Room Management 11)"""
         return self.__deposit_amount
+
+
 
 
 class ActivityRecord:
