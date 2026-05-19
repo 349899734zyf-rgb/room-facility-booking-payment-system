@@ -116,12 +116,6 @@ def main():
         booking_ui.display_booking_failure_message(booking_result['reason'])
 
 
-if __name__ == "__main__":
-    main()
-
-
-
-
 
 def main_admin_room_management():
     """Room Management Main Program - Admin Operations"""
@@ -152,7 +146,7 @@ def main_admin_room_management():
                     else:
                         room_ui.display_invalid_input_message()
                 except Exception as e:
-                    print(f"❌ Error: {str(e)}")
+                    print(f"Error: {str(e)}")
 
         elif choice == "2":
             # ============ 2. View All Rooms ============
@@ -217,15 +211,15 @@ def main_admin_room_management():
                 status = room_ui.get_usage_status_input()
 
                 if status:
-                    is_student_in = status['is_student_in'] == 'y'
-                    is_equipment_rented = status['is_equipment_rented'] == 'y'
+                    is_student_in = status['is_student_in']
+                    is_equipment_rented = status['is_equipment_rented']
 
                     if room_controller.update_room_usage_status(
                             room_id,
                             is_student_in,
                             is_equipment_rented
                     ):
-                        print("\n✅ Room status updated successfully")
+                        print("\nRoom status updated successfully")
                     else:
                         room_ui.display_invalid_input_message()
 
@@ -240,43 +234,16 @@ def main_admin_room_management():
                 room_ui.display_room_not_found_message()
             else:
                 # Display current slots
-                current_slots = room.get_available_time_slots()
-                if current_slots:
-                    print(f"\nCurrent time slots for {room_id}:")
-                    for i, slot in enumerate(current_slots, 1):
-                        print(f"  {i}. {slot}")
-                else:
-                    print(f"\nNo time slots available for {room_id}")
+                room_ui.display_available_time_slots(room)
 
-                # Get new time slots
-                print("\nEnter new time slots (format: 09:00-10:00), one per line")
-                print("Enter blank line to finish")
-
-                time_slots = []
-                while True:
-                    slot = input("Time slot: ").strip()
-
-                    if not slot:
-                        break
-
-                    if '-' not in slot:
-                        print("❌ Format error, should be HH:MM-HH:MM")
-                        continue
-
-                    parts = slot.split('-')
-                    if len(parts) != 2:
-                        print("❌ Format error, should be HH:MM-HH:MM")
-                        continue
-
-                    time_slots.append(slot)
+                # Get new time slots using UI method
+                time_slots = room_ui.get_time_slots_input()
 
                 if time_slots:
                     if room_controller.update_room_time_slots(room_id, time_slots):
-                        print("\n✅ Time slots updated successfully")
+                        room_ui.display_update_success()
                     else:
                         room_ui.display_invalid_input_message()
-                else:
-                    print("❌ Please enter at least one time slot")
 
         elif choice == "7":
             # ============ 7. View Predicted Income ============
@@ -294,30 +261,14 @@ def main_admin_room_management():
 
         elif choice == "8":
             # ============ 8. Return to Main Menu ============
-            print("\n✅ Returning to main menu")
+            print("\nReturning to main menu")
             break
 
         else:
             room_ui.display_invalid_input_message()
 
-        room_ui.pause()
 
-def main_admin_login():
-    """
-    Story 1.15: Admin Login
-    Administrator wants to log in so they can manage rooms and system settings
-    """
-    print("\n" + "=" * 80)
-    print(" " * 25 + "ADMIN LOGIN")
-    print("=" * 80)
 
-    username = input("Enter admin username: ").strip()
-    password = input("Enter admin password: ").strip()
-
-    # TODO: Call auth_controller to verify credentials
-    # If verification succeeds, return admin object
-    print("Success: Admin logged in successfully!")
-    return True
 
 
 def main_admin_booking_status(admin_controller, booking_controller, booking_status_ui):
@@ -348,8 +299,7 @@ def main_admin_booking_status(admin_controller, booking_controller, booking_stat
             print("Error: Booking not found")
         else:
             # Display booking details (if method exists)
-            if hasattr(booking_status_ui, 'display_booking_details'):
-                booking_status_ui.display_booking_details(booking)
+            booking_status_ui.display_booking_details(booking)
 
             # Get new status
             new_status = booking_status_ui.get_new_status()
@@ -379,8 +329,7 @@ def main_admin_ban_student(admin_controller, auth_controller, ban_student_ui):
         # Display all students
         students = auth_controller.get_students()
 
-        if hasattr(ban_student_ui, 'display_students'):
-            ban_student_ui.display_students(students)
+        ban_student_ui.display_students(students)
 
         # Get student selection
         student_id = ban_student_ui.get_student_selection()
