@@ -3,6 +3,8 @@ AuthController.
 Covers: Acct 1-4, 6-7, 13, 15
 """
 from typing import Dict, List, Optional
+from entities.student import Student
+from entities.admin import Admin
 
 
 class AuthController:

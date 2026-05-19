@@ -6,6 +6,10 @@ from datetime import datetime
 from typing import List, Optional
 
 
+from entities.user import User
+from entities.activity_record import ActivityRecord
+
+
 class Student(User):
     """学生实体类 (Account Management 1-13, Booking, Checkout)"""
 

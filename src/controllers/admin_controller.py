@@ -3,6 +3,10 @@ AdminController.
 Covers: Room 2, 9-11; Acct 14
 """
 from typing import List, Dict, Optional
+from entities.booking import Booking
+from entities.student import Student
+from entities.equipment import Equipment
+from entities.admin import Admin
 
 
 class AdminController:

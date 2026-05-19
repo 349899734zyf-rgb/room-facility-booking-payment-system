@@ -3,6 +3,7 @@ AccountController.
 Covers: Acct 5, 8-12
 """
 from typing import Dict, List, Optional
+from entities.student import Student
 
 
 class AccountController:

@@ -3,6 +3,7 @@ RoomController.
 Covers: Room 1, 3-8
 """
 from typing import List, Dict, Optional
+from entities.room import Room
 
 
 class RoomController:

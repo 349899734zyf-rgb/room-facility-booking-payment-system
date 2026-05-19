@@ -5,6 +5,9 @@ Covers: Acct 13-15
 from typing import List
 
 
+from entities.user import User
+
+
 class Admin(User):
     """管理员实体类 (Account Management 14-15, Room Management 1-11)"""
 

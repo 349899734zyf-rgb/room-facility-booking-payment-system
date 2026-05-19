@@ -5,7 +5,7 @@ Test Strategy: min-, min, middle, max, max+ for each boundary condition
 """
 import unittest
 import sys
-sys.path.insert(0, r"d:\5136\project 2\草稿")
+sys.path.insert(0, r"d:\5136\project 2\src")
 
 from entity_classes import Student, Admin, User
 from controller_classes import AuthController, AccountController, AdminController

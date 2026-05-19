@@ -5,7 +5,7 @@ Test Strategy: min-, min, middle, max, max+ for each boundary condition
 """
 import unittest
 import sys
-sys.path.insert(0, r"d:\5136\project 2\草稿")
+sys.path.insert(0, r"d:\5136\project 2\src")
 
 from entity_classes import Student, Room, Booking, PromoCode, DealPackage, Order
 from controller_classes import PaymentController, AccountController, BookingController
@@ -152,25 +152,25 @@ class TestCheck04_PromoCode(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_bvt_discount_applied(self):
-        """AC: Discount reduces price (price 50, discount 10 → 40)"""
+        """AC: 10% discount on price 50 → 45"""
         booking = make_booking(self.student, price=50.0)
         order = self.ctrl.create_order(booking, "balance")
         new_price = self.ctrl.apply_promo_code(self.promo, self.student, order)
-        self.assertEqual(new_price, 40.0)
+        self.assertAlmostEqual(new_price, 45.0)  # 50 * (1 - 10/100) = 45
 
     def test_bvt_discount_exceeds_price(self):
-        """BVT max — discount > price — final = 0 (never negative)"""
+        """BVT max — 10% of price 5 → 4.5 (percentage never exceeds price)"""
         booking = make_booking(self.student, price=5.0)
         order = self.ctrl.create_order(booking, "balance")
         new_price = self.ctrl.apply_promo_code(self.promo, self.student, order)
-        self.assertEqual(new_price, 0.0)
+        self.assertAlmostEqual(new_price, 4.5)  # 5 * 0.9 = 4.5
 
     def test_bvt_discount_equals_price(self):
-        """BVT — discount == price — final = 0"""
+        """BVT — 10% of price 10 → 9"""
         booking = make_booking(self.student, price=10.0)
         order = self.ctrl.create_order(booking, "balance")
         new_price = self.ctrl.apply_promo_code(self.promo, self.student, order)
-        self.assertEqual(new_price, 0.0)
+        self.assertAlmostEqual(new_price, 9.0)  # 10 * 0.9 = 9
 
 
 # ============================================================
