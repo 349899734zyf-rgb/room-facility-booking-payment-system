@@ -50,8 +50,8 @@ class RoomManagementUI:
         print("-" * 150)
 
         for room in rooms:
-            student_status = 'Yes' if room.is_student_in_room() else 'No'
-            equipment_status = 'Yes' if room.is_equipment_rented() else 'No'
+            student_status = 'Yes' if room.get_is_student_in_room() else 'No'
+            equipment_status = 'Yes' if room.get_is_equipment_rented() else 'No'
             print(f"{room.get_room_id():<12} {room.get_room_name():<20} "
                   f"{room.get_building():<15} {room.get_capacity():<10} "
                   f"${room.get_price_per_hour():<11.2f} {room.get_opening_hours():<20} "
@@ -281,8 +281,8 @@ class RoomManagementUI:
         print(f"Capacity:       {room.get_capacity()} students")
         print(f"Price:          ${room.get_price_per_hour():.2f}/hour")
         print(f"Opening Hours:  {room.get_opening_hours()}")
-        student_in = 'Yes' if room.is_student_in_room() else 'No'
-        equipment = 'Yes' if room.is_equipment_rented() else 'No'
+        student_in = 'Yes' if room.get_is_student_in_room() else 'No'
+        equipment = 'Yes' if room.get_is_equipment_rented() else 'No'
         print(f"Student In:     {student_in}")
         print(f"Equipment:      {equipment}")
         print("-" * 80)
