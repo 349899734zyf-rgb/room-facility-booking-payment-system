@@ -8,6 +8,8 @@ from file_handler import FileHandler
 from controllers.auth_controller import AuthController
 from controllers.booking_controller import BookingController
 from boundary.account_ui import AccountUI
+from boundary.login_ui import LoginUI
+from boundary.registration_ui import RegistrationUI
 from entities.student import Student
 from entities.admin import Admin
 from entities.room import Room
@@ -20,6 +22,8 @@ def main():
     auth_ctrl = AuthController()
     book_ctrl = BookingController()
     ui = AccountUI()
+    login_ui = LoginUI()
+    reg_ui = RegistrationUI()
 
     # Load existing students from CSV into the system
     existing_students = FileHandler.load_students(student_file)
@@ -53,26 +57,26 @@ def main():
 
         if choice == "1":
             # Login
-            ui.display_login_header()
-            email, password = ui.get_login_credentials()
+            login_ui.display_login_header()
+            email, password = login_ui.get_login_credentials()
 
             user = auth_ctrl.login(email, password)
 
             if user:
                 role_name = user.get_role()
-                ui.display_login_success(role_name)
+                login_ui.display_login_success(role_name)
 
                 if role_name == "admin":
                     admin_menu(user, ui)
                 else:
                     student_menu(user, book_ctrl, ui)
             else:
-                ui.display_login_error()
+                login_ui.display_login_error()
 
         elif choice == "2":
             # Registration
-            ui.display_registration_header()
-            first_name, last_name, student_id, phone, email, password = ui.get_registration_info()
+            reg_ui.display_registration_header()
+            first_name, last_name, student_id, phone, email, password = reg_ui.get_registration_info()
 
             new_student = auth_ctrl.register_student(
                 email, password, first_name, last_name, phone, student_id
@@ -80,9 +84,9 @@ def main():
 
             if new_student:
                 FileHandler.save_student(student_file, new_student)
-                ui.display_registration_success()
+                reg_ui.display_registration_success()
             else:
-                ui.display_registration_error()
+                reg_ui.display_registration_error()
 
         elif choice == "3":
             ui.display_exit_message()

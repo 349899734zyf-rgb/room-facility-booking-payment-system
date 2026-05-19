@@ -1,12 +1,12 @@
 """
-AccountUI - Account management UI for login, registration, and menus.
+AccountUI - Account menu navigation UI.
 Extracted from Amanda's main.py. No new content added.
-Covers: Acct 1-4 (Login/Registration)
+Covers: Menu navigation, student/admin portal display
 """
 
 
 class AccountUI:
-    """Boundary class for account-related user interactions."""
+    """Boundary class for menu navigation and portal display."""
 
     # ==================== Main Menu ====================
 
@@ -24,64 +24,6 @@ class AccountUI:
     def get_menu_choice():
         """Get main menu selection."""
         return input("Selection: ")
-
-    # ==================== Login ====================
-
-    @staticmethod
-    def display_login_header():
-        """Display login section header."""
-        print()
-        print("=== Account Login ===")
-
-    @staticmethod
-    def get_login_credentials():
-        """Get email and password from user."""
-        email = input("Enter Email: ").strip()
-        password = input("Enter Password: ").strip()
-        return email, password
-
-    @staticmethod
-    def display_login_success(role):
-        """Display login success message based on role."""
-        print()
-        if role == "admin":
-            print("Login Successful! Welcome to the Admin Portal!")
-        else:
-            print("Login Successful! Welcome to the Student Portal!")
-
-    @staticmethod
-    def display_login_error():
-        """Display login error message."""
-        print("Error: Invalid email or password!")
-
-    # ==================== Registration ====================
-
-    @staticmethod
-    def display_registration_header():
-        """Display registration section header."""
-        print()
-        print("=== Student Registration ===")
-
-    @staticmethod
-    def get_registration_info():
-        """Get all registration fields from user."""
-        first_name = input("First Name: ").strip()
-        last_name = input("Last Name: ").strip()
-        student_id = input("Student ID: ").strip()
-        phone = input("Phone Number: ").strip()
-        email = input("Email: ").strip()
-        password = input("Password: ").strip()
-        return first_name, last_name, student_id, phone, email, password
-
-    @staticmethod
-    def display_registration_success():
-        """Display registration success message."""
-        print("Registration Successful!")
-
-    @staticmethod
-    def display_registration_error():
-        """Display registration error message."""
-        print("Error: Registration Failed!")
 
     # ==================== Student Menu ====================
 

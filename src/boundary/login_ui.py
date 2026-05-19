@@ -1,14 +1,35 @@
 """
-LoginUI.
+LoginUI - Login interface.
 Covers: Acct 4, 15
 """
-from typing import Dict
 
 
 class LoginUI:
-    """登录界面 (Account Management 4, 15)"""
-    def display_login_form(self) -> None: pass
-    def get_login_credentials(self) -> Dict[str, str]: return {}
-    def display_login_success(self, role: str) -> None: pass
-    def display_invalid_credentials_message(self) -> None: pass
+    """Login boundary class (Account Management 4, 15)"""
 
+    @staticmethod
+    def display_login_header():
+        """Display login section header."""
+        print()
+        print("=== Account Login ===")
+
+    @staticmethod
+    def get_login_credentials():
+        """Get email and password from user."""
+        email = input("Enter Email: ").strip()
+        password = input("Enter Password: ").strip()
+        return email, password
+
+    @staticmethod
+    def display_login_success(role):
+        """Display login success message based on role."""
+        print()
+        if role == "admin":
+            print("Login Successful! Welcome to the Admin Portal!")
+        else:
+            print("Login Successful! Welcome to the Student Portal!")
+
+    @staticmethod
+    def display_login_error():
+        """Display login error message."""
+        print("Error: Invalid email or password!")
