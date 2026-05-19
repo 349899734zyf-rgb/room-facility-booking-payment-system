@@ -20,7 +20,7 @@ def build_sample_booking(equipment_rental=False):
         "12345678"
     )
     student.add_funds(200)
-    student.add_deal_package_hours(12)
+    student.add_deal_package_hours(1)
 
     room = Room(
         "RM001",
@@ -141,6 +141,38 @@ def run_booking_flow():
                 package.get_price(),
                 package.get_hours()
             )
+            if not deal_package_ui.get_purchase_confirmation():
+                payment_ui.display_booking_not_confirmed()
+                return prompt_for_next_step(payment_ui, payment_controller)
+
+            if not payment_controller.purchase_deal_package(student):
+                payment_ui.display_insufficient_balance_message()
+                payment_ui.display_top_up_option()
+                if payment_ui.get_top_up_choice() != "1":
+                    payment_ui.display_checkout_finished()
+                    return False
+
+                try:
+                    top_up_amount = float(payment_ui.get_top_up_amount())
+                except ValueError:
+                    payment_ui.display_invalid_payment_option_message()
+                    return False
+
+                if not payment_controller.top_up_account(student, top_up_amount):
+                    payment_ui.display_invalid_payment_option_message()
+                    return False
+
+                payment_ui.display_top_up_success(student.get_balance())
+                if not payment_controller.purchase_deal_package(student):
+                    payment_ui.display_insufficient_balance_message()
+                    return False
+
+            deal_package_ui.display_purchase_success(package.get_hours())
+            payment_ui.display_deal_package_info(
+                duration=duration,
+                remaining=student.get_deal_package_hours()
+            )
+            success = student.get_deal_package_hours() >= duration
 
     if success:
         payment_ui.display_proceed_confirmation_prompt()
@@ -163,6 +195,7 @@ def run_booking_flow():
 
         payment_controller.confirm_order(order, student)
         payment_ui.display_booking_confirmed()
+        display_order_detail(payment_ui, payment_controller, order)
         payment_ui.display_next_step_options()
         next_step = payment_controller.choose_next_step(
             payment_ui.get_next_step_choice()
@@ -174,8 +207,52 @@ def run_booking_flow():
     elif payment_method == "balance":
         payment_ui.display_insufficient_balance_message()
         payment_ui.display_top_up_option()
+        if payment_ui.get_top_up_choice() != "1":
+            payment_ui.display_checkout_finished()
+            return False
+
+        try:
+            top_up_amount = float(payment_ui.get_top_up_amount())
+        except ValueError:
+            payment_ui.display_invalid_payment_option_message()
+            return False
+
+        if not payment_controller.top_up_account(student, top_up_amount):
+            payment_ui.display_invalid_payment_option_message()
+            return False
+
+        payment_ui.display_top_up_success(student.get_balance())
+
+        if not payment_controller.check_balance_sufficient(student, payable_amount):
+            payment_ui.display_insufficient_balance_message()
+            return False
+
+        payment_ui.display_proceed_confirmation_prompt()
+        if payment_ui.get_proceed_confirmation_choice() != "1":
+            payment_ui.display_booking_not_confirmed()
+            return False
+
+        payment_controller.pay_by_balance(student, payable_amount)
+        payment_controller.confirm_order(order, student)
+        payment_ui.display_booking_confirmed()
+        display_order_detail(payment_ui, payment_controller, order)
+        return prompt_for_next_step(payment_ui, payment_controller)
 
     return False
+
+
+def display_order_detail(payment_ui, payment_controller, order):
+    summary = payment_controller.get_booking_summary(order)
+    payment_ui.display_order_detail(
+        order_id=order.get_order_id(),
+        name=summary["name"],
+        room=summary["room"],
+        building=summary["building"],
+        time_period=summary["time_period"],
+        price=summary["price"],
+        equipment=summary["equipment"],
+        payment_method=order.get_payment_method()
+    )
 
 
 def prompt_for_next_step(payment_ui, payment_controller):

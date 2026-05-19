@@ -205,6 +205,32 @@ def test_display_booking_summary(capsys):
     assert "Equipment rental: Yes" in output
 
 
+def test_display_order_detail(capsys):
+    ui = PaymentUI()
+
+    ui.display_order_detail(
+        order_id="OD0001",
+        name="Test Student",
+        room="Study Room",
+        building="Clayton",
+        time_period="10:00-12:00",
+        price=20.0,
+        equipment=False,
+        payment_method="balance"
+    )
+
+    output = capsys.readouterr().out
+    assert "===== ORDER DETAIL =====" in output
+    assert "Order ID: OD0001" in output
+    assert "Name: Test Student" in output
+    assert "Room: Study Room" in output
+    assert "Building: Clayton" in output
+    assert "Time: 10:00-12:00" in output
+    assert "Price: $20.0" in output
+    assert "Equipment rental: No" in output
+    assert "Payment method: balance" in output
+
+
 def test_next_step_options_and_choice(capsys, monkeypatch):
     ui = PaymentUI()
     monkeypatch.setattr("builtins.input", lambda prompt: "2")

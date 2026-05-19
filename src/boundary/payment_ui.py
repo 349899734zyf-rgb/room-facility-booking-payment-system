@@ -80,6 +80,9 @@ class PaymentUI:
     def get_top_up_choice(self):
         return input("Choose top-up option: ")
 
+    def get_top_up_amount(self):
+        return input("Enter top-up amount: ")
+
     def display_top_up_success(self, balance):
         print(f"Top-up complete. Current balance: ${balance}")
 
@@ -108,6 +111,27 @@ class PaymentUI:
         print(f"Time: {time_period}")
         print(f"Price: ${price}")
         print(f"Equipment rental: {'Yes' if equipment else 'No'}")
+
+    def display_order_detail(
+            self,
+            order_id,
+            name,
+            room,
+            building,
+            time_period,
+            price,
+            equipment,
+            payment_method
+    ):
+        print("\n===== ORDER DETAIL =====")
+        print(f"Order ID: {order_id}")
+        print(f"Name: {name}")
+        print(f"Room: {room}")
+        print(f"Building: {building}")
+        print(f"Time: {time_period}")
+        print(f"Price: ${price}")
+        print(f"Equipment rental: {'Yes' if equipment else 'No'}")
+        print(f"Payment method: {payment_method}")
 
     def display_next_step_options(self):
         print("1. Make another booking")
