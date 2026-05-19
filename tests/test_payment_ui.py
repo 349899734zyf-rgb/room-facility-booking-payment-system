@@ -1,6 +1,29 @@
 from src.boundary.payment_ui import DealPackageUI, PaymentUI
 
 
+def test_equipment_options_and_choice(capsys, monkeypatch):
+    ui = PaymentUI()
+    monkeypatch.setattr("builtins.input", lambda prompt: "1")
+
+    ui.display_equipment_options()
+    choice = ui.get_equipment_choice()
+
+    output = capsys.readouterr().out
+    assert "===== EQUIPMENT RENTAL =====" in output
+    assert "Equipment rental?" in output
+    assert "1. Yes" in output
+    assert "2. No" in output
+    assert choice == "1"
+
+
+def test_display_invalid_equipment_option_message(capsys):
+    ui = PaymentUI()
+
+    ui.display_invalid_equipment_option_message()
+
+    assert capsys.readouterr().out == "Invalid equipment option\n"
+
+
 def test_display_payment_options_shows_price_duration_and_choices(capsys):
     ui = PaymentUI()
 
@@ -21,6 +44,14 @@ def test_get_payment_method_choice_returns_user_input(monkeypatch):
     choice = ui.get_payment_method_choice()
 
     assert choice == "1"
+
+
+def test_display_invalid_payment_option_message(capsys):
+    ui = PaymentUI()
+
+    ui.display_invalid_payment_option_message()
+
+    assert capsys.readouterr().out == "Invalid payment option\n"
 
 
 def test_get_promo_code_input_returns_user_input(monkeypatch):
@@ -84,12 +115,48 @@ def test_display_booking_confirmed(capsys):
     assert capsys.readouterr().out == "Booking confirmed\n"
 
 
+def test_proceed_confirmation_prompt_and_choice(capsys, monkeypatch):
+    ui = PaymentUI()
+    monkeypatch.setattr("builtins.input", lambda prompt: "1")
+
+    ui.display_proceed_confirmation_prompt()
+    choice = ui.get_proceed_confirmation_choice()
+
+    output = capsys.readouterr().out
+    assert "If you want to proceed" in output
+    assert "1 for yes, 2 for no" in output
+    assert choice == "1"
+
+
+def test_display_booking_not_confirmed(capsys):
+    ui = PaymentUI()
+
+    ui.display_booking_not_confirmed()
+
+    assert capsys.readouterr().out == "Booking not confirmed\n"
+
+
 def test_display_insufficient_balance_message(capsys):
     ui = PaymentUI()
 
     ui.display_insufficient_balance_message()
 
     assert capsys.readouterr().out == "Insufficient balance\n"
+
+
+def test_top_up_options_and_success_message(capsys, monkeypatch):
+    ui = PaymentUI()
+    monkeypatch.setattr("builtins.input", lambda prompt: "1")
+
+    ui.display_top_up_option()
+    choice = ui.get_top_up_choice()
+    ui.display_top_up_success(balance=40.0)
+
+    output = capsys.readouterr().out
+    assert "1. Add funds" in output
+    assert "2. Stop payment" in output
+    assert "Top-up complete. Current balance: $40.0" in output
+    assert choice == "1"
 
 
 def test_display_insufficient_deal_hours_message(capsys):
@@ -146,9 +213,17 @@ def test_next_step_options_and_choice(capsys, monkeypatch):
     choice = ui.get_next_step_choice()
 
     output = capsys.readouterr().out
-    assert "1. View my bookings" in output
-    assert "2. Return to home" in output
+    assert "1. Make another booking" in output
+    assert "2. Finish" in output
     assert choice == "2"
+
+
+def test_display_checkout_finished(capsys):
+    ui = PaymentUI()
+
+    ui.display_checkout_finished()
+
+    assert capsys.readouterr().out == "Checkout finished\n"
 
 
 def test_deal_package_ui_displays_and_confirms_purchase(capsys, monkeypatch):

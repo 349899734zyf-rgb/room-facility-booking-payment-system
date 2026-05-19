@@ -10,7 +10,7 @@ from src.controllers.payment_controller import PaymentController
 from src.entity_classes import Booking, Room, Student
 
 
-def build_sample_booking():
+def build_sample_booking(equipment_rental=False):
     student = Student(
         "test@student.monash.edu",
         "Password1",
@@ -20,6 +20,7 @@ def build_sample_booking():
         "12345678"
     )
     student.add_funds(200)
+    student.add_deal_package_hours(12)
 
     room = Room(
         "RM001",
@@ -39,7 +40,7 @@ def build_sample_booking():
         room,
         start,
         end,
-        False,
+        equipment_rental,
         20
     )
 
@@ -47,11 +48,28 @@ def build_sample_booking():
 
 
 def main():
+    while True:
+        should_continue = run_booking_flow()
+        if not should_continue:
+            break
+
+
+def run_booking_flow():
     payment_ui = PaymentUI()
     deal_package_ui = DealPackageUI()
     payment_controller = PaymentController()
 
-    student, room, booking = build_sample_booking()
+    payment_ui.display_equipment_options()
+    equipment_choice = payment_ui.get_equipment_choice()
+    if equipment_choice == "1":
+        equipment_rental = True
+    elif equipment_choice == "2":
+        equipment_rental = False
+    else:
+        payment_ui.display_invalid_equipment_option_message()
+        return False
+
+    student, room, booking = build_sample_booking(equipment_rental)
     duration = booking.calculate_duration_hours()
     time_period = f"{booking.get_start_time()} to {booking.get_end_time()}"
 
@@ -70,7 +88,11 @@ def main():
     )
 
     choice = payment_ui.get_payment_method_choice()
-    payment_method = "deal_package" if choice == "2" else "balance"
+    payment_method = payment_controller.select_payment_method(choice)
+    if payment_method is None:
+        payment_ui.display_invalid_payment_option_message()
+        return
+
     order = payment_controller.create_order(booking, payment_method)
 
     promo_input = payment_ui.get_promo_code_input().strip()
@@ -97,20 +119,20 @@ def main():
             price=payable_amount,
             balance=student.get_balance()
         )
-        success = payment_controller.pay_by_balance(
+        success = payment_controller.check_balance_sufficient(
             student,
             payable_amount
         )
     else:
+        if not payment_controller.can_use_deal_package(booking.get_equipment_rental()):
+            payment_ui.display_equipment_restriction_message()
+            return prompt_for_next_step(payment_ui, payment_controller)
+
         payment_ui.display_deal_package_info(
             duration=duration,
             remaining=student.get_deal_package_hours()
         )
-        success = payment_controller.pay_by_deal_package(
-            student,
-            duration,
-            booking.get_equipment_rental()
-        )
+        success = student.get_deal_package_hours() >= duration
 
         if not success and student.get_deal_package_hours() < duration:
             payment_ui.display_insufficient_deal_hours_message()
@@ -121,11 +143,50 @@ def main():
             )
 
     if success:
+        payment_ui.display_proceed_confirmation_prompt()
+        if payment_ui.get_proceed_confirmation_choice() != "1":
+            payment_ui.display_booking_not_confirmed()
+            return
+
+        if payment_method == "balance":
+            payment_controller.pay_by_balance(student, payable_amount)
+        else:
+            payment_controller.pay_by_deal_package(
+                student,
+                duration,
+                booking.get_equipment_rental()
+            )
+            payment_ui.display_deal_package_info(
+                duration=duration,
+                remaining=student.get_deal_package_hours()
+            )
+
         payment_controller.confirm_order(order, student)
         payment_ui.display_booking_confirmed()
         payment_ui.display_next_step_options()
+        next_step = payment_controller.choose_next_step(
+            payment_ui.get_next_step_choice()
+        )
+        if next_step == "continue_booking":
+            return True
+        payment_ui.display_checkout_finished()
+        return False
     elif payment_method == "balance":
         payment_ui.display_insufficient_balance_message()
+        payment_ui.display_top_up_option()
+
+    return False
+
+
+def prompt_for_next_step(payment_ui, payment_controller):
+    payment_ui.display_next_step_options()
+    next_step = payment_controller.choose_next_step(
+        payment_ui.get_next_step_choice()
+    )
+    if next_step == "continue_booking":
+        return True
+    payment_ui.display_checkout_finished()
+    return False
 
 
 if __name__ == "__main__":

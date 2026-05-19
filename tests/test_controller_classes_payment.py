@@ -70,6 +70,51 @@ def test_aggregate_payment_controller_blocks_deal_package_with_equipment():
     assert student.get_deal_package_hours() == 5.0
 
 
+def test_aggregate_payment_controller_validates_payment_and_next_step_choices():
+    controller = PaymentController()
+
+    assert controller.select_payment_method("1") == "balance"
+    assert controller.select_payment_method("2") == "deal_package"
+    assert controller.select_payment_method("bad") is None
+    assert controller.choose_next_step("1") == "continue_booking"
+    assert controller.choose_next_step("2") == "finish"
+    assert controller.choose_next_step("bad") is None
+
+
+def test_aggregate_payment_controller_top_up_and_complete_balance_payment():
+    controller = PaymentController()
+    student = make_student(balance=10.0)
+    booking = make_booking(student)
+    booking.set_status("pending")
+    order = controller.create_order(booking, "balance")
+
+    assert controller.complete_balance_payment(student, order) is False
+    assert booking.get_status() == "pending"
+    assert controller.top_up_account(student, 20.0) is True
+    assert controller.complete_balance_payment(student, order) is True
+    assert student.get_balance() == 10.0
+    assert booking.get_status() == "confirmed"
+
+
+def test_aggregate_payment_controller_deal_package_payment_and_summary():
+    controller = PaymentController()
+    student = make_student(package_hours=5.0)
+    booking = make_booking(student)
+    booking.set_status("pending")
+    order = controller.create_order(booking, "deal_package")
+
+    summary = controller.get_booking_summary(order)
+
+    assert summary["name"] == "Test Student"
+    assert summary["room"] == "Study Room"
+    assert summary["building"] == "Clayton"
+    assert summary["price"] == 20.0
+    assert summary["equipment"] is False
+    assert controller.complete_deal_package_payment(student, order) is True
+    assert student.get_deal_package_hours() == 3.0
+    assert booking.get_status() == "confirmed"
+
+
 def test_room_availability_updates_after_order_confirmation():
     booking_controller = BookingController()
     payment_controller = PaymentController()

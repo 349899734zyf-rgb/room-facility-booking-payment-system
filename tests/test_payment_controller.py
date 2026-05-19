@@ -64,6 +64,15 @@ def test_get_promo_codes_returns_default_codes():
     assert promo_codes[0].get_code() == "NEWBEE20"
 
 
+def test_select_payment_method_accepts_valid_choices_and_rejects_invalid():
+    controller = PaymentController()
+
+    assert controller.select_payment_method("1") == "balance"
+    assert controller.select_payment_method("2") == "deal_package"
+    assert controller.select_payment_method(" balance ") == "balance"
+    assert controller.select_payment_method("bad") is None
+
+
 def test_validate_promo_code_returns_none_for_unknown_or_used_code():
     controller = PaymentController()
     student = make_student()
@@ -261,6 +270,40 @@ def test_balance_payment_does_not_add_deposit_without_equipment():
     assert student.get_balance() == 130.0
 
 
+def test_complete_balance_payment_deducts_balance_and_confirms_booking():
+    controller = PaymentController()
+    student = make_student(balance=50.0)
+    booking = make_booking(student, total_price=20.0)
+    booking.set_status("pending")
+    order = controller.create_order(booking, "balance")
+
+    assert controller.complete_balance_payment(student, order) is True
+    assert student.get_balance() == 30.0
+    assert booking.get_status() == "confirmed"
+    assert booking.get_payment_method() == "balance"
+
+
+def test_complete_balance_payment_stops_when_balance_is_insufficient():
+    controller = PaymentController()
+    student = make_student(balance=10.0)
+    booking = make_booking(student, total_price=20.0)
+    booking.set_status("pending")
+    order = controller.create_order(booking, "balance")
+
+    assert controller.complete_balance_payment(student, order) is False
+    assert student.get_balance() == 10.0
+    assert booking.get_status() == "pending"
+
+
+def test_top_up_account_adds_funds_for_later_payment():
+    controller = PaymentController()
+    student = make_student(balance=10.0)
+
+    assert controller.top_up_account(student, 30.0) is True
+    assert student.get_balance() == 40.0
+    assert controller.top_up_account(student, 0.0) is False
+
+
 def test_equipment_deposit_is_not_discounted_by_promo_code():
     controller = PaymentController()
     student = make_student(balance=150.0)
@@ -277,6 +320,31 @@ def test_equipment_deposit_is_not_discounted_by_promo_code():
     assert payable_amount == 116.0
 
 
+def test_complete_deal_package_payment_deducts_hours_and_confirms_booking():
+    controller = PaymentController()
+    student = make_student(package_hours=5.0)
+    booking = make_booking(student, total_price=20.0, equipment_rental=False)
+    booking.set_status("pending")
+    order = controller.create_order(booking, "deal_package")
+
+    assert controller.complete_deal_package_payment(student, order) is True
+    assert student.get_deal_package_hours() == 3.0
+    assert booking.get_status() == "confirmed"
+    assert booking.get_payment_method() == "deal_package"
+
+
+def test_complete_deal_package_payment_rejects_equipment_or_insufficient_hours():
+    controller = PaymentController()
+    student = make_student(package_hours=1.0)
+    booking = make_booking(student, total_price=20.0, equipment_rental=True)
+    booking.set_status("pending")
+    order = controller.create_order(booking, "deal_package")
+
+    assert controller.complete_deal_package_payment(student, order) is False
+    assert student.get_deal_package_hours() == 1.0
+    assert booking.get_status() == "pending"
+
+
 def test_create_order_uses_booking_price_and_increments_order_id():
     controller = PaymentController()
     booking = make_booking(total_price=20.0)
@@ -290,6 +358,32 @@ def test_create_order_uses_booking_price_and_increments_order_id():
     assert first_order.get_payment_method() == "balance"
     assert second_order.get_order_id() == "OD0002"
     assert second_order.get_payment_method() == "deal_package"
+
+
+def test_get_booking_summary_returns_confirmation_details():
+    controller = PaymentController()
+    student = make_student()
+    booking = make_booking(student, total_price=20.0, equipment_rental=True)
+    order = controller.create_order(booking, "balance")
+
+    summary = controller.get_booking_summary(order)
+
+    assert summary["name"] == "Test Student"
+    assert summary["room"] == "Study Room"
+    assert summary["building"] == "Clayton"
+    assert str(booking.get_start_time()) in summary["time_period"]
+    assert str(booking.get_end_time()) in summary["time_period"]
+    assert summary["price"] == 20.0
+    assert summary["equipment"] is True
+
+
+def test_choose_next_step_accepts_continue_or_finish_only():
+    controller = PaymentController()
+
+    assert controller.choose_next_step("1") == "continue_booking"
+    assert controller.choose_next_step("2") == "finish"
+    assert controller.choose_next_step(" finish ") == "finish"
+    assert controller.choose_next_step("bad") is None
 
 
 def test_confirm_order_marks_booking_confirmed_and_payment_method():

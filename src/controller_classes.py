@@ -162,6 +162,18 @@ class BookingController:
 
 class PaymentController:
     EQUIPMENT_DEPOSIT_AMOUNT = 100.0
+    PAYMENT_METHOD_CHOICES = {
+        "1": "balance",
+        "2": "deal_package",
+        "balance": "balance",
+        "deal_package": "deal_package",
+    }
+    NEXT_STEP_CHOICES = {
+        "1": "continue_booking",
+        "2": "finish",
+        "continue_booking": "continue_booking",
+        "finish": "finish",
+    }
     """支付控制器 (Checkout and Booking Handling 1-11)"""
 
     def __init__(self) -> None:
@@ -176,9 +188,23 @@ class PaymentController:
     def get_deal_package(self) -> DealPackage:
         return self.__deal_package
 
+    def select_payment_method(self, choice: str) -> Optional[str]:
+        """Validate payment method input (Checkout 1)."""
+        return self.PAYMENT_METHOD_CHOICES.get(choice.strip().lower())
+
     def pay_by_balance(self, student: Student, amount) -> bool:
         """余额支付 (Checkout 2)"""
         return student.deduct_balance(self._resolve_payment_amount(amount))
+
+    def complete_balance_payment(self, student: Student, order: Order) -> bool:
+        """Deduct the payable amount and confirm the booking if successful."""
+        if not self.pay_by_balance(student, order):
+            return False
+        return self.confirm_order(order, student)
+
+    def top_up_account(self, student: Student, amount: float) -> bool:
+        """Top up account balance from the insufficient-balance flow."""
+        return student.add_funds(amount)
 
     def check_balance_sufficient(self, student: Student, amount) -> bool:
         """检查余额是否充足 (Checkout 2)"""
@@ -190,6 +216,19 @@ class PaymentController:
         if has_equipment:
             return False
         return student.deduct_deal_package_hours(hours)
+
+    def complete_deal_package_payment(self, student: Student,
+                                      order: Order) -> bool:
+        """Pay with package hours and confirm the booking if successful."""
+        booking = order.get_booking()
+        duration = booking.calculate_duration_hours()
+        if not self.pay_by_deal_package(
+                student,
+                duration,
+                booking.get_equipment_rental()
+        ):
+            return False
+        return self.confirm_order(order, student)
 
     def validate_promo_code(self, code: str, student: Student) -> Optional[PromoCode]:
         """验证优惠码 (Checkout 4-4.5)"""
@@ -241,6 +280,20 @@ class PaymentController:
         self.__latest_order = order
         return order
 
+    def get_booking_summary(self, order: Order) -> Dict[str, object]:
+        """Return the details needed before final confirmation."""
+        booking = order.get_booking()
+        student = booking.get_student()
+        room = booking.get_room()
+        return {
+            "name": f"{student.get_first_name()} {student.get_last_name()}",
+            "room": room.get_room_name(),
+            "building": room.get_building(),
+            "time_period": f"{booking.get_start_time()} to {booking.get_end_time()}",
+            "price": order.get_final_price(),
+            "equipment": booking.get_equipment_rental(),
+        }
+
     def confirm_order(self, order: Order, student: Student) -> bool:
         """确认订单 (Checkout 10)"""
         booking = order.get_booking()
@@ -251,6 +304,10 @@ class PaymentController:
             False
         )
         return True
+
+    def choose_next_step(self, choice: str) -> Optional[str]:
+        """Validate post-confirmation navigation input (Checkout 11)."""
+        return self.NEXT_STEP_CHOICES.get(choice.strip().lower())
 
     def can_use_deal_package(self, has_equipment: bool) -> bool:
         """检查套餐支付限制 (Checkout 6)"""
