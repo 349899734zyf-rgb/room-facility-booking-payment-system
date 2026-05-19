@@ -5,22 +5,25 @@ from controllers.booking_controller import BookingController
 from controllers.room_controller import RoomController
 from controllers.admin_controller import AdminController
 from boundary.room_management_ui import RoomManagementUI
+from boundary.booking_ui import BookingUI
 from boundary.admin_ui import AdminUI
 from boundary.booking_status_ui import BookingStatusUI
 from boundary.ban_student_ui import BanStudentUI
 from boundary.equipment_deposit_ui import EquipmentDepositUI
+from booking_constants import REASON_ROOMS_FOUND, REASON_INVALID_INPUT, REASON_NO_ROOMS
 
 
 def main():
     """
-    Entry point of the booking system.
+    Booking demo entry point — uses BookingUI for all user interaction.
     """
-    print("=== Booking System Test ===")
+    print("=== Booking System Demo ===")
 
-    # Initialize controller
+    # Initialize controller and UI
     controller = BookingController()
+    booking_ui = BookingUI()
 
-    # Create a sample student
+    # Create sample data
     student = Student(
         "test@student.monash.edu",
         "Password1",
@@ -30,67 +33,87 @@ def main():
         "S001"
     )
 
-    # Create a sample room
     room = Room("R001", "Study Room 1", "Building A", 4, 15.0, "09:00-18:00")
-
-    # Set available time slots for the room
     room.set_available_time_slots([
         "2026-05-06 10:00-2026-05-06 12:00"
     ])
-
-    # Add room to controller
     controller.get_rooms().append(room)
 
-    # --- Book 1: Filter rooms by criteria ---
-    building = input("Enter building: ")
-    start_time_str = input("Enter start time (YYYY-MM-DD HH:MM): ")
-    end_time_str = input("Enter end time (YYYY-MM-DD HH:MM): ")
+    # --- Book 7: Check eligibility ---
+    eligibility = controller.check_eligibility(student)
+    booking_ui.display_eligibility_status(
+        eligibility['is_banned'],
+        3 - len(student.get_active_bookings())
+    )
 
-    rooms = controller.search_rooms(building, start_time_str, end_time_str)
-
-    if not rooms:
-        print("No available rooms found.")
+    if not eligibility['can_make_booking']:
+        if eligibility['is_banned']:
+            booking_ui.display_booking_ban_info(student.get_active_bookings())
+        elif eligibility['has_reached_limit']:
+            booking_ui.display_booking_limit_message()
         return
 
-    print("\nAvailable rooms:")
-    for i, room in enumerate(rooms):
-        print(f"{i + 1}. {room.get_room_name()}")
+    # --- Book 1: Filter rooms by criteria ---
+    criteria = booking_ui.get_search_criteria()
+    result = controller.search_rooms(
+        criteria['building'],
+        criteria['start_time'],
+        criteria['end_time']
+    )
 
-    # --- Book 5: Create a new booking draft ---
-    start_time = datetime.strptime(start_time_str, "%Y-%m-%d %H:%M")
-    end_time = datetime.strptime(end_time_str, "%Y-%m-%d %H:%M")
+    if result['reason'] == REASON_INVALID_INPUT:
+        booking_ui.display_invalid_input_message()
+        return
+    if result['reason'] == REASON_NO_ROOMS:
+        booking_ui.display_no_rooms_message()
+        return
 
-    print("\nBooking Summary:")
-    print("Room:", selected_room.get_room_name())
-    print("Building:", selected_room.get_building())
-    print("Start time:", start_time_str)
-    print("End time:", end_time_str)
+    # --- Book 13: View current bookings before decision ---
+    booking_ui.display_current_bookings(student.get_active_bookings())
+
+    # Display available rooms
+    available_rooms = result['rooms']
+    booking_ui.display_available_rooms(available_rooms)
 
     # --- Book 9: Select an available room ---
-    choice = int(input("\nSelect a room number: ")) - 1
-    selected_room = rooms[choice]
+    room_id = booking_ui.get_room_selection()
+    selected_room = controller.select_room(available_rooms, room_id)
 
-    print("\nSelected room:")
-    print(selected_room.get_room_name())
+    if selected_room is None:
+        booking_ui.display_room_selection_error()
+        return
+
+    # --- Book 8: Duration rules ---
+    start_time = datetime.datetime.strptime(criteria['start_time'], "%Y-%m-%d %H:%M")
+    end_time = datetime.datetime.strptime(criteria['end_time'], "%Y-%m-%d %H:%M")
+
+    if not controller.validate_duration(start_time, end_time):
+        booking_ui.display_duration_rule_message()
+        return
+
+    # --- Book 4: Equipment bundle choice ---
+    booking_ui.display_equipment_options()
+    try:
+        equipment = booking_ui.get_equipment_choice()
+    except ValueError:
+        equipment = False
+
+    if equipment:
+        booking_ui.display_deposit_requirement(controller.get_equipment_deposit())
 
     # --- Book 15: Make booking ---
-    confirm = input("\nConfirm booking? (y/n): ")
+    booking_result = controller.create_booking(
+        student,
+        selected_room,
+        start_time,
+        end_time,
+        equipment
+    )
 
-    if confirm.lower() == "y":
-        booking = controller.create_booking(
-            student,
-            selected_room,
-            start_time,
-            end_time,
-            False
-        )
-
-        if booking:
-            print("Booking created successfully:", booking.get_booking_id())
-        else:
-            print("Booking failed.")
+    if booking_result['success']:
+        booking_ui.display_booking_confirmation(booking_result['booking'])
     else:
-        print("Booking cancelled.")
+        booking_ui.display_booking_failure_message(booking_result['reason'])
 
 
 if __name__ == "__main__":
