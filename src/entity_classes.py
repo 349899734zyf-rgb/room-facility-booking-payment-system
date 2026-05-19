@@ -191,7 +191,8 @@ class Student(User):
 
     def mark_promo_code_used(self, code: str) -> None:
         """标记优惠码已使用"""
-        self.__used_promo_codes.append(code)
+        if not self.has_used_promo_code(code):
+            self.__used_promo_codes.append(code)
 
     def get_active_bookings(self) -> List['Booking']:
         """获取有效预定列表"""
@@ -446,11 +447,13 @@ class PromoCode:
 
     def mark_used(self, student_id: str) -> None:
         """标记为已使用"""
-        self.__used_by_students.append(student_id)
+        if not self.is_used_by(student_id):
+            self.__used_by_students.append(student_id)
 
     def apply_discount(self, original_price: float) -> float:
         """应用折扣 (Checkout 4)"""
-        return max(0, original_price - self.__discount_amount)
+        discount = original_price * (self.__discount_amount / 100)
+        return max(0, original_price - discount)
 
 
 class DealPackage:
@@ -566,6 +569,7 @@ class Order:
         self.__promo_discount: float = 0.0
         self.__final_price: float = price
         self.__payment_method: str = payment_method
+        self.__promo_code_used: Optional[str] = None
 
     # --- Accessors ---
     def get_order_id(self) -> str:
@@ -586,6 +590,9 @@ class Order:
     def get_payment_method(self) -> str:
         return self.__payment_method
 
+    def get_promo_code_used(self) -> Optional[str]:
+        return self.__promo_code_used
+
     # --- Mutators ---
     def set_promo_discount(self, discount: float) -> None:
         self.__promo_discount = discount
@@ -593,6 +600,9 @@ class Order:
 
     def set_payment_method(self, method: str) -> None:
         self.__payment_method = method
+
+    def set_promo_code_used(self, code: str) -> None:
+        self.__promo_code_used = code
 
     # --- Business Methods ---
     def calculate_final_price(self) -> float:
