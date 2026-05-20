@@ -18,11 +18,12 @@ from boundary.ban_student_ui import BanStudentUI
 from boundary.equipment_deposit_ui import EquipmentDepositUI
 
 
-def main_admin_room_management():
+def main_admin_room_management(room_controller=None, admin=None, admin_controller=None):
     """Room Management Main Program - Admin Operations"""
 
     # Create controller and UI
-    room_controller = RoomController()
+    if room_controller is None:
+        room_controller = RoomController()
     room_ui = RoomManagementUI(room_controller)
 
     while True:
@@ -50,12 +51,24 @@ def main_admin_room_management():
                     print(f"Error: {str(e)}")
 
         elif choice == "2":
-            # ============ 2. View All Rooms ============
+            # ============ 2. Record Promotion Idea ============
+            if admin is None or admin_controller is None:
+                print("\nError: Admin session required to record promotion ideas.")
+            else:
+                idea = room_ui.get_promotion_idea_input()
+                if idea:
+                    if admin_controller.record_promotion_idea(admin, idea):
+                        room_ui.display_promotion_recorded()
+                    else:
+                        print("Error: Failed to record promotion idea.")
+
+        elif choice == "3":
+            # ============ 3. View All Rooms ============
             rooms = room_controller.get_rooms()
             room_ui.display_room_list(rooms)
 
-        elif choice == "3":
-            # ============ 3. Delete Room ============
+        elif choice == "4":
+            # ============ 4. Delete Room ============
             rooms = room_controller.get_rooms()
             room_ui.display_room_list(rooms)
             room_id = room_ui.get_room_number_input()
@@ -67,37 +80,6 @@ def main_admin_room_management():
                     room_ui.display_remove_success()
                 else:
                     room_ui.display_invalid_input_message()
-
-        elif choice == "4":
-            # ============ 4. Update Room Information ============
-            rooms = room_controller.get_rooms()
-            room_ui.display_room_list(rooms)
-            room_id = room_ui.get_room_number_input()
-            room = room_controller.find_room(room_id)
-
-            if room is None:
-                room_ui.display_room_not_found_message()
-            else:
-                room_ui.display_current_room_details(room)
-                updates = room_ui.get_room_update_input()
-
-                if updates:
-                    # Convert string values to appropriate types
-                    updates_dict = {}
-                    for key, value in updates.items():
-                        if key == 'capacity':
-                            updates_dict[key] = int(value)
-                        elif key == 'price':
-                            updates_dict[key] = float(value)
-                        else:
-                            updates_dict[key] = value
-
-                    if room_controller.update_room_info(room_id, updates_dict):
-                        room_ui.display_update_success()
-                        updated_room = room_controller.find_room(room_id)
-                        room_ui.display_current_room_details(updated_room)
-                    else:
-                        room_ui.display_invalid_input_message()
 
         elif choice == "5":
             # ============ 5. Update Room Status ============
@@ -161,7 +143,38 @@ def main_admin_room_management():
                 room_ui.display_room_usage_status(booked_slots, income)
 
         elif choice == "8":
-            # ============ 8. Return to Main Menu ============
+            # ============ 8. Change Room Information ============
+            rooms = room_controller.get_rooms()
+            room_ui.display_room_list(rooms)
+            room_id = room_ui.get_room_number_input()
+            room = room_controller.find_room(room_id)
+
+            if room is None:
+                room_ui.display_room_not_found_message()
+            else:
+                room_ui.display_current_room_details(room)
+                updates = room_ui.get_room_update_input()
+
+                if updates:
+                    # Convert string values to appropriate types
+                    updates_dict = {}
+                    for key, value in updates.items():
+                        if key == 'capacity':
+                            updates_dict[key] = int(value)
+                        elif key == 'price':
+                            updates_dict[key] = float(value)
+                        else:
+                            updates_dict[key] = value
+
+                    if room_controller.update_room_info(room_id, updates_dict):
+                        room_ui.display_update_success()
+                        updated_room = room_controller.find_room(room_id)
+                        room_ui.display_current_room_details(updated_room)
+                    else:
+                        room_ui.display_invalid_input_message()
+
+        elif choice == "9":
+            # ============ 9. Return to Main Menu ============
             print("\nReturning to main menu")
             break
 
@@ -306,7 +319,7 @@ def main_admin_equipment_deposit(admin_controller, equipment_deposit_ui):
             break
 
 
-def main_admin_menu(admin_controller, auth_controller, room_controller, booking_controller):
+def main_admin_menu(admin, admin_controller, auth_controller, room_controller, booking_controller):
     """
     Main Admin Menu - Integrates all admin management functions
     This is the main entry point for admin operations
@@ -320,6 +333,14 @@ def main_admin_menu(admin_controller, auth_controller, room_controller, booking_
     equipment_deposit_ui = EquipmentDepositUI(admin_controller)
 
     while True:
+        # Display admin information
+        adm_prof = admin_controller.get_admin_info(admin)
+        admin_ui.display_admin_info(
+            adm_prof["email"],
+            adm_prof["first_name"],
+            adm_prof["last_name"],
+            adm_prof["phone"]
+        )
         # Display admin home menu
         admin_ui.display_admin_home()
 
@@ -327,7 +348,7 @@ def main_admin_menu(admin_controller, auth_controller, room_controller, booking_
 
         if choice == "1":
             # Room Management
-            main_admin_room_management()
+            main_admin_room_management(room_controller, admin, admin_controller)
 
         elif choice == "2":
             # Update Booking Status

@@ -31,13 +31,21 @@ class AccountUI:
         """Display student portal menu."""
         print()
         print("=== Monash Student Portal ===")
-        print("Welcome, {}! (Role: Student)".format(student.get_first_name()))
-        print("1. Search & Filter Rooms")
-        print("2. View Profile & Settings")
-        print("3. View Usage Status")
-        print("4. Funds Management")
-        print("5. View Activity History")
-        print("6. Logout")
+        print("Welcome, {} {}! (Role: Student)".format(student.get_first_name(), student.get_last_name()))
+        print("-" * 45)
+        print("Student Profile Details:")
+        print("- Student ID:     {}".format(student.get_student_id()))
+        print("- Email Address:  {}".format(student.get_email()))
+        print("- Mobile Number:  {}".format(student.get_phone()))
+        print("- Account Balance:${:.2f}".format(student.get_balance()))
+        print("-" * 45)
+        print("1. Search & Book Rooms")
+        print("2. Checkout & Payment")
+        print("3. View Profile & Settings")
+        print("4. View Usage Status")
+        print("5. Funds Management")
+        print("6. View Activity History")
+        print("7. Logout")
         print()
 
     @staticmethod
@@ -87,7 +95,8 @@ class AccountUI:
         print("- Security ID:   {}".format(admin.get_admin_id()))
         print("-" * 45)
         print("Administrative Control Options:")
-        print("1. Logout Profile Operations")
+        print("1. Room Management Console")
+        print("2. Logout Profile Operations")
         print()
 
     @staticmethod
