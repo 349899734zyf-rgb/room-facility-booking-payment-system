@@ -314,16 +314,24 @@ class AccountController:
     def __init__(self) -> None:
         pass
 
-    def get_profile_info(self, student: Student) -> Dict[str, object]:
+    def get_profile_info(self, user):
         """获取个人资料 (Acct 5)"""
-        return {
-            "first_name": student.get_first_name(),
-            "last_name": student.get_last_name(),
-            "student_id": student.get_student_id(),
-            "email": student.get_email(),
-            "phone": student.get_phone(),
-            "balance": student.get_balance()
+        profile = {
+            "first_name": user.get_first_name(),
+            "last_name": user.get_last_name(),
+            "email": user.get_email(),
+            "phone": user.get_phone(),
+            "role": user.get_role()
         }
+
+        if isinstance(user, Student):
+            profile["student_id"] = user.get_student_id()
+            profile["balance"] = user.get_balance()
+        else:
+            profile["student_id"] = "N/A"
+            profile["balance"] = 0.0
+
+        return profile
 
     def get_usage_status(self, student: Student) -> Dict[str, object]:
         """获取使用状态 (Acct 8)"""

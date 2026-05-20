@@ -1,9 +1,8 @@
 import os
-from typing import cast
 from file_handler import FileHandler
 from controller_classes import AuthController, BookingController, AccountController
 from boundary_classes import LoginUI, RegistrationUI, ProfileUI, UsageStatusUI
-from entity_classes import Student, Admin, User
+from entity_classes import Student, Admin
 
 def main():
     student_file = "students.csv"
@@ -293,11 +292,8 @@ def admin_menu(admin: Admin, acct_ctrl: AccountController):
     while True:
         print()
         print("=== Admin Control Center Home Dashboard ===")
-        print("Status: Logged In Authenticated Dashboard View")
 
-        user_view = cast(User, admin)
-        student_view = cast(Student, user_view)
-        adm_prof = acct_ctrl.get_profile_info(student_view)
+        adm_prof = acct_ctrl.get_profile_info(admin)
 
         #Acct 14: Admin View Info
         print("-" * 45)
