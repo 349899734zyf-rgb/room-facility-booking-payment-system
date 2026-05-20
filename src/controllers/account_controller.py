@@ -1,0 +1,46 @@
+"""
+AccountController.
+Covers: Acct 5, 8-12
+"""
+from typing import Dict, List, Optional
+from entities.student import Student
+
+
+class AccountController:
+    """Account Controller (Account Management 5, 8-12)"""
+
+    def __init__(self) -> None:
+        pass
+
+    def get_profile_info(self, student: Student) -> Dict[str, object]:
+        """Get profile info (Acct 5)"""
+        return {
+            "first_name": student.get_first_name(),
+            "last_name": student.get_last_name(),
+            "student_id": student.get_student_id(),
+            "email": student.get_email(),
+            "phone": student.get_phone(),
+            "balance": student.get_balance()
+        }
+
+    def get_usage_status(self, student: Student) -> Dict[str, object]:
+        """Get usage status (Acct 8)"""
+        return {
+            "current_bookings": student.get_active_bookings(),
+            "ban_status": student.get_booking_ban_status(),
+            "balance": student.get_balance(),
+            "deal_package_hours": student.get_deal_package_hours()
+        }
+
+    def get_activity_history(self, student: Student, page: int) -> List:
+        """Get activity history (Acct 9-10)"""
+        return student.get_activity_history_page(page)
+
+    def get_funds_summary(self, student: Student) -> Dict[str, float]:
+        """Get funds summary (Acct 11)"""
+        return {"balance": student.get_balance()}
+
+    def add_funds(self, student: Student, amount: float) -> bool:
+        """Add funds (Acct 12)"""
+        return student.add_funds(amount)
+

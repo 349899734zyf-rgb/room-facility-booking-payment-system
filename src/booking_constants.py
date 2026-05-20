@@ -1,4 +1,4 @@
-﻿"""
+"""
 This file stores shared constant values used by the booking feature.
 Keeping these values in one place avoids embedded constants and improves
 readability.

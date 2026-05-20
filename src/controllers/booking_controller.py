@@ -34,7 +34,8 @@ from booking_constants import (
     TIME_FORMAT,
 )
 from entities.booking import Booking
-from entity_classes import Room, Student
+from entities.student import Student
+from entities.room import Room
 
 
 class BookingController:

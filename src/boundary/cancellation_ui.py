@@ -1,4 +1,4 @@
-﻿"""
+"""
 This file defines the CancellationUI class, which handles text-based input and
 output for reviewing bookings and confirming or stopping cancellation requests.
 """

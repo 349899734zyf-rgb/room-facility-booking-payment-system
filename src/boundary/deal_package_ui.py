@@ -1,0 +1,22 @@
+"""
+DealPackageUI - Interface for purchasing deal packages.
+Covers: Checkout 7
+"""
+
+
+class DealPackageUI:
+    """Deal Package boundary class (Checkout 7)"""
+
+    def display_deal_package_info(self, price: float, hours: float) -> None:
+        """Display details of the deal package available for purchase."""
+        print("\n===== DEAL PACKAGE =====")
+        print(f"Price: ${price}")
+        print(f"Hours: {hours}")
+
+    def get_purchase_confirmation(self) -> bool:
+        """Get confirmation from the student for purchase."""
+        return input("Purchase deal package? (y/n): ").lower() == "y"
+
+    def display_purchase_success(self, hours: float) -> None:
+        """Display success message upon purchase."""
+        print(f"Deal package purchased. Added {hours} hours")
