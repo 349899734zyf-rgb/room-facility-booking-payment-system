@@ -5,7 +5,8 @@ import sys
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from boundary.payment_ui import DealPackageUI, PaymentUI
+from boundary.payment_ui import PaymentUI
+from boundary.deal_package_ui import DealPackageUI
 from controllers.payment_controller import PaymentController
 from entities.booking import Booking
 from entities.room import Room
