@@ -82,23 +82,3 @@ class PaymentUI:
     def get_next_step_choice(self):
         return input("Choose next step: ")
 
-
-class DealPackageUI:
-
-    def display_deal_package_info(
-            self,
-            price,
-            hours
-    ):
-        print("\n===== DEAL PACKAGE =====")
-        print(f"Price: ${price}")
-        print(f"Hours: {hours}")
-
-    def get_purchase_confirmation(self):
-        return input("Purchase deal package? (y/n): ").lower() == "y"
-
-    def display_purchase_success(
-            self,
-            hours
-    ):
-        print(f"Deal package purchased. Added {hours} hours")
