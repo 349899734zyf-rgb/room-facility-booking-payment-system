@@ -24,25 +24,26 @@ class AccountUI:
     def get_menu_choice():
         """Get main menu selection."""
         return input("Selection: ")
-
     # ==================== Student Menu ====================
 
     @staticmethod
     def display_student_menu(student):
         """Display student portal menu."""
         print()
-        print("--- Welcome, {} ---".format(student.get_first_name()))
-        print("Student ID: {}".format(student.get_student_id()))
-        print("Balance: ${}".format(student.get_balance()))
-        print()
+        print("=== Monash Student Portal ===")
+        print("Welcome, {}! (Role: Student)".format(student.get_first_name()))
         print("1. Search & Filter Rooms")
-        print("2. Logout")
+        print("2. View Profile & Settings")
+        print("3. View Usage Status")
+        print("4. Funds Management")
+        print("5. View Activity History")
+        print("6. Logout")
         print()
 
     @staticmethod
     def get_student_menu_choice():
         """Get student menu selection."""
-        return input("Selection: ")
+        return input("Selection: ").strip()
 
     @staticmethod
     def get_search_input():
@@ -65,33 +66,40 @@ class AccountUI:
                     r.get_room_id(), r.get_room_name(), r.get_building()))
 
     @staticmethod
-    def display_logout_message():
-        """Display logout message."""
+    def display_student_logout_message():
+        """Display student logout message."""
         print()
-        print("Logging Out...")
+        print("Logging Out Student Portal...")
 
     # ==================== Admin Menu ====================
 
     @staticmethod
-    def display_admin_menu(admin):
+    def display_admin_menu(admin, adm_prof):
         """Display admin portal menu."""
         print()
-        print("--- Admin Portal: {} ---".format(admin.get_first_name()))
-        print("Staff ID: {}".format(admin.get_admin_id()))
-        print()
-        print("1. Logout")
+        print("=== Admin Control Center Home Dashboard ===")
+        print("Status: Logged In Authenticated Dashboard View")
+        print("-" * 45)
+        print("Admin Profile Details:")
+        print("- Staff Name:    {} {}".format(adm_prof["first_name"], adm_prof["last_name"]))
+        print("- Staff Email:   {}".format(adm_prof["email"]))
+        print("- Staff Phone:   {}".format(adm_prof["phone"]))
+        print("- Security ID:   {}".format(admin.get_admin_id()))
+        print("-" * 45)
+        print("Administrative Control Options:")
+        print("1. Logout Profile Operations")
         print()
 
     @staticmethod
     def get_admin_menu_choice():
         """Get admin menu selection."""
-        return input("Selection: ")
+        return input("Selection: ").strip()
 
     @staticmethod
     def display_admin_logout_message():
         """Display admin logout message."""
         print()
-        print("Logging Out Admin Portal...")
+        print("Logging Out Admin Portal Workspace Dashboard...")
 
     @staticmethod
     def display_exit_message():
