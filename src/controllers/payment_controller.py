@@ -1,38 +1,14 @@
-from typing import Dict, List, Optional
-
-try:
-    from src.entity_classes import (
-        Booking,
-        DealPackage,
-        Order,
-        PromoCode,
-        Student
-    )
-except ModuleNotFoundError:
-    from entity_classes import (
-        Booking,
-        DealPackage,
-        Order,
-        PromoCode,
-        Student
-    )
+from typing import List, Optional
+from entities.promo_code import PromoCode
+from entities.deal_package import DealPackage
+from entities.order import Order
+from entities.student import Student
+from entities.booking import Booking
 
 class PaymentController:
     """Checkout and Payment Controller"""
 
     EQUIPMENT_DEPOSIT_AMOUNT = 100.0
-    PAYMENT_METHOD_CHOICES = {
-        "1": "balance",
-        "2": "deal_package",
-        "balance": "balance",
-        "deal_package": "deal_package",
-    }
-    NEXT_STEP_CHOICES = {
-        "1": "continue_booking",
-        "2": "finish",
-        "continue_booking": "continue_booking",
-        "finish": "finish",
-    }
 
     def __init__(self) -> None:
         self.__promo_codes: List[PromoCode] = []
@@ -50,13 +26,6 @@ class PaymentController:
 
     def get_promo_codes(self) -> List[PromoCode]:
         return self.__promo_codes
-
-    def select_payment_method(
-            self,
-            choice: str
-    ) -> Optional[str]:
-
-        return self.PAYMENT_METHOD_CHOICES.get(choice.strip().lower())
 
     # =====================================================
     # Promo Code
@@ -195,24 +164,6 @@ class PaymentController:
             required_hours
         )
 
-    def complete_deal_package_payment(
-            self,
-            student: Student,
-            order: Order
-    ) -> bool:
-
-        booking = order.get_booking()
-        duration = booking.calculate_duration_hours()
-
-        if not self.pay_by_deal_package(
-                student,
-                duration,
-                booking.get_equipment_rental()
-        ):
-            return False
-
-        return self.confirm_order(order, student)
-
     def can_use_deal_package(
             self,
             has_equipment: bool
@@ -241,25 +192,6 @@ class PaymentController:
         return student.deduct_balance(
             self._resolve_payment_amount(amount)
         )
-
-    def complete_balance_payment(
-            self,
-            student: Student,
-            order: Order
-    ) -> bool:
-
-        if not self.pay_by_balance(student, order):
-            return False
-
-        return self.confirm_order(order, student)
-
-    def top_up_account(
-            self,
-            student: Student,
-            amount: float
-    ) -> bool:
-
-        return student.add_funds(amount)
 
     def get_equipment_deposit_amount(self) -> float:
         return self.EQUIPMENT_DEPOSIT_AMOUNT
@@ -316,31 +248,6 @@ class PaymentController:
         )
         self.__latest_order = order
         return order
-
-    def get_booking_summary(
-            self,
-            order: Order
-    ) -> Dict[str, object]:
-
-        booking = order.get_booking()
-        student = booking.get_student()
-        room = booking.get_room()
-
-        return {
-            "name": f"{student.get_first_name()} {student.get_last_name()}",
-            "room": room.get_room_name(),
-            "building": room.get_building(),
-            "time_period": f"{booking.get_start_time()} to {booking.get_end_time()}",
-            "price": order.get_final_price(),
-            "equipment": booking.get_equipment_rental(),
-        }
-
-    def choose_next_step(
-            self,
-            choice: str
-    ) -> Optional[str]:
-
-        return self.NEXT_STEP_CHOICES.get(choice.strip().lower())
 
     def confirm_order(
             self,
