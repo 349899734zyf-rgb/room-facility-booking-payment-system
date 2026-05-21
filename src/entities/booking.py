@@ -80,9 +80,9 @@ class Booking:
         """Return the current booking status."""
         return self.__status
 
-    def get_payment_method(self) -> Optional[str]:
+    def get_payment_method(self) -> str:
         """Return the payment method used for this booking."""
-        return self.__payment_method
+        return self.__payment_method or ""
 
     def get_promo_code_used(self) -> Optional[str]:
         """Return the promo code used for this booking."""
@@ -116,7 +116,18 @@ class Booking:
         """Return True when cancellation happens in the late window."""
         check_time = current_time or datetime.now()
         time_before_start = self.__start_time - check_time
-        late_window = timedelta(minutes=LATE_CANCELLATION_MINUTES)
+        
+        room_type = "Small"
+        if hasattr(self.__room, "get_room_type"):
+            room_type = self.__room.get_room_type()
+            
+        if room_type == "Medium":
+            late_window = timedelta(hours=3)
+        elif room_type == "Large":
+            late_window = timedelta(hours=4)
+        else:
+            late_window = timedelta(minutes=30)
+            
         return timedelta(0) <= time_before_start <= late_window
 
     def cancel(self, current_time: Optional[datetime] = None) -> str:
@@ -128,15 +139,17 @@ class Booking:
 
     def __str__(self) -> str:
         """Return a readable summary of the booking."""
-        if hasattr(self.__room, "get_room_id"):
-            room_id = self.__room.get_room_id()
-        else:
-            room_id = "unknown room"
+        room_desc = "unknown room"
+        if self.__room:
+            if hasattr(self.__room, "get_room_name") and hasattr(self.__room, "get_room_id"):
+                room_desc = f"{self.__room.get_room_id()} ({self.__room.get_room_name()})"
+            elif hasattr(self.__room, "get_room_id"):
+                room_desc = self.__room.get_room_id()
 
         start_text = self.__start_time.strftime(DISPLAY_TIME_FORMAT)
         end_text = self.__end_time.strftime(DISPLAY_TIME_FORMAT)
         return (
-            f"{self.__booking_id} | {room_id} | "
+            f"{self.__booking_id} | {room_desc} | "
             f"{start_text} - {end_text} | {self.__status}"
         )
 

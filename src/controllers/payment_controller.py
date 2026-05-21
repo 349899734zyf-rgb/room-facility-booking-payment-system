@@ -10,6 +10,20 @@ class PaymentController:
 
     EQUIPMENT_DEPOSIT_AMOUNT = 100.0
 
+    # ===== 以下常量来自 CQ 原始代码 (Branch_CQ) =====
+    PAYMENT_METHOD_CHOICES = {
+        "1": "balance",
+        "2": "deal_package",
+        "balance": "balance",
+        "deal_package": "deal_package",
+    }
+    NEXT_STEP_CHOICES = {
+        "1": "continue_booking",
+        "2": "finish",
+        "continue_booking": "continue_booking",
+        "finish": "finish",
+    }
+
     def __init__(self) -> None:
         self.__promo_codes: List[PromoCode] = []
         self.__deal_package = DealPackage("DP001", 100.0, 12.0)
@@ -17,9 +31,7 @@ class PaymentController:
         self.__latest_order: Optional[Order] = None
 
         # default promo code
-        self.__promo_codes.append(
-            PromoCode("NEWBEE20", 20.0)
-        )
+        self.__promo_codes.append(PromoCode("NEWBEE20", 20.0))
 
     def get_deal_package(self) -> DealPackage:
         return self.__deal_package
@@ -34,15 +46,28 @@ class PaymentController:
     def validate_promo_code(
             self,
             code: str,
-            student: Student
+            student: Student,
+            booking: Optional[Booking] = None
     ) -> Optional[PromoCode]:
+
+        target_code = code.strip().upper()
+        search_code = "NEWBEE20" if target_code == "NEWBIE20" else target_code
 
         for promo in self.__promo_codes:
 
-            if promo.get_code() == code:
+            if promo.get_code().upper() == search_code:
 
                 if promo.is_used_by(student.get_student_id()):
                     return None
+
+                if search_code == "NEWBEE20":
+                    room_type = "Small"
+                    if booking and hasattr(booking, "get_room"):
+                        room = booking.get_room()
+                        if room and hasattr(room, "get_room_type"):
+                            room_type = room.get_room_type()
+                    if room_type != "Small":
+                        return None
 
                 return promo
 
@@ -154,10 +179,11 @@ class PaymentController:
             self,
             student: Student,
             required_hours: float,
-            has_equipment: bool
+            has_equipment: bool,
+            room_type: str = "Small"
     ) -> bool:
 
-        if not self.can_use_deal_package(has_equipment):
+        if not self.can_use_deal_package(has_equipment, room_type):
             return False
 
         return student.deduct_deal_package_hours(
@@ -166,10 +192,11 @@ class PaymentController:
 
     def can_use_deal_package(
             self,
-            has_equipment: bool
+            has_equipment: bool,
+            room_type: str = "Small"
     ) -> bool:
 
-        return not has_equipment
+        return (not has_equipment) and (room_type == "Small")
 
     # =====================================================
     # Balance Payment
@@ -270,3 +297,47 @@ class PaymentController:
             )
 
         return True
+
+    # ===== 以下方法来自 CQ 原始代码 (Branch_CQ) =====
+
+    def select_payment_method(self, choice: str) -> Optional[str]:
+        """Validate payment method input (Checkout 1)."""
+        return self.PAYMENT_METHOD_CHOICES.get(choice.strip().lower())
+
+    def top_up_account(self, student: Student, amount: float) -> bool:
+        """Top up account balance from the insufficient-balance flow."""
+        return student.add_funds(amount)
+
+    def complete_balance_payment(self, student: Student, order: Order) -> bool:
+        """Deduct the payable amount and confirm the booking if successful."""
+        if not self.pay_by_balance(student, order):
+            return False
+        return self.confirm_order(order, student)
+
+    def complete_deal_package_payment(self, student: Student, order: Order) -> bool:
+        """Pay with package hours and confirm the booking if successful."""
+        booking = order.get_booking()
+        duration = booking.calculate_duration_hours()
+        room = booking.get_room()
+        room_type = room.get_room_type() if hasattr(room, "get_room_type") else "Small"
+        if not self.pay_by_deal_package(student, duration, booking.get_equipment_rental(), room_type):
+            return False
+        return self.confirm_order(order, student)
+
+    def get_booking_summary(self, order: Order) -> dict:
+        """Return the details needed before final confirmation."""
+        booking = order.get_booking()
+        student = booking.get_student()
+        room = booking.get_room()
+        return {
+            "name": f"{student.get_first_name()} {student.get_last_name()}",
+            "room": room.get_room_name(),
+            "building": room.get_building(),
+            "time_period": f"{booking.get_start_time()} to {booking.get_end_time()}",
+            "price": order.get_final_price(),
+            "equipment": booking.get_equipment_rental(),
+        }
+
+    def choose_next_step(self, choice: str) -> Optional[str]:
+        """Validate post-confirmation navigation input (Checkout 11)."""
+        return self.NEXT_STEP_CHOICES.get(choice.strip().lower())

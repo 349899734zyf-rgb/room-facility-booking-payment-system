@@ -76,9 +76,73 @@ class PaymentUI:
         print(f"Equipment rental: {'Yes' if equipment else 'No'}")
 
     def display_next_step_options(self):
-        print("1. View my bookings")
-        print("2. Return to home")
+        print("1. Make another booking")
+        print("2. Finish")
 
     def get_next_step_choice(self):
         return input("Choose next step: ")
+
+    # ===== 以下方法来自 CQ 原始代码 (Branch_CQ) =====
+
+    def display_equipment_options(self):
+        print("\n===== EQUIPMENT RENTAL =====")
+        print("Equipment rental?")
+        print("1. Yes")
+        print("2. No")
+
+    def get_equipment_choice(self):
+        return input("Choose equipment option: ")
+
+    def display_invalid_equipment_option_message(self):
+        print("Invalid equipment option")
+
+    def display_invalid_payment_option_message(self):
+        print("Invalid payment option")
+
+    def display_proceed_confirmation_prompt(self):
+        print('If you want to proceed')
+        print("1 for yes, 2 for no")
+
+    def get_proceed_confirmation_choice(self):
+        return input("Choose option: ")
+
+    def display_booking_not_confirmed(self):
+        print("Booking not confirmed")
+
+    def display_top_up_option(self):
+        print("1. Add funds")
+        print("2. Stop payment")
+
+    def get_top_up_choice(self):
+        return input("Choose top-up option: ")
+
+    def get_top_up_amount(self):
+        return input("Enter top-up amount: ")
+
+    def display_top_up_success(self, balance):
+        print(f"Top-up complete. Current balance: ${balance}")
+
+    def display_order_detail(
+            self,
+            order_id,
+            name,
+            room,
+            building,
+            time_period,
+            price,
+            equipment,
+            payment_method
+    ):
+        print("\n===== ORDER DETAIL =====")
+        print(f"Order ID: {order_id}")
+        print(f"Name: {name}")
+        print(f"Room: {room}")
+        print(f"Building: {building}")
+        print(f"Time: {time_period}")
+        print(f"Price: ${price}")
+        print(f"Equipment rental: {'Yes' if equipment else 'No'}")
+        print(f"Payment method: {payment_method}")
+
+    def display_checkout_finished(self):
+        print("Checkout finished")
 

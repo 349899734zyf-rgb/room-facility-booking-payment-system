@@ -15,6 +15,7 @@ class AdminController:
     def __init__(self) -> None:
         self.__all_bookings: List[Booking] = []
         self.__equipments: List[Equipment] = []
+        self.__students: List[Student] = []
 
     def get_all_bookings(self) -> List[Booking]:
         return self.__all_bookings
@@ -24,6 +25,34 @@ class AdminController:
 
     def get_equipments(self) -> List[Equipment]:
         return self.__equipments
+
+    # ===== 以下方法来自 QIuerying 原始代码 =====
+
+    def get_all_students(self) -> List[Student]:
+        return self.__students
+
+    def set_all_students(self, students: List[Student]) -> None:
+        self.__students = students
+
+    def add_student(self, student: Student) -> None:
+        self.__students.append(student)
+
+    def find_student(self, student_id: str) -> Optional[Student]:
+        for student in self.__students:
+            if student.get_student_id() == student_id:
+                return student
+        return None
+
+    def get_all_equipment(self) -> List[Equipment]:
+        return self.__equipments
+
+    def find_equipment(self, equipment_id: str) -> Optional[Equipment]:
+        for equipment in self.__equipments:
+            if equipment.get_equipment_id() == equipment_id:
+                return equipment
+        return None
+
+    # ===== 原有方法 =====
 
     def get_admin_info(self, admin: Admin) -> Dict[str, str]:
         """Get admin info (Account Management 14)"""
@@ -40,8 +69,32 @@ class AdminController:
 
     def update_booking_status(self, booking_id: str, new_status: str) -> bool:
         """Update booking status (Room Management 9)"""
+        if new_status not in ["confirmed", "completed", "cancelled", "no_show"]:
+            return False
+            
         for b in self.__all_bookings:
             if b.get_booking_id() == booking_id:
+                if new_status == "no_show":
+                    student = b.get_student()
+                    room = b.get_room()
+                    room_type = room.get_room_type() if hasattr(room, "get_room_type") else "Small"
+                    
+                    deposit_refund = b.get_equipment_deposit()
+                    if room_type == "Small":
+                        room_refund = b.get_total_price() * 0.2
+                    else:
+                        room_refund = 0.0
+                    refund = room_refund + deposit_refund
+                    if refund > 0:
+                        student.add_funds(refund)
+                        
+                    student.record_no_show()
+                    student.remove_booking(b)
+                    
+                    start_text = b.get_start_time().strftime("%Y-%m-%d %H:%M")
+                    end_text = b.get_end_time().strftime("%Y-%m-%d %H:%M")
+                    room.update_availability(f"{start_text}-{end_text}", True)
+                
                 b.set_status(new_status)
                 return True
         return False
@@ -72,4 +125,5 @@ class AdminController:
         refund = equipment.refund_deposit()
         student.add_funds(refund)
         return True
+
 
