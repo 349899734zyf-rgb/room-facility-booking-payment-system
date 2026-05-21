@@ -3,7 +3,10 @@ import os
 from entities.student import Student
 
 class FileHandler:
-    Fields = ['firstName', 'lastName', 'sID', 'phone', 'email', 'password', 'balance']
+    Fields = [
+        'firstName', 'lastName', 'sID', 'phone', 'email', 'password', 'balance',
+        'booking_ban_status', 'late_cancellation_count', 'no_show_count', 'deal_package_hours', 'used_promo_codes'
+    ]
 
     @staticmethod
     def save_student(file_path, student):
@@ -20,7 +23,12 @@ class FileHandler:
                 'phone': student.get_phone(),
                 'email': student.get_email(),
                 'password': student.get_password(),
-                'balance': student.get_balance()
+                'balance': student.get_balance(),
+                'booking_ban_status': str(student.get_booking_ban_status()),
+                'late_cancellation_count': student.get_late_cancellation_count(),
+                'no_show_count': student.get_no_show_count(),
+                'deal_package_hours': student.get_deal_package_hours(),
+                'used_promo_codes': ';'.join(student.get_used_promo_codes())
             })
 
     @staticmethod
@@ -41,5 +49,20 @@ class FileHandler:
                     row['sID']
                 )
                 s.set_balance(float(row['balance']))
+                
+                # Check optional fields with defaults to maintain backward-compatibility
+                ban_status = row.get('booking_ban_status', 'False')
+                s.set_booking_ban_status(ban_status == 'True')
+                
+                s.set_late_cancellation_count(int(row.get('late_cancellation_count', 0)))
+                s.set_no_show_count(int(row.get('no_show_count', 0)))
+                s.set_deal_package_hours(float(row.get('deal_package_hours', 0.0)))
+                
+                used_promos = row.get('used_promo_codes', '')
+                if used_promos:
+                    for code in used_promos.split(';'):
+                        if code:
+                            s.mark_promo_code_used(code)
+                
                 students.append(s)
         return students
