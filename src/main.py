@@ -624,7 +624,7 @@ def main():
 
                     if role_name == "admin" and isinstance(user, Admin):
                         # Direct to complete Admin Dashboard flow
-                        main_admin_menu(user, admin_ctrl, auth_ctrl, room_ctrl, book_ctrl)
+                        main_admin_menu(user, admin_ctrl, auth_ctrl, room_ctrl, book_ctrl, student_file)
                     elif role_name == "student" and isinstance(user, Student):
                         # Direct to complete Student Portal flow
                         student_menu(

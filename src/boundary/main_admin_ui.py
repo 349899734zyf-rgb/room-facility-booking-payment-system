@@ -1,4 +1,5 @@
 import datetime
+import os
 import sys
 from pathlib import Path
 
@@ -16,6 +17,17 @@ from boundary.admin_ui import AdminUI
 from boundary.booking_status_ui import BookingStatusUI
 from boundary.ban_student_ui import BanStudentUI
 from boundary.equipment_deposit_ui import EquipmentDepositUI
+from file_handler import FileHandler
+
+
+def _save_all_students(auth_controller, student_file):
+    """Rewrite the students CSV with the current in-memory state."""
+    if student_file is None:
+        return
+    if os.path.exists(student_file):
+        os.remove(student_file)
+    for s in auth_controller.get_students():
+        FileHandler.save_student(student_file, s)
 
 
 def main_admin_room_management(room_controller=None, admin=None, admin_controller=None):
@@ -216,7 +228,7 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
             room_ui.display_invalid_input_message()
 
 
-def main_admin_booking_status(admin_controller, booking_controller, booking_status_ui):
+def main_admin_booking_status(admin_controller, booking_controller, booking_status_ui, auth_controller=None, student_file=None):
     """
     Story 2.9: Update Booking Status
     Administrator wants to update booking status for accurate records
@@ -258,6 +270,9 @@ def main_admin_booking_status(admin_controller, booking_controller, booking_stat
             if new_status:
                 if admin_controller.update_booking_status(booking_id, new_status):
                     booking_status_ui.display_status_update_success()
+                    # Persist student state changes (e.g. no-show refund, count)
+                    if auth_controller and student_file:
+                        _save_all_students(auth_controller, student_file)
                 else:
                     print("Error: Failed to update booking status")
 
@@ -267,7 +282,7 @@ def main_admin_booking_status(admin_controller, booking_controller, booking_stat
             break
 
 
-def main_admin_ban_student(admin_controller, auth_controller, ban_student_ui):
+def main_admin_ban_student(admin_controller, auth_controller, ban_student_ui, student_file=None):
     """
     Story 2.10: Ban Student
     Administrator wants to ban a student for inappropriate behavior
@@ -310,6 +325,7 @@ def main_admin_ban_student(admin_controller, auth_controller, ban_student_ui):
                 elif confirm:
                     if admin_controller.unban_student(student):
                         ban_student_ui.display_unban_success()
+                        _save_all_students(auth_controller, student_file)
             else:
                 # If not banned, ask to ban
                 confirm = ban_student_ui.get_ban_confirmation()
@@ -319,6 +335,7 @@ def main_admin_ban_student(admin_controller, auth_controller, ban_student_ui):
                 elif confirm:
                     if admin_controller.ban_student(student):
                         ban_student_ui.display_ban_success()
+                        _save_all_students(auth_controller, student_file)
 
         continue_choice = input("\nManage another student? (y/n, or enter 'CANCEL' to return): ").strip().lower()
         if continue_choice.upper() == "CANCEL" or continue_choice not in ['y', 'yes']:
@@ -380,7 +397,7 @@ def main_admin_equipment_deposit(admin_controller, equipment_deposit_ui):
             break
 
 
-def main_admin_menu(admin, admin_controller, auth_controller, room_controller, booking_controller):
+def main_admin_menu(admin, admin_controller, auth_controller, room_controller, booking_controller, student_file=None):
     """
     Main Admin Menu - Integrates all admin management functions
     This is the main entry point for admin operations
@@ -413,11 +430,11 @@ def main_admin_menu(admin, admin_controller, auth_controller, room_controller, b
 
         elif choice == "2":
             # Update Booking Status
-            main_admin_booking_status(admin_controller, booking_controller, booking_status_ui)
+            main_admin_booking_status(admin_controller, booking_controller, booking_status_ui, auth_controller, student_file)
 
         elif choice == "3":
             # Ban Student
-            main_admin_ban_student(admin_controller, auth_controller, ban_student_ui)
+            main_admin_ban_student(admin_controller, auth_controller, ban_student_ui, student_file)
 
         elif choice == "4":
             # Set Equipment Deposit
