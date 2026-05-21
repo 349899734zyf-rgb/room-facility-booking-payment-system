@@ -1,0 +1,11 @@
+Type,Name,Credential/Value 1,Credential/Value 2,Extra Info,Description
+Student Account,Student A,student1@student.monash.edu,Password123,ID: 00000001 | Phone: 0461812001,Default Balance: $50.0
+Student Account,Student B,student2@student.monash.edu,Password123,ID: 00000002 | Phone: 0461812002,Default Balance: $50.0
+Admin Account,Admin User,admin1@monash.edu,Password123456,ID: ADMIN001 | Phone: 0461812562,Prepopulated system admin
+Promo Code,NEWBIE20,NEWBIE20,-,Discount,Only valid for Small rooms
+Promo Code,NEWBEE20,NEWBEE20,-,Discount,Only valid for Small rooms
+Deal Package,Weekly/Monthly,-,-,Payment Method,Only valid for Small rooms and without equipment rentals
+Room Type Rule,Small Room,Price: <= $10/hr,Min duration: 1 hr,Cancel window: 30 mins | Late cancel: 50% room fee + 100% deposit,No-show: 20% room fee + 100% deposit
+Room Type Rule,Medium Room,Price: $40/hr,Min duration: 2 hr | Advance booking: 3 hr,Cancel window: 3 hr | Late cancel: 50% room fee + 100% deposit,No-show: 0% room fee + 100% deposit
+Room Type Rule,Large Room,Price: $80/hr,Min duration: 2 hr | Advance booking: 24 hr,Cancel window: 4 hr | Late cancel: 30% room fee + 100% deposit,No-show: 0% room fee + 100% deposit
+Prepopulated Room,Study Room 1,Room ID: R001,Price: $15/hr,Building: Building A | Capacity: 4,Slot: 2026-05-06 10:00 to 12:00
