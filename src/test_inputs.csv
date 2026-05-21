@@ -8,4 +8,22 @@ Deal Package,Weekly/Monthly,-,-,Payment Method,Only valid for Small rooms and wi
 Room Type Rule,Small Room,Price: <= $10/hr,Min duration: 1 hr,Cancel window: 30 mins | Late cancel: 50% room fee + 100% deposit,No-show: 20% room fee + 100% deposit
 Room Type Rule,Medium Room,Price: $40/hr,Min duration: 2 hr | Advance booking: 3 hr,Cancel window: 3 hr | Late cancel: 50% room fee + 100% deposit,No-show: 0% room fee + 100% deposit
 Room Type Rule,Large Room,Price: $80/hr,Min duration: 2 hr | Advance booking: 24 hr,Cancel window: 4 hr | Late cancel: 30% room fee + 100% deposit,No-show: 0% room fee + 100% deposit
-Prepopulated Room,Study Room 1,Room ID: R001,Price: $15/hr,Building: Building A | Capacity: 4,Slot: 2026-05-06 10:00 to 12:00
+Prepopulated Room,Study Room 1,Room ID: R001,Price: $15/hr,Building: Building A | Capacity: 4,Slot: 2026-05-06 10:00-2026-05-06 12:00
+Menu Selection,Main Menu,1 (Login),2 (Register),3 (Exit),System main entry options
+Menu Selection,Student Menu,1 (Search & Book),2 (Checkout),3 (Profile & Settings),4 (Usage Status) | 5 (Funds) | 6 (History) | 7 (Logout)
+Menu Selection,Profile Sub-menu,1 (Update Mobile),2 (Change Password),3 (Return),Accessed via option 3 in Student Menu
+Menu Selection,Funds Sub-menu,1 (Add Funds),2 (Return),Accessed via option 5 in Student Menu
+Menu Selection,Admin Menu,1 (Room Console),2 (Logout),-,Options inside Admin Center Dashboard
+Menu Selection,Admin Room Console,1 (Add Room),2 (Update Room),3 (Return),Options inside Admin Room Management
+Text Input,Booking Search (Building),Building A,Clayton Building,Woodside,Valid building name inputs for searching
+Text Input,Booking Search (Date/Time),2026-05-06 10:00,2026-05-06 12:00,Format: YYYY-MM-DD HH:MM,Example valid slots for prepopulated Study Room 1
+Text Input,Room Selection (Book),R001,RM999,-,Room IDs to enter when booking
+Text Input,Equipment Choice,1 (Yes),2 (No),-,Choices when asked for equipment rental
+Admin Action Input,Add Room ID,R002,R003,R004,Example Room ID values to enter
+Admin Action Input,Add Room Name,Conference Room A,Study Pod 2,Seminar Room 1,Example Room names to enter
+Admin Action Input,Add Building,Building A,Clayton Building,Woodside,Example building codes/names
+Admin Action Input,Add Room Price,10.0 (Small),40.0 (Medium),80.0 (Large),Price determines room type (Small/Medium/Large)
+Admin Action Input,Add Capacity,4,2,10,Example capacity integer values
+Admin Action Input,Add Available Hours,09:00-18:00,08:00-22:00,-,Format: HH:MM-HH:MM
+Admin Action Input,Add Available Slots,2026-05-06 10:00-2026-05-06 12:00,-,-,Format: YYYY-MM-DD HH:MM-YYYY-MM-DD HH:MM
+Admin Action Input,Add Standard Equipment,Projector,Whiteboard,Microwave,Standard equipment lists for new rooms
