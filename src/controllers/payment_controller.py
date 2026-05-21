@@ -10,7 +10,7 @@ class PaymentController:
 
     EQUIPMENT_DEPOSIT_AMOUNT = 100.0
 
-    # ===== 以下常量来自 CQ 原始代码 (Branch_CQ) =====
+    # Constants imported from Branch_CQ
     PAYMENT_METHOD_CHOICES = {
         "1": "balance",
         "2": "deal_package",
@@ -298,7 +298,7 @@ class PaymentController:
 
         return True
 
-    # ===== 以下方法来自 CQ 原始代码 (Branch_CQ) =====
+    # Methods imported from Branch_CQ
 
     def select_payment_method(self, choice: str) -> Optional[str]:
         """Validate payment method input (Checkout 1)."""

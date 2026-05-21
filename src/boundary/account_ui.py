@@ -56,9 +56,15 @@ class AccountUI:
     @staticmethod
     def get_search_input():
         """Get room search criteria from user."""
-        building = input("Enter Building (e.g., Woodside): ").strip()
-        start = input("Enter Start Time (e.g., 09:00): ").strip()
-        end = input("Enter End Time (e.g., 11:00): ").strip()
+        building = input("Enter Building (e.g., Woodside, or enter 'CANCEL' to return): ").strip()
+        if building.upper() == "CANCEL":
+            return "CANCEL", "", ""
+        start = input("Enter Start Time (format: HH:MM, e.g., 09:00, or enter 'CANCEL' to return): ").strip()
+        if start.upper() == "CANCEL":
+            return "CANCEL", "", ""
+        end = input("Enter End Time (format: HH:MM, e.g., 11:00, or enter 'CANCEL' to return): ").strip()
+        if end.upper() == "CANCEL":
+            return "CANCEL", "", ""
         return building, start, end
 
     @staticmethod

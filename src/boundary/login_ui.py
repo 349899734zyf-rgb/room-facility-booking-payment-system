@@ -16,8 +16,12 @@ class LoginUI:
     @staticmethod
     def get_login_credentials():
         """Get email and password from user."""
-        email = input("Enter Email: ").strip()
-        password = input("Enter Password: ").strip()
+        email = input("Enter Email (or enter 'CANCEL' to return): ").strip()
+        if email.upper() == "CANCEL":
+            return "CANCEL", ""
+        password = input("Enter Password (or enter 'CANCEL' to return): ").strip()
+        if password.upper() == "CANCEL":
+            return "CANCEL", "CANCEL"
         return email, password
 
     @staticmethod

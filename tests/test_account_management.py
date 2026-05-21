@@ -1,5 +1,5 @@
 """
-MSSRB — Account Management BVT (Boundary Value Testing)
+MSSRB - Account Management BVT (Boundary Value Testing)
 User Stories: Acct 1 ~ Acct 15
 Test Strategy: min-, min, middle, max, max+ for each boundary condition
 """
@@ -20,7 +20,7 @@ from controllers.admin_controller import AdminController
 # Boundary: all 6 fields must be non-empty
 # ============================================================
 class TestAcct01_StudentRegistration(unittest.TestCase):
-    """Acct 1 — Student Registration [SP: 5]
+    """Acct 1 - Student Registration [SP: 5]
     AC: Student enters email, password, last name, first name, mobile, student ID.
     BVT: Number of blank fields (0 = valid, 1+ = invalid)
     """
@@ -28,23 +28,23 @@ class TestAcct01_StudentRegistration(unittest.TestCase):
         self.auth = AuthController()
 
     def test_bvt_all_fields_filled(self):
-        """BVT min (0 blank fields) — should succeed"""
+        """BVT min (0 blank fields) - should succeed"""
         s = self.auth.register_student("a@student.monash.edu", "Pass1234",
                                        "John", "Doe", "0412345678", "12345678")
         self.assertIsNotNone(s)
 
     def test_bvt_one_blank_field(self):
-        """BVT min+ (1 blank field — email empty) — should fail"""
+        """BVT min+ (1 blank field - email empty) - should fail"""
         s = self.auth.register_student("", "Pass1234", "John", "Doe", "0412345678", "12345678")
         self.assertIsNone(s)
 
     def test_bvt_two_blank_fields(self):
-        """BVT middle (2 blank fields) — should fail"""
+        """BVT middle (2 blank fields) - should fail"""
         s = self.auth.register_student("", "", "John", "Doe", "0412345678", "12345678")
         self.assertIsNone(s)
 
     def test_bvt_all_blank_fields(self):
-        """BVT max (6 blank fields) — should fail"""
+        """BVT max (6 blank fields) - should fail"""
         s = self.auth.register_student("", "", "", "", "", "")
         self.assertIsNone(s)
 
@@ -66,7 +66,7 @@ class TestAcct01_StudentRegistration(unittest.TestCase):
 # Boundary: email must end with @student.monash.edu
 # ============================================================
 class TestAcct02_ValidMonashEmail(unittest.TestCase):
-    """Acct 2 — Valid Monash Email [SP: 1]
+    """Acct 2 - Valid Monash Email [SP: 1]
     AC: Email format xxxx@student.monash.edu, invalid email shows error.
     BVT: email suffix validation
     """
@@ -74,31 +74,31 @@ class TestAcct02_ValidMonashEmail(unittest.TestCase):
         self.auth = AuthController()
 
     def test_bvt_min_minus_empty_email(self):
-        """BVT min- (empty string) — invalid"""
+        """BVT min- (empty string) - invalid"""
         self.assertFalse(self.auth.validate_email(""))
 
     def test_bvt_min_just_domain(self):
-        """BVT min (just '@student.monash.edu') — valid format"""
+        """BVT min (just '@student.monash.edu') - valid format"""
         self.assertTrue(self.auth.validate_email("@student.monash.edu"))
 
     def test_bvt_middle_normal_email(self):
-        """BVT middle (normal student email) — valid"""
+        """BVT middle (normal student email) - valid"""
         self.assertTrue(self.auth.validate_email("john0001@student.monash.edu"))
 
     def test_bvt_max_long_prefix(self):
-        """BVT max (very long prefix) — valid"""
+        """BVT max (very long prefix) - valid"""
         self.assertTrue(self.auth.validate_email("a" * 100 + "@student.monash.edu"))
 
     def test_bvt_max_plus_wrong_domain(self):
-        """BVT max+ (wrong domain) — invalid"""
+        """BVT max+ (wrong domain) - invalid"""
         self.assertFalse(self.auth.validate_email("john@monash.edu"))
 
     def test_bvt_gmail_domain(self):
-        """BVT extra — gmail domain — invalid"""
+        """BVT extra - gmail domain - invalid"""
         self.assertFalse(self.auth.validate_email("john@gmail.com"))
 
     def test_bvt_partial_domain(self):
-        """BVT extra — partial domain — invalid"""
+        """BVT extra - partial domain - invalid"""
         self.assertFalse(self.auth.validate_email("john@student.monash"))
 
 
@@ -107,7 +107,7 @@ class TestAcct02_ValidMonashEmail(unittest.TestCase):
 # Boundary: >=8 chars, must contain uppercase AND digit
 # ============================================================
 class TestAcct03_ValidPassword(unittest.TestCase):
-    """Acct 3 — Valid Password [SP: 2]
+    """Acct 3 - Valid Password [SP: 2]
     AC: Password >=8 chars, contains uppercase and number.
     BVT: password length and character composition
     """
@@ -115,31 +115,31 @@ class TestAcct03_ValidPassword(unittest.TestCase):
         self.auth = AuthController()
 
     def test_bvt_min_minus_7_chars(self):
-        """BVT min- (7 chars with uppercase+digit) — FAIL"""
+        """BVT min- (7 chars with uppercase+digit) - FAIL"""
         self.assertFalse(self.auth.validate_password("Pass12a"))  # 7 chars
 
     def test_bvt_min_8_chars(self):
-        """BVT min (8 chars with uppercase+digit) — PASS"""
+        """BVT min (8 chars with uppercase+digit) - PASS"""
         self.assertTrue(self.auth.validate_password("Pass1234"))  # 8 chars
 
     def test_bvt_middle_12_chars(self):
-        """BVT middle (12 chars) — PASS"""
+        """BVT middle (12 chars) - PASS"""
         self.assertTrue(self.auth.validate_password("Password1234"))
 
     def test_bvt_max_50_chars(self):
-        """BVT max (50 chars) — PASS"""
+        """BVT max (50 chars) - PASS"""
         self.assertTrue(self.auth.validate_password("A1" + "a" * 48))
 
     def test_bvt_no_uppercase(self):
-        """BVT composition — no uppercase — FAIL"""
+        """BVT composition - no uppercase - FAIL"""
         self.assertFalse(self.auth.validate_password("password1"))
 
     def test_bvt_no_digit(self):
-        """BVT composition — no digit — FAIL"""
+        """BVT composition - no digit - FAIL"""
         self.assertFalse(self.auth.validate_password("Password"))
 
     def test_bvt_empty_password(self):
-        """BVT min- — empty string — FAIL"""
+        """BVT min- - empty string - FAIL"""
         self.assertFalse(self.auth.validate_password(""))
 
 
@@ -148,8 +148,8 @@ class TestAcct03_ValidPassword(unittest.TestCase):
 # Boundary: correct vs incorrect credentials
 # ============================================================
 class TestAcct04_StudentLogin(unittest.TestCase):
-    """Acct 4 — Student Login [SP: 3]
-    AC: Correct credentials → main menu, incorrect → error.
+    """Acct 4 - Student Login [SP: 3]
+    AC: Correct credentials -> main menu, incorrect -> error.
     BVT: credential matching
     """
     def setUp(self):
@@ -158,27 +158,27 @@ class TestAcct04_StudentLogin(unittest.TestCase):
                                    "John", "Doe", "0412345678", "12345678")
 
     def test_bvt_correct_credentials(self):
-        """BVT valid — correct email + password"""
+        """BVT valid - correct email + password"""
         user = self.auth.login("stu@student.monash.edu", "Pass1234")
         self.assertIsNotNone(user)
 
     def test_bvt_wrong_password(self):
-        """BVT min- — correct email, wrong password"""
+        """BVT min- - correct email, wrong password"""
         user = self.auth.login("stu@student.monash.edu", "Wrong123")
         self.assertIsNone(user)
 
     def test_bvt_wrong_email(self):
-        """BVT min- — wrong email, correct password"""
+        """BVT min- - wrong email, correct password"""
         user = self.auth.login("wrong@student.monash.edu", "Pass1234")
         self.assertIsNone(user)
 
     def test_bvt_both_wrong(self):
-        """BVT max- — both wrong"""
+        """BVT max- - both wrong"""
         user = self.auth.login("wrong@student.monash.edu", "Wrong123")
         self.assertIsNone(user)
 
     def test_bvt_empty_credentials(self):
-        """BVT min- — empty strings"""
+        """BVT min- - empty strings"""
         user = self.auth.login("", "")
         self.assertIsNone(user)
 
@@ -188,7 +188,7 @@ class TestAcct04_StudentLogin(unittest.TestCase):
 # Boundary: profile fields must match registered data
 # ============================================================
 class TestAcct05_ViewProfile(unittest.TestCase):
-    """Acct 5 — View Profile [SP: 1]
+    """Acct 5 - View Profile [SP: 1]
     AC: Displays first name, last name, student ID, email, mobile, balance.
     BVT: profile completeness
     """
@@ -198,7 +198,7 @@ class TestAcct05_ViewProfile(unittest.TestCase):
         self.ctrl = AccountController()
 
     def test_bvt_all_fields_present(self):
-        """BVT — all 6 fields returned"""
+        """BVT - all 6 fields returned"""
         info = self.ctrl.get_profile_info(self.student)
         self.assertEqual(len(info), 6)
         self.assertEqual(info["first_name"], "John")
@@ -214,7 +214,7 @@ class TestAcct05_ViewProfile(unittest.TestCase):
 # Boundary: 04XXXXXXXX format (10 digits, starts with 04)
 # ============================================================
 class TestAcct06_EditMobile(unittest.TestCase):
-    """Acct 6 — Edit Mobile Number [SP: 2]
+    """Acct 6 - Edit Mobile Number [SP: 2]
     AC: 04XXXXXXXX format, new == confirm, cancel keeps original.
     BVT: mobile number length and format
     """
@@ -224,32 +224,32 @@ class TestAcct06_EditMobile(unittest.TestCase):
                                "John", "Doe", "0412345678", "12345678")
 
     def test_bvt_min_minus_9_digits(self):
-        """BVT min- (9 digits) — FAIL"""
+        """BVT min- (9 digits) - FAIL"""
         self.assertFalse(self.auth.validate_mobile("041234567"))
 
     def test_bvt_min_10_digits_valid(self):
-        """BVT min (10 digits, starts 04) — PASS"""
+        """BVT min (10 digits, starts 04) - PASS"""
         self.assertTrue(self.auth.validate_mobile("0412345678"))
 
     def test_bvt_max_plus_11_digits(self):
-        """BVT max+ (11 digits) — FAIL"""
+        """BVT max+ (11 digits) - FAIL"""
         self.assertFalse(self.auth.validate_mobile("04123456789"))
 
     def test_bvt_wrong_prefix(self):
-        """BVT — doesn't start with 04 — FAIL"""
+        """BVT - doesn't start with 04 - FAIL"""
         self.assertFalse(self.auth.validate_mobile("0312345678"))
 
     def test_bvt_non_digit(self):
-        """BVT — contains letter — FAIL"""
+        """BVT - contains letter - FAIL"""
         self.assertFalse(self.auth.validate_mobile("04123abcde"))
 
     def test_bvt_mismatch_confirm(self):
-        """BVT — new != confirm — FAIL"""
+        """BVT - new != confirm - FAIL"""
         result = self.auth.update_mobile(self.student, "0498765432", "0400000000")
         self.assertFalse(result)
 
     def test_bvt_matching_valid(self):
-        """BVT — matching valid numbers — PASS"""
+        """BVT - matching valid numbers - PASS"""
         result = self.auth.update_mobile(self.student, "0498765432", "0498765432")
         self.assertTrue(result)
         self.assertEqual(self.student.get_phone(), "0498765432")
@@ -266,7 +266,7 @@ class TestAcct06_EditMobile(unittest.TestCase):
 # Boundary: current password must match, new must follow rules
 # ============================================================
 class TestAcct07_ChangePassword(unittest.TestCase):
-    """Acct 7 — Change Password [SP: 3]
+    """Acct 7 - Change Password [SP: 3]
     AC: current password verified, new follows rules, confirm matches.
     BVT: password change conditions
     """
@@ -276,23 +276,23 @@ class TestAcct07_ChangePassword(unittest.TestCase):
                                "John", "Doe", "0412345678", "12345678")
 
     def test_bvt_valid_change(self):
-        """BVT — all conditions met — PASS"""
+        """BVT - all conditions met - PASS"""
         self.assertTrue(self.auth.change_password(self.student, "Pass1234", "NewPass99", "NewPass99"))
 
     def test_bvt_wrong_current(self):
-        """BVT — wrong current password — FAIL"""
+        """BVT - wrong current password - FAIL"""
         self.assertFalse(self.auth.change_password(self.student, "Wrong123", "NewPass99", "NewPass99"))
 
     def test_bvt_mismatch_confirm(self):
-        """BVT — new != confirm — FAIL"""
+        """BVT - new != confirm - FAIL"""
         self.assertFalse(self.auth.change_password(self.student, "Pass1234", "NewPass99", "Different1"))
 
     def test_bvt_new_too_short(self):
-        """BVT min- — new password 7 chars — FAIL"""
+        """BVT min- - new password 7 chars - FAIL"""
         self.assertFalse(self.auth.change_password(self.student, "Pass1234", "New1abc", "New1abc"))
 
     def test_bvt_new_exactly_8(self):
-        """BVT min — new password 8 chars — PASS"""
+        """BVT min - new password 8 chars - PASS"""
         self.assertTrue(self.auth.change_password(self.student, "Pass1234", "NewPas12", "NewPas12"))
 
 
@@ -301,7 +301,7 @@ class TestAcct07_ChangePassword(unittest.TestCase):
 # Boundary: status fields reflect current state
 # ============================================================
 class TestAcct08_ViewUsageStatus(unittest.TestCase):
-    """Acct 8 — View Usage Status [SP: 1]
+    """Acct 8 - View Usage Status [SP: 1]
     AC: Displays bookings, ban status, balance, deposit status.
     BVT: status field values at boundary states
     """
@@ -311,20 +311,20 @@ class TestAcct08_ViewUsageStatus(unittest.TestCase):
                                "John", "Doe", "0412345678", "12345678")
 
     def test_bvt_new_student_defaults(self):
-        """BVT min — new student, all defaults"""
+        """BVT min - new student, all defaults"""
         status = self.ctrl.get_usage_status(self.student)
         self.assertEqual(status["ban_status"], False)
         self.assertEqual(status["balance"], 0.0)
         self.assertEqual(len(status["current_bookings"]), 0)
 
     def test_bvt_banned_student(self):
-        """BVT max — banned student"""
+        """BVT max - banned student"""
         self.student.set_booking_ban_status(True)
         status = self.ctrl.get_usage_status(self.student)
         self.assertTrue(status["ban_status"])
 
     def test_bvt_student_with_balance(self):
-        """BVT middle — student with balance"""
+        """BVT middle - student with balance"""
         self.student.add_funds(50.0)
         status = self.ctrl.get_usage_status(self.student)
         self.assertEqual(status["balance"], 50.0)
@@ -335,7 +335,7 @@ class TestAcct08_ViewUsageStatus(unittest.TestCase):
 # Boundary: number of records (0, 1, many)
 # ============================================================
 class TestAcct09_ViewActivityHistory(unittest.TestCase):
-    """Acct 9 — View Activity History [SP: 2]
+    """Acct 9 - View Activity History [SP: 2]
     AC: Displays date, type, details, amount. Record types shown.
     BVT: activity history record count
     """
@@ -370,7 +370,7 @@ class TestAcct09_ViewActivityHistory(unittest.TestCase):
 # Boundary: page number (0, 1, middle, last, beyond)
 # ============================================================
 class TestAcct10_NavigateHistoryPages(unittest.TestCase):
-    """Acct 10 — Navigate History Pages [SP: 2]
+    """Acct 10 - Navigate History Pages [SP: 2]
     AC: Next/prev page, page number input, correct records per page.
     BVT: page number boundaries (page_size=10)
     """
@@ -381,27 +381,27 @@ class TestAcct10_NavigateHistoryPages(unittest.TestCase):
             self.student.add_funds(1.0)  # Creates 25 activity records
 
     def test_bvt_page_1(self):
-        """BVT min — page 1 returns 10 records"""
+        """BVT min - page 1 returns 10 records"""
         page = self.student.get_activity_history_page(1, 10)
         self.assertEqual(len(page), 10)
 
     def test_bvt_page_2(self):
-        """BVT middle — page 2 returns 10 records"""
+        """BVT middle - page 2 returns 10 records"""
         page = self.student.get_activity_history_page(2, 10)
         self.assertEqual(len(page), 10)
 
     def test_bvt_page_3_partial(self):
-        """BVT max — page 3 returns 5 records (25 total, pages of 10)"""
+        """BVT max - page 3 returns 5 records (25 total, pages of 10)"""
         page = self.student.get_activity_history_page(3, 10)
         self.assertEqual(len(page), 5)
 
     def test_bvt_page_beyond(self):
-        """BVT max+ — page 4 returns 0 records"""
+        """BVT max+ - page 4 returns 0 records"""
         page = self.student.get_activity_history_page(4, 10)
         self.assertEqual(len(page), 0)
 
     def test_bvt_page_0(self):
-        """BVT min- — page 0 returns empty (invalid)"""
+        """BVT min- - page 0 returns empty (invalid)"""
         page = self.student.get_activity_history_page(0, 10)
         self.assertEqual(len(page), 0)
 
@@ -411,7 +411,7 @@ class TestAcct10_NavigateHistoryPages(unittest.TestCase):
 # Boundary: balance value (0, positive)
 # ============================================================
 class TestAcct11_ViewFundsSummary(unittest.TestCase):
-    """Acct 11 — View Funds Summary [SP: 1]
+    """Acct 11 - View Funds Summary [SP: 1]
     AC: Displays current balance.
     BVT: balance amounts
     """
@@ -421,12 +421,12 @@ class TestAcct11_ViewFundsSummary(unittest.TestCase):
                                "John", "Doe", "0412345678", "12345678")
 
     def test_bvt_min_zero_balance(self):
-        """BVT min — zero balance"""
+        """BVT min - zero balance"""
         summary = self.ctrl.get_funds_summary(self.student)
         self.assertEqual(summary["balance"], 0.0)
 
     def test_bvt_positive_balance(self):
-        """BVT middle — after adding funds"""
+        """BVT middle - after adding funds"""
         self.student.add_funds(100.0)
         summary = self.ctrl.get_funds_summary(self.student)
         self.assertEqual(summary["balance"], 100.0)
@@ -437,7 +437,7 @@ class TestAcct11_ViewFundsSummary(unittest.TestCase):
 # Boundary: amount > 0
 # ============================================================
 class TestAcct12_AddFunds(unittest.TestCase):
-    """Acct 12 — Add Funds [SP: 3]
+    """Acct 12 - Add Funds [SP: 3]
     AC: Positive amount accepted, non-positive rejected, cancel keeps balance.
     BVT: top-up amount boundary
     """
@@ -447,26 +447,26 @@ class TestAcct12_AddFunds(unittest.TestCase):
                                "John", "Doe", "0412345678", "12345678")
 
     def test_bvt_min_minus_negative(self):
-        """BVT min- (-1.0) — FAIL"""
+        """BVT min- (-1.0) - FAIL"""
         self.assertFalse(self.ctrl.add_funds(self.student, -1.0))
         self.assertEqual(self.student.get_balance(), 0.0)
 
     def test_bvt_min_zero(self):
-        """BVT min (0.0) — FAIL (must be positive)"""
+        """BVT min (0.0) - FAIL (must be positive)"""
         self.assertFalse(self.ctrl.add_funds(self.student, 0.0))
 
     def test_bvt_min_plus_tiny(self):
-        """BVT min+ (0.01) — PASS"""
+        """BVT min+ (0.01) - PASS"""
         self.assertTrue(self.ctrl.add_funds(self.student, 0.01))
         self.assertAlmostEqual(self.student.get_balance(), 0.01)
 
     def test_bvt_middle(self):
-        """BVT middle (50.0) — PASS"""
+        """BVT middle (50.0) - PASS"""
         self.assertTrue(self.ctrl.add_funds(self.student, 50.0))
         self.assertEqual(self.student.get_balance(), 50.0)
 
     def test_bvt_max_large(self):
-        """BVT max (10000.0) — PASS"""
+        """BVT max (10000.0) - PASS"""
         self.assertTrue(self.ctrl.add_funds(self.student, 10000.0))
         self.assertEqual(self.student.get_balance(), 10000.0)
 
@@ -476,7 +476,7 @@ class TestAcct12_AddFunds(unittest.TestCase):
 # Boundary: student vs admin role
 # ============================================================
 class TestAcct13_RoleRecognition(unittest.TestCase):
-    """Acct 13 — Role Recognition [SP: 2]
+    """Acct 13 - Role Recognition [SP: 2]
     AC: System identifies student vs admin, functions based on role.
     BVT: role identification
     """
@@ -484,13 +484,13 @@ class TestAcct13_RoleRecognition(unittest.TestCase):
         self.auth = AuthController()
 
     def test_bvt_student_role(self):
-        """BVT — student identified as 'student'"""
+        """BVT - student identified as 'student'"""
         student = Student("s@student.monash.edu", "Pass1234",
                           "John", "Doe", "0412345678", "12345678")
         self.assertEqual(self.auth.identify_role(student), "student")
 
     def test_bvt_admin_role(self):
-        """BVT — admin identified as 'admin'"""
+        """BVT - admin identified as 'admin'"""
         admin = Admin("admin@monash.edu", "Admin123",
                       "Jane", "Smith", "0498765432", "ADM001")
         self.assertEqual(self.auth.identify_role(admin), "admin")
@@ -501,7 +501,7 @@ class TestAcct13_RoleRecognition(unittest.TestCase):
 # Boundary: admin info completeness
 # ============================================================
 class TestAcct14_AdminViewInfo(unittest.TestCase):
-    """Acct 14 — Admin View Info [SP: 1]
+    """Acct 14 - Admin View Info [SP: 1]
     AC: Displays email, first name, last name, phone.
     BVT: info completeness
     """
@@ -511,7 +511,7 @@ class TestAcct14_AdminViewInfo(unittest.TestCase):
                            "Jane", "Smith", "0498765432", "ADM001")
 
     def test_bvt_all_fields_present(self):
-        """BVT — all 4 fields returned"""
+        """BVT - all 4 fields returned"""
         info = self.ctrl.get_admin_info(self.admin)
         self.assertEqual(len(info), 4)
         self.assertEqual(info["email"], "admin@monash.edu")
@@ -525,8 +525,8 @@ class TestAcct14_AdminViewInfo(unittest.TestCase):
 # Boundary: admin credential matching
 # ============================================================
 class TestAcct15_AdminLogin(unittest.TestCase):
-    """Acct 15 — Admin Login [SP: 3]
-    AC: Correct credentials → admin home, incorrect → fail.
+    """Acct 15 - Admin Login [SP: 3]
+    AC: Correct credentials -> admin home, incorrect -> fail.
     BVT: admin credential validation
     """
     def setUp(self):
@@ -536,18 +536,18 @@ class TestAcct15_AdminLogin(unittest.TestCase):
         self.auth.get_admins().append(admin)
 
     def test_bvt_correct_admin_login(self):
-        """BVT — correct admin credentials — PASS"""
+        """BVT - correct admin credentials - PASS"""
         user = self.auth.login("admin@monash.edu", "Admin123")
         self.assertIsNotNone(user)
         self.assertEqual(user.get_role(), "admin")
 
     def test_bvt_wrong_admin_password(self):
-        """BVT — wrong password — FAIL"""
+        """BVT - wrong password - FAIL"""
         user = self.auth.login("admin@monash.edu", "Wrong123")
         self.assertIsNone(user)
 
     def test_bvt_nonexistent_admin(self):
-        """BVT — nonexistent admin — FAIL"""
+        """BVT - nonexistent admin - FAIL"""
         user = self.auth.login("fake@monash.edu", "Admin123")
         self.assertIsNone(user)
 

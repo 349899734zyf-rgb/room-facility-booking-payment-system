@@ -26,7 +26,7 @@ class AdminController:
     def get_equipments(self) -> List[Equipment]:
         return self.__equipments
 
-    # ===== 以下方法来自 QIuerying 原始代码 =====
+    # Methods imported from QIuerying original code
 
     def get_all_students(self) -> List[Student]:
         return self.__students
@@ -52,7 +52,7 @@ class AdminController:
                 return equipment
         return None
 
-    # ===== 原有方法 =====
+    # Original methods
 
     def get_admin_info(self, admin: Admin) -> Dict[str, str]:
         """Get admin info (Account Management 14)"""

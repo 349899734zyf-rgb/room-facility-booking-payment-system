@@ -1,7 +1,4 @@
-"""
-DealPackageUI - Interface for purchasing deal packages.
-Covers: Checkout 7
-"""
+from typing import Optional
 
 
 class DealPackageUI:
@@ -13,9 +10,12 @@ class DealPackageUI:
         print(f"Price: ${price}")
         print(f"Hours: {hours}")
 
-    def get_purchase_confirmation(self) -> bool:
+    def get_purchase_confirmation(self) -> Optional[bool]:
         """Get confirmation from the student for purchase."""
-        return input("Purchase deal package? (y/n): ").lower() == "y"
+        ans = input("Purchase deal package? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+        if ans.upper() == "CANCEL":
+            return None
+        return ans == "y"
 
     def display_purchase_success(self, hours: float) -> None:
         """Display success message upon purchase."""

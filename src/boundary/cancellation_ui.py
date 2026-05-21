@@ -24,7 +24,7 @@ class CancellationUI:
 
     def get_booking_selection(self) -> str:
         """Get the booking ID the student wants to cancel."""
-        return input("Enter booking ID to cancel: ").strip()
+        return input("Enter booking ID to cancel (or enter 'CANCEL' to return): ").strip()
 
     def display_booking_details(
         self,
@@ -43,7 +43,7 @@ class CancellationUI:
 
     def get_cancellation_confirmation(self) -> bool:
         """Return True only when the student confirms cancellation."""
-        answer = input("Confirm cancellation? (y/n): ").strip().lower()
+        answer = input("Confirm cancellation? (y/n, or enter 'CANCEL' to return): ").strip().lower()
         return answer == "y"
 
     def display_cancellation_result(

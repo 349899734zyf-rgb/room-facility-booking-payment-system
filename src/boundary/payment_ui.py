@@ -13,7 +13,7 @@ class PaymentUI:
         print("2. Deal Package")
 
     def get_payment_method_choice(self):
-        return input("Choose payment method: ")
+        return input("Choose payment method (1 for Balance, 2 for Deal Package, or enter 'CANCEL' to return): ")
 
     def display_balance_payment_info(
             self,
@@ -24,7 +24,7 @@ class PaymentUI:
         print(f"Current balance: ${balance}")
 
     def get_promo_code_input(self):
-        return input("Enter promo code: ")
+        return input("Enter promo code (or press Enter to skip, or enter 'CANCEL' to return): ")
 
     def display_promo_code_valid(self, new_price):
         print(f"Promo applied. New price: ${new_price}")
@@ -80,9 +80,9 @@ class PaymentUI:
         print("2. Finish")
 
     def get_next_step_choice(self):
-        return input("Choose next step: ")
+        return input("Choose next step (1 to make another booking, 2 to finish, or enter 'CANCEL' to return): ")
 
-    # ===== 以下方法来自 CQ 原始代码 (Branch_CQ) =====
+    # Methods imported from Branch_CQ
 
     def display_equipment_options(self):
         print("\n===== EQUIPMENT RENTAL =====")
@@ -91,7 +91,7 @@ class PaymentUI:
         print("2. No")
 
     def get_equipment_choice(self):
-        return input("Choose equipment option: ")
+        return input("Choose equipment option (1 for Yes, 2 for No, or enter 'CANCEL' to return): ")
 
     def display_invalid_equipment_option_message(self):
         print("Invalid equipment option")
@@ -104,7 +104,7 @@ class PaymentUI:
         print("1 for yes, 2 for no")
 
     def get_proceed_confirmation_choice(self):
-        return input("Choose option: ")
+        return input("Choose option (1 for Yes, 2 for No, or enter 'CANCEL' to return): ")
 
     def display_booking_not_confirmed(self):
         print("Booking not confirmed")
@@ -114,10 +114,10 @@ class PaymentUI:
         print("2. Stop payment")
 
     def get_top_up_choice(self):
-        return input("Choose top-up option: ")
+        return input("Choose top-up option (1 to add funds, 2 to stop payment, or enter 'CANCEL' to return): ")
 
     def get_top_up_amount(self):
-        return input("Enter top-up amount: ")
+        return input("Enter top-up amount (positive number, or enter 'CANCEL' to return): ")
 
     def display_top_up_success(self, balance):
         print(f"Top-up complete. Current balance: ${balance}")

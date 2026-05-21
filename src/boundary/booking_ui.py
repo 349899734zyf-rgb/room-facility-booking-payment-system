@@ -32,9 +32,15 @@ class BookingUI:
 
     def get_search_criteria(self) -> Dict[str, str]:
         """Get building and time period from the student."""
-        building = input("Enter building code: ").strip()
-        start_time = input("Enter start time (YYYY-MM-DD HH:MM): ").strip()
-        end_time = input("Enter end time (YYYY-MM-DD HH:MM): ").strip()
+        building = input("Enter building code (or enter 'CANCEL' to return): ").strip()
+        if building.upper() == "CANCEL":
+            return {"building": "CANCEL", "start_time": "", "end_time": ""}
+        start_time = input("Enter start time (YYYY-MM-DD HH:MM, or enter 'CANCEL' to return): ").strip()
+        if start_time.upper() == "CANCEL":
+            return {"building": "CANCEL", "start_time": "", "end_time": ""}
+        end_time = input("Enter end time (YYYY-MM-DD HH:MM, or enter 'CANCEL' to return): ").strip()
+        if end_time.upper() == "CANCEL":
+            return {"building": "CANCEL", "start_time": "", "end_time": ""}
         return {
             "building": building,
             "start_time": start_time,
@@ -62,7 +68,7 @@ class BookingUI:
 
     def get_room_selection(self) -> str:
         """Get the room ID selected by the student."""
-        return input("Enter the room ID you want to book: ").strip()
+        return input("Enter the room ID you want to book (or enter 'CANCEL' to return): ").strip()
 
     def display_room_selection_error(self) -> None:
         """Show a message when the selected room is invalid."""
@@ -76,7 +82,9 @@ class BookingUI:
 
     def get_equipment_choice(self) -> bool:
         """Return True if the student chooses to borrow equipment."""
-        choice = input("Choose 1 or 2: ").strip()
+        choice = input("Choose 1 or 2 (or enter 'CANCEL' to return): ").strip()
+        if choice.upper() == "CANCEL":
+            raise ValueError("CANCEL")
         if choice == "1":
             return True
         if choice == "2":

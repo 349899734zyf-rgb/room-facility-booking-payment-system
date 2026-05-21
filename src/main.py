@@ -104,7 +104,10 @@ def run_student_booking(student, book_ctrl, booking_ui):
     booking_ui.display_equipment_options()
     try:
         equipment = booking_ui.get_equipment_choice()
-    except ValueError:
+    except ValueError as e:
+        if str(e) == "CANCEL":
+            print("Booking process cancelled.")
+            return
         equipment = False
 
     if equipment:
@@ -227,19 +230,31 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
                 package.get_price(),
                 package.get_hours()
             )
-            if not deal_package_ui.get_purchase_confirmation():
+            purchase_confirm = deal_package_ui.get_purchase_confirmation()
+            if purchase_confirm is None:
+                print("Payment cancelled.")
+                return
+            elif not purchase_confirm:
                 payment_ui.display_booking_not_confirmed()
                 return
 
             if not payment_ctrl.purchase_deal_package(student):
                 payment_ui.display_insufficient_balance_message()
                 payment_ui.display_top_up_option()
-                if payment_ui.get_top_up_choice() != "1":
+                top_up_choice = payment_ui.get_top_up_choice()
+                if top_up_choice.upper() == "CANCEL":
+                    print("Payment cancelled.")
+                    return
+                elif top_up_choice != "1":
                     payment_ui.display_checkout_finished()
                     return
 
+                top_up_amount_val = payment_ui.get_top_up_amount()
+                if top_up_amount_val.upper() == "CANCEL":
+                    print("Payment cancelled.")
+                    return
                 try:
-                    top_up_amount = float(payment_ui.get_top_up_amount())
+                    top_up_amount = float(top_up_amount_val)
                 except ValueError:
                     payment_ui.display_invalid_payment_option_message()
                     return
@@ -261,9 +276,13 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
             success = student.get_deal_package_hours() >= duration
 
     if success:
-        # CQ 原始流程：支付前确认
+        # CQ Original Flow: Confirmation before payment
         payment_ui.display_proceed_confirmation_prompt()
-        if payment_ui.get_proceed_confirmation_choice() != "1":
+        proceed_choice = payment_ui.get_proceed_confirmation_choice()
+        if proceed_choice.upper() == "CANCEL":
+            print("Payment cancelled.")
+            return
+        elif proceed_choice != "1":
             payment_ui.display_booking_not_confirmed()
             return
 
@@ -279,7 +298,7 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
         payment_ctrl.confirm_order(order, student)
         payment_ui.display_booking_confirmed()
 
-        # CQ 原始流程：显示订单详情
+        # CQ Original Flow: Display order details
         summary = payment_ctrl.get_booking_summary(order)
         payment_ui.display_order_detail(
             order_id=order.get_order_id(),
@@ -293,9 +312,15 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
         )
 
         payment_ui.display_next_step_options()
-        next_step = payment_ctrl.choose_next_step(
-            payment_ui.get_next_step_choice()
-        )
+        next_step_choice = payment_ui.get_next_step_choice()
+        if next_step_choice.upper() == "CANCEL":
+            payment_ui.display_checkout_finished()
+            if os.path.exists(student_file):
+                os.remove(student_file)
+            for s in auth_ctrl.get_students():
+                FileHandler.save_student(student_file, s)
+            return
+        next_step = payment_ctrl.choose_next_step(next_step_choice)
 
         # Save state changes
         if os.path.exists(student_file):
@@ -304,15 +329,23 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
             FileHandler.save_student(student_file, s)
 
     elif payment_method == "balance":
-        # ===== CQ 原始流程：余额不足→充值跳转 =====
+        # ===== CQ Original Flow: Insufficient balance -> redirect to top-up =====
         payment_ui.display_insufficient_balance_message()
         payment_ui.display_top_up_option()
-        if payment_ui.get_top_up_choice() != "1":
+        top_up_choice = payment_ui.get_top_up_choice()
+        if top_up_choice.upper() == "CANCEL":
+            print("Payment cancelled.")
+            return
+        elif top_up_choice != "1":
             payment_ui.display_checkout_finished()
             return
 
+        top_up_amount_val = payment_ui.get_top_up_amount()
+        if top_up_amount_val.upper() == "CANCEL":
+            print("Payment cancelled.")
+            return
         try:
-            top_up_amount = float(payment_ui.get_top_up_amount())
+            top_up_amount = float(top_up_amount_val)
         except ValueError:
             payment_ui.display_invalid_payment_option_message()
             return
@@ -327,9 +360,13 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
             payment_ui.display_insufficient_balance_message()
             return
 
-        # 充值后确认支付
+        # Confirm payment after top-up
         payment_ui.display_proceed_confirmation_prompt()
-        if payment_ui.get_proceed_confirmation_choice() != "1":
+        proceed_choice = payment_ui.get_proceed_confirmation_choice()
+        if proceed_choice.upper() == "CANCEL":
+            print("Payment cancelled.")
+            return
+        elif proceed_choice != "1":
             payment_ui.display_booking_not_confirmed()
             return
 
@@ -477,7 +514,10 @@ def student_menu(student, book_ctrl, auth_ctrl, acct_ctrl, payment_ctrl, ui, pro
                 history_ui.display_navigation_menu()
 
                 hist_choice = history_ui.get_page_navigation_input()
-                if hist_choice == "1":
+                if hist_choice.upper() == "CANCEL":
+                    print("\nReturning to main menu.")
+                    break
+                elif hist_choice == "1":
                     if page < total_pages:
                         page += 1
                     else:
@@ -489,6 +529,9 @@ def student_menu(student, book_ctrl, auth_ctrl, acct_ctrl, payment_ctrl, ui, pro
                         history_ui.display_newest_page_warning()
                 elif hist_choice == "3":
                     target_page = history_ui.get_direct_page_input(total_pages)
+                    if target_page == -2:
+                        print("\nReturning to navigation.")
+                        continue
                     if target_page != -1:
                         page = target_page
                 elif hist_choice == "4":
@@ -689,7 +732,10 @@ def run_booking_flow():
 
     payment_ui.display_equipment_options()
     equipment_choice = payment_ui.get_equipment_choice()
-    if equipment_choice == "1":
+    if equipment_choice.upper() == "CANCEL":
+        print("Payment cancelled.")
+        return False
+    elif equipment_choice == "1":
         equipment_rental = True
     elif equipment_choice == "2":
         equipment_rental = False
@@ -716,6 +762,9 @@ def run_booking_flow():
     )
 
     choice = payment_ui.get_payment_method_choice()
+    if choice.upper() == "CANCEL":
+        print("Payment cancelled.")
+        return False
     payment_method = payment_controller.select_payment_method(choice)
     if payment_method is None:
         payment_ui.display_invalid_payment_option_message()
@@ -724,6 +773,9 @@ def run_booking_flow():
     order = payment_controller.create_order(booking, payment_method)
 
     promo_input = payment_ui.get_promo_code_input().strip()
+    if promo_input.upper() == "CANCEL":
+        print("Payment cancelled.")
+        return False
     if promo_input and payment_method == "deal_package":
         payment_ui.display_promo_deal_package_restriction_message()
     elif promo_input:
@@ -770,19 +822,31 @@ def run_booking_flow():
                 package.get_price(),
                 package.get_hours()
             )
-            if not deal_package_ui.get_purchase_confirmation():
+            purchase_confirm = deal_package_ui.get_purchase_confirmation()
+            if purchase_confirm is None:
+                print("Payment cancelled.")
+                return False
+            elif not purchase_confirm:
                 payment_ui.display_booking_not_confirmed()
                 return prompt_for_next_step(payment_ui, payment_controller)
 
             if not payment_controller.purchase_deal_package(student):
                 payment_ui.display_insufficient_balance_message()
                 payment_ui.display_top_up_option()
-                if payment_ui.get_top_up_choice() != "1":
+                top_up_choice = payment_ui.get_top_up_choice()
+                if top_up_choice.upper() == "CANCEL":
+                    print("Payment cancelled.")
+                    return False
+                elif top_up_choice != "1":
                     payment_ui.display_checkout_finished()
                     return False
 
+                top_up_amount_val = payment_ui.get_top_up_amount()
+                if top_up_amount_val.upper() == "CANCEL":
+                    print("Payment cancelled.")
+                    return False
                 try:
-                    top_up_amount = float(payment_ui.get_top_up_amount())
+                    top_up_amount = float(top_up_amount_val)
                 except ValueError:
                     payment_ui.display_invalid_payment_option_message()
                     return False
@@ -805,7 +869,11 @@ def run_booking_flow():
 
     if success:
         payment_ui.display_proceed_confirmation_prompt()
-        if payment_ui.get_proceed_confirmation_choice() != "1":
+        proceed_choice = payment_ui.get_proceed_confirmation_choice()
+        if proceed_choice.upper() == "CANCEL":
+            print("Payment cancelled.")
+            return False
+        elif proceed_choice != "1":
             payment_ui.display_booking_not_confirmed()
             return False
 
@@ -828,9 +896,11 @@ def run_booking_flow():
         payment_ui.display_booking_confirmed()
         display_order_detail(payment_ui, payment_controller, order)
         payment_ui.display_next_step_options()
-        next_step = payment_controller.choose_next_step(
-            payment_ui.get_next_step_choice()
-        )
+        next_step_choice = payment_ui.get_next_step_choice()
+        if next_step_choice.upper() == "CANCEL":
+            payment_ui.display_checkout_finished()
+            return False
+        next_step = payment_controller.choose_next_step(next_step_choice)
         if next_step == "continue_booking":
             return True
         payment_ui.display_checkout_finished()
@@ -838,12 +908,20 @@ def run_booking_flow():
     elif payment_method == "balance":
         payment_ui.display_insufficient_balance_message()
         payment_ui.display_top_up_option()
-        if payment_ui.get_top_up_choice() != "1":
+        top_up_choice = payment_ui.get_top_up_choice()
+        if top_up_choice.upper() == "CANCEL":
+            print("Payment cancelled.")
+            return False
+        elif top_up_choice != "1":
             payment_ui.display_checkout_finished()
             return False
 
+        top_up_amount_val = payment_ui.get_top_up_amount()
+        if top_up_amount_val.upper() == "CANCEL":
+            print("Payment cancelled.")
+            return False
         try:
-            top_up_amount = float(payment_ui.get_top_up_amount())
+            top_up_amount = float(top_up_amount_val)
         except ValueError:
             payment_ui.display_invalid_payment_option_message()
             return False
@@ -859,7 +937,11 @@ def run_booking_flow():
             return False
 
         payment_ui.display_proceed_confirmation_prompt()
-        if payment_ui.get_proceed_confirmation_choice() != "1":
+        proceed_choice = payment_ui.get_proceed_confirmation_choice()
+        if proceed_choice.upper() == "CANCEL":
+            print("Payment cancelled.")
+            return False
+        elif proceed_choice != "1":
             payment_ui.display_booking_not_confirmed()
             return False
 

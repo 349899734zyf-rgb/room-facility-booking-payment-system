@@ -35,7 +35,7 @@ class EquipmentDepositUI:
         print("\n" + "-" * 80)
         print(" " * 25 + "SELECT EQUIPMENT")
         print("-" * 80)
-        return input("Enter equipment ID: ").strip()
+        return input("Enter equipment ID (e.g., EQ001, or enter 'CANCEL' to return): ").strip()
 
     def display_current_deposit(self, equipment_id: str, amount: float) -> None:
         """Display current deposit information"""
@@ -52,7 +52,9 @@ class EquipmentDepositUI:
         print("-" * 80)
 
         try:
-            amount_str = input("Enter deposit amount ($): ").strip()
+            amount_str = input("Enter deposit amount ($) (positive number, or enter 'CANCEL' to return): ").strip()
+            if amount_str.upper() == "CANCEL":
+                return -1.0
 
             if not amount_str:
                 print("Error: Deposit amount cannot be empty")
@@ -67,12 +69,14 @@ class EquipmentDepositUI:
             return amount
 
         except ValueError:
-            print("Error: Please enter a valid number")
+            print("Error: Please enter a valid positive number")
             return 0.0
 
     def get_deposit_confirmation(self) -> bool:
         """Get deposit confirmation from user"""
-        confirm = input("\nConfirm setting this deposit amount? (y/n): ").strip().lower()
+        confirm = input("\nConfirm setting this deposit amount? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+        if confirm.upper() == "CANCEL":
+            return None
         return confirm in ['y', 'yes']
 
     def display_deposit_set_success(self, amount: float) -> None:

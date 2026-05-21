@@ -37,7 +37,7 @@ class BookingStatusUI:
         print("\n" + "-" * 80)
         print(" " * 25 + "SELECT BOOKING TO UPDATE")
         print("-" * 80)
-        return input("Enter booking ID: ").strip()
+        return input("Enter booking ID (e.g., BK001, or enter 'CANCEL' to return): ").strip()
 
     def display_booking_details(self, booking) -> None:
         """Display booking details"""
@@ -61,7 +61,9 @@ class BookingStatusUI:
         print("4. Cancelled")
         print("5. No Show")
 
-        choice = input("Select new status (1-5): ").strip()
+        choice = input("Select new status (1-5, or enter 'CANCEL' to return): ").strip()
+        if choice.upper() == "CANCEL":
+            return "CANCEL"
 
         status_map = {
             '1': 'Pending',

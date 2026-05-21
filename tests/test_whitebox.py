@@ -1,5 +1,5 @@
 """
-MSSRB — White-box Testing (Statement & Branch Coverage)
+MSSRB - White-box Testing (Statement & Branch Coverage)
 Goal: Cover all uncovered lines in entity_classes.py and controller_classes.py
 Strategy: Trace each branch (True/False) through Control Flow Graphs
 """
@@ -48,21 +48,21 @@ def future(h=24):
 
 # ================================================================
 # WB-1: User.__str__ and verify_password branches
-# CFG: verify_password → [match?] → True / False
+# CFG: verify_password -> [match?] -> True / False
 # ================================================================
 class TestWB_User(unittest.TestCase):
     def test_str(self):
-        """WB — User.__str__ (line 80)"""
+        """WB - User.__str__ (line 80)"""
         s = make_student()
         self.assertIn("John Doe", str(s))
 
     def test_verify_password_true(self):
-        """WB — Branch: password matches → True"""
+        """WB - Branch: password matches -> True"""
         s = make_student()
         self.assertTrue(s.verify_password("Pass1234"))
 
     def test_verify_password_false(self):
-        """WB — Branch: password mismatch → False"""
+        """WB - Branch: password mismatch -> False"""
         s = make_student()
         self.assertFalse(s.verify_password("Wrong"))
 
@@ -115,39 +115,39 @@ class TestWB_StudentAccessors(unittest.TestCase):
 
 
 # ================================================================
-# WB-3: Student.record_no_show — all branches
-# CFG: [increment count] → [append history] → [check threshold]
-#      threshold: [total >= 3?] → True: ban / False: skip
+# WB-3: Student.record_no_show - all branches
+# CFG: [increment count] -> [append history] -> [check threshold]
+#      threshold: [total >= 3?] -> True: ban / False: skip
 # ================================================================
 class TestWB_RecordNoShow(unittest.TestCase):
     def test_no_show_increments(self):
-        """WB — no_show count incremented (lines 222-226)"""
+        """WB - no_show count incremented (lines 222-226)"""
         s = make_student()
         s.record_no_show()
         self.assertEqual(s.get_no_show_count(), 1)
 
     def test_no_show_adds_history(self):
-        """WB — activity history records no_show"""
+        """WB - activity history records no_show"""
         s = make_student()
         s.record_no_show()
         self.assertEqual(s.get_activity_history()[-1].get_record_type(), "no_show")
 
     def test_no_show_triggers_ban(self):
-        """WB — 3 no-shows → banned (threshold branch True)"""
+        """WB - 3 no-shows -> banned (threshold branch True)"""
         s = make_student()
         for _ in range(3):
             s.record_no_show()
         self.assertTrue(s.get_booking_ban_status())
 
     def test_no_show_under_threshold(self):
-        """WB — 2 no-shows → not banned (threshold branch False)"""
+        """WB - 2 no-shows -> not banned (threshold branch False)"""
         s = make_student()
         s.record_no_show()
         s.record_no_show()
         self.assertFalse(s.get_booking_ban_status())
 
     def test_mixed_late_and_noshow_ban(self):
-        """WB — 2 late + 1 no-show = 3 → banned"""
+        """WB - 2 late + 1 no-show = 3 -> banned"""
         s = make_student()
         s.record_late_cancellation()
         s.record_late_cancellation()
@@ -158,50 +158,50 @@ class TestWB_RecordNoShow(unittest.TestCase):
 # ================================================================
 # WB-4: Room.__str__, update_availability branches
 # CFG: update_availability:
-#   [available?] → True: [not in list?] → add
-#                → False: [in list?] → remove
+#   [available?] -> True: [not in list?] -> add
+#                -> False: [in list?] -> remove
 # ================================================================
 class TestWB_Room(unittest.TestCase):
     def test_str(self):
-        """WB — Room.__str__ (line 432-435)"""
+        """WB - Room.__str__ (line 432-435)"""
         r = make_room()
         self.assertIn("RM0001", str(r))
         self.assertIn("Room A", str(r))
 
     def test_update_availability_add(self):
-        """WB — Branch: available=True, slot not in list → add"""
+        """WB - Branch: available=True, slot not in list -> add"""
         r = make_room()
         r.update_availability("09:00-10:00", True)
         self.assertIn("09:00-10:00", r.get_available_time_slots())
 
     def test_update_availability_add_duplicate(self):
-        """WB — Branch: available=True, slot already in list → skip"""
+        """WB - Branch: available=True, slot already in list -> skip"""
         r = make_room()
         r.set_available_time_slots(["09:00-10:00"])
         r.update_availability("09:00-10:00", True)
         self.assertEqual(r.get_available_time_slots().count("09:00-10:00"), 1)
 
     def test_update_availability_remove(self):
-        """WB — Branch: available=False, slot in list → remove"""
+        """WB - Branch: available=False, slot in list -> remove"""
         r = make_room()
         r.set_available_time_slots(["09:00-10:00"])
         r.update_availability("09:00-10:00", False)
         self.assertNotIn("09:00-10:00", r.get_available_time_slots())
 
     def test_update_availability_remove_missing(self):
-        """WB — Branch: available=False, slot not in list → skip"""
+        """WB - Branch: available=False, slot not in list -> skip"""
         r = make_room()
         r.update_availability("15:00-16:00", False)
         self.assertEqual(r.get_available_time_slots(), [])
 
     def test_room_accessors_uncovered(self):
-        """WB — opening_hours, is_student_in_room (lines 365, 374)"""
+        """WB - opening_hours, is_student_in_room (lines 365, 374)"""
         r = make_room()
         self.assertEqual(r.get_opening_hours(), "09:00-21:00")
         self.assertFalse(r.get_is_student_in_room())
 
     def test_room_mutators_uncovered(self):
-        """WB — set_room_id, set_price_per_hour (lines 378, 390)"""
+        """WB - set_room_id, set_price_per_hour (lines 378, 390)"""
         r = make_room()
         r.set_room_id("RM9999")
         self.assertEqual(r.get_room_id(), "RM9999")
@@ -210,10 +210,10 @@ class TestWB_Room(unittest.TestCase):
 
 
 # ================================================================
-# WB-5: Booking — calculate_duration, is_late_cancellation, cancel
-# CFG cancel: [set cancelled] → [is_late?]
-#              → True: return "late_cancellation"
-#              → False: return "regular_cancellation"
+# WB-5: Booking - calculate_duration, is_late_cancellation, cancel
+# CFG cancel: [set cancelled] -> [is_late?]
+#              -> True: return "late_cancellation"
+#              -> False: return "regular_cancellation"
 # ================================================================
 class TestWB_Booking(unittest.TestCase):
     def _make_booking(self, start_delta_h=24):
@@ -224,29 +224,29 @@ class TestWB_Booking(unittest.TestCase):
         return Booking("BK0001", s, r, start, end, False, 30.0)
 
     def test_calculate_duration(self):
-        """WB — calculate_duration_hours (line 512-513)"""
+        """WB - calculate_duration_hours (line 512-513)"""
         b = self._make_booking()
         self.assertAlmostEqual(b.calculate_duration_hours(), 2.0)
 
     def test_is_late_cancellation_false(self):
-        """WB — Branch: start > 30 min away → False"""
+        """WB - Branch: start > 30 min away -> False"""
         b = self._make_booking(24)
         self.assertFalse(b.is_late_cancellation())
 
     def test_cancel_regular(self):
-        """WB — Branch: not late → 'regular_cancellation'"""
+        """WB - Branch: not late -> 'regular_cancellation'"""
         b = self._make_booking(24)
         self.assertEqual(b.cancel(), "regular_cancellation")
 
     def test_booking_str(self):
-        """WB — Booking.__str__ (lines 533-538)"""
+        """WB - Booking.__str__ (lines 533-538)"""
         b = self._make_booking()
         text = str(b)
         self.assertIn("BK0001", text)
         self.assertIn("Room A", text)
 
     def test_booking_accessors_uncovered(self):
-        """WB — get_booking_id, get_student, get_equipment_rental, etc."""
+        """WB - get_booking_id, get_student, get_equipment_rental, etc."""
         b = self._make_booking()
         self.assertEqual(b.get_booking_id(), "BK0001")
         self.assertIsNotNone(b.get_student())
@@ -255,7 +255,7 @@ class TestWB_Booking(unittest.TestCase):
         self.assertIsNone(b.get_promo_code_used())
 
     def test_booking_mutators_uncovered(self):
-        """WB — set_promo_code_used, set_total_price (lines 502, 505)"""
+        """WB - set_promo_code_used, set_total_price (lines 502, 505)"""
         b = self._make_booking()
         b.set_promo_code_used("SAVE10")
         self.assertEqual(b.get_promo_code_used(), "SAVE10")
@@ -264,22 +264,22 @@ class TestWB_Booking(unittest.TestCase):
 
 
 # ================================================================
-# WB-6: PromoCode — is_valid branches
-# CFG: [code.strip() != ""] → True / False
+# WB-6: PromoCode - is_valid branches
+# CFG: [code.strip() != ""] -> True / False
 # ================================================================
 class TestWB_PromoCode(unittest.TestCase):
     def test_is_valid_true(self):
-        """WB — Branch: non-empty code → True (line 576)"""
+        """WB - Branch: non-empty code -> True (line 576)"""
         pc = PromoCode("SAVE10", 10.0)
         self.assertTrue(pc.is_valid())
 
     def test_is_valid_false(self):
-        """WB — Branch: empty code → False"""
+        """WB - Branch: empty code -> False"""
         pc = PromoCode("", 10.0)
         self.assertFalse(pc.is_valid())
 
     def test_mutators_uncovered(self):
-        """WB — set_code, set_discount_amount (lines 568, 571)"""
+        """WB - set_code, set_discount_amount (lines 568, 571)"""
         pc = PromoCode("OLD", 5.0)
         pc.set_code("NEW")
         self.assertEqual(pc.get_code(), "NEW")
@@ -287,17 +287,17 @@ class TestWB_PromoCode(unittest.TestCase):
         self.assertEqual(pc.get_discount_amount(), 15.0)
 
     def test_get_used_by_students(self):
-        """WB — line 564"""
+        """WB - line 564"""
         pc = PromoCode("X", 1.0)
         self.assertEqual(pc.get_used_by_students(), [])
 
 
 # ================================================================
-# WB-7: DealPackage — uncovered accessors/mutators
+# WB-7: DealPackage - uncovered accessors/mutators
 # ================================================================
 class TestWB_DealPackage(unittest.TestCase):
     def test_accessors(self):
-        """WB — get_package_id, set_price, set_hours (lines 609, 619, 622)"""
+        """WB - get_package_id, set_price, set_hours (lines 609, 619, 622)"""
         dp = DealPackage("DP001", 100.0, 12.0)
         self.assertEqual(dp.get_package_id(), "DP001")
         dp.set_price(80.0)
@@ -307,11 +307,11 @@ class TestWB_DealPackage(unittest.TestCase):
 
 
 # ================================================================
-# WB-8: Equipment — uncovered lines
+# WB-8: Equipment - uncovered lines
 # ================================================================
 class TestWB_Equipment(unittest.TestCase):
     def test_accessors(self):
-        """WB — lines 645, 648, 654, 657"""
+        """WB - lines 645, 648, 654, 657"""
         eq = Equipment("EQ001", "Projector", 50.0)
         self.assertEqual(eq.get_equipment_id(), "EQ001")
         self.assertEqual(eq.get_name(), "Projector")
@@ -319,13 +319,13 @@ class TestWB_Equipment(unittest.TestCase):
         self.assertTrue(eq.get_is_available())
 
     def test_set_is_available(self):
-        """WB — line 664"""
+        """WB - line 664"""
         eq = Equipment("EQ001", "Projector", 50.0)
         eq.set_is_available(False)
         self.assertFalse(eq.get_is_available())
 
     def test_str(self):
-        """WB — lines 672-673"""
+        """WB - lines 672-673"""
         eq = Equipment("EQ001", "Projector", 50.0)
         self.assertIn("Available", str(eq))
         eq.set_is_available(False)
@@ -333,11 +333,11 @@ class TestWB_Equipment(unittest.TestCase):
 
 
 # ================================================================
-# WB-9: ActivityRecord — uncovered accessors + __str__
+# WB-9: ActivityRecord - uncovered accessors + __str__
 # ================================================================
 class TestWB_ActivityRecord(unittest.TestCase):
     def test_accessors(self):
-        """WB — lines 697, 703, 706"""
+        """WB - lines 697, 703, 706"""
         now = datetime.now()
         ar = ActivityRecord(now, "booking", "Test details", 15.0)
         self.assertEqual(ar.get_date(), now)
@@ -345,7 +345,7 @@ class TestWB_ActivityRecord(unittest.TestCase):
         self.assertEqual(ar.get_amount(), 15.0)
 
     def test_str(self):
-        """WB — line 709"""
+        """WB - line 709"""
         ar = ActivityRecord(datetime.now(), "booking", "Test", 10.0)
         text = str(ar)
         self.assertIn("BOOKING", text)
@@ -353,7 +353,7 @@ class TestWB_ActivityRecord(unittest.TestCase):
 
 
 # ================================================================
-# WB-10: Order — calculate_final_price + uncovered accessors
+# WB-10: Order - calculate_final_price + uncovered accessors
 # ================================================================
 class TestWB_Order(unittest.TestCase):
     def _make_order(self):
@@ -364,41 +364,41 @@ class TestWB_Order(unittest.TestCase):
         return Order("OD0001", b, 15.0, "balance")
 
     def test_calculate_final_price(self):
-        """WB — line 765"""
+        """WB - line 765"""
         o = self._make_order()
         self.assertEqual(o.calculate_final_price(), 15.0)
 
     def test_accessors(self):
-        """WB — lines 736, 745"""
+        """WB - lines 736, 745"""
         o = self._make_order()
         self.assertEqual(o.get_order_id(), "OD0001")
         self.assertEqual(o.get_promo_discount(), 0.0)
 
 
 # ================================================================
-# WB-11: Admin — uncovered accessors
+# WB-11: Admin - uncovered accessors
 # ================================================================
 class TestWB_Admin(unittest.TestCase):
     def test_set_admin_id(self):
-        """WB — line 308"""
+        """WB - line 308"""
         a = Admin("a@monash.edu", "Admin123", "J", "S", "0400000000", "ADM001")
         a.set_admin_id("ADM999")
         self.assertEqual(a.get_admin_id(), "ADM999")
 
     def test_get_promotion_ideas(self):
-        """WB — line 304"""
+        """WB - line 304"""
         a = Admin("a@monash.edu", "Admin123", "J", "S", "0400000000", "ADM001")
         self.assertEqual(a.get_promotion_ideas(), [])
 
 
 # ================================================================
-# WB-12: AuthController — register_student branch: duplicate email
-# CFG: [empty?] → [valid email?] → [valid pwd?] → [valid mobile?]
-#      → [duplicate?] → True: None / False: create
+# WB-12: AuthController - register_student branch: duplicate email
+# CFG: [empty?] -> [valid email?] -> [valid pwd?] -> [valid mobile?]
+#      -> [duplicate?] -> True: None / False: create
 # ================================================================
 class TestWB_AuthController(unittest.TestCase):
     def test_register_duplicate_email(self):
-        """WB — Branch: duplicate email → None (lines 82-83)"""
+        """WB - Branch: duplicate email -> None (lines 82-83)"""
         ctrl = AuthController()
         ctrl.register_student("a@student.monash.edu", "Pass1234",
                               "A", "B", "0412345678", "111")
@@ -407,63 +407,63 @@ class TestWB_AuthController(unittest.TestCase):
         self.assertIsNone(dup)
 
     def test_register_invalid_mobile(self):
-        """WB — Branch: invalid mobile → None (line 79)"""
+        """WB - Branch: invalid mobile -> None (line 79)"""
         ctrl = AuthController()
         result = ctrl.register_student("a@student.monash.edu", "Pass1234",
                                        "A", "B", "1234567890", "111")
         self.assertIsNone(result)
 
     def test_find_student_not_found(self):
-        """WB — Branch: no match → None (line 146)"""
+        """WB - Branch: no match -> None (line 146)"""
         ctrl = AuthController()
         self.assertIsNone(ctrl.find_student_by_id("NONEXIST"))
 
     def test_find_student_found(self):
-        """WB — Branch: match found → return (lines 143-145)"""
+        """WB - Branch: match found -> return (lines 143-145)"""
         ctrl = AuthController()
         ctrl.register_student("a@student.monash.edu", "Pass1234",
                               "A", "B", "0412345678", "111")
         self.assertIsNotNone(ctrl.find_student_by_id("111"))
 
     def test_update_mobile_mismatch(self):
-        """WB — Branch: mobiles don't match → False (line 137)"""
+        """WB - Branch: mobiles don't match -> False (line 137)"""
         ctrl = AuthController()
         s = make_student()
         self.assertFalse(ctrl.update_mobile(s, "0412345678", "0498765432"))
 
 
 # ================================================================
-# WB-13: BookingController — find_room_by_id, find_booking_by_id
-# CFG: [loop rooms] → [id match?] → True: return / False: continue
-#      → end: return None
+# WB-13: BookingController - find_room_by_id, find_booking_by_id
+# CFG: [loop rooms] -> [id match?] -> True: return / False: continue
+#      -> end: return None
 # ================================================================
 class TestWB_BookingController(unittest.TestCase):
     def test_set_rooms(self):
-        """WB — line 235"""
+        """WB - line 235"""
         ctrl = BookingController()
         r = make_room()
         ctrl.set_rooms([r])
         self.assertEqual(len(ctrl.get_rooms()), 1)
 
     def test_get_all_bookings(self):
-        """WB — line 238"""
+        """WB - line 238"""
         ctrl = BookingController()
         self.assertEqual(ctrl.get_all_bookings(), [])
 
     def test_find_room_found(self):
-        """WB — Branch: match → return room (lines 333-336)"""
+        """WB - Branch: match -> return room (lines 333-336)"""
         ctrl = BookingController()
         r = make_room()
         ctrl.set_rooms([r])
         self.assertEqual(ctrl.find_room_by_id("RM0001"), r)
 
     def test_find_room_not_found(self):
-        """WB — Branch: no match → None"""
+        """WB - Branch: no match -> None"""
         ctrl = BookingController()
         self.assertIsNone(ctrl.find_room_by_id("RM9999"))
 
     def test_find_booking_found(self):
-        """WB — Branch: match → return booking (lines 340-343)"""
+        """WB - Branch: match -> return booking (lines 340-343)"""
         ctrl = BookingController()
         s = make_student()
         r = make_room()
@@ -474,16 +474,16 @@ class TestWB_BookingController(unittest.TestCase):
         self.assertEqual(ctrl.find_booking_by_id("BK9001"), b)
 
     def test_find_booking_not_found(self):
-        """WB — Branch: no match → None"""
+        """WB - Branch: no match -> None"""
         ctrl = BookingController()
         self.assertIsNone(ctrl.find_booking_by_id("BK9999"))
 
     def test_late_cancel_branch(self):
-        """WB — cancel_booking late branch (line 317)"""
+        """WB - cancel_booking late branch (line 317)"""
         ctrl = BookingController()
         s = make_student(balance=100.0)
         r = make_room()
-        # Booking starts in 10 minutes → late cancellation
+        # Booking starts in 10 minutes -> late cancellation
         start = datetime.now() + timedelta(minutes=10)
         end = start + timedelta(hours=1)
         b = Booking("BK0001", s, r, start, end, False, 15.0)
@@ -495,24 +495,24 @@ class TestWB_BookingController(unittest.TestCase):
 
 
 # ================================================================
-# WB-14: PaymentController — check_balance_sufficient
-# CFG: [balance >= amount?] → True / False
+# WB-14: PaymentController - check_balance_sufficient
+# CFG: [balance >= amount?] -> True / False
 # ================================================================
 class TestWB_PaymentController(unittest.TestCase):
     def test_check_balance_sufficient_true(self):
-        """WB — Branch: enough → True (line 379 not hit previously)"""
+        """WB - Branch: enough -> True (line 379 not hit previously)"""
         ctrl = PaymentController()
         s = make_student(balance=100.0)
         self.assertTrue(ctrl.check_balance_sufficient(s, 50.0))
 
     def test_check_balance_sufficient_false(self):
-        """WB — Branch: not enough → False"""
+        """WB - Branch: not enough -> False"""
         ctrl = PaymentController()
         s = make_student()
         self.assertFalse(ctrl.check_balance_sufficient(s, 50.0))
 
     def test_confirm_order(self):
-        """WB — line 581: confirm_order sets booking fields"""
+        """WB - line 581: confirm_order sets booking fields"""
         ctrl = PaymentController()
         s = make_student()
         r = make_room()
@@ -543,7 +543,7 @@ class TestWB_UserMutators(unittest.TestCase):
         self.assertEqual(s.get_last_name(), "Smith")
 
     def test_get_password(self):
-        """WB — line 38"""
+        """WB - line 38"""
         s = make_student()
         self.assertEqual(s.get_password(), "Pass1234")
 
