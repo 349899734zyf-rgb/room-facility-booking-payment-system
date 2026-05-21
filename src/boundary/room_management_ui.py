@@ -33,7 +33,7 @@ class RoomManagementUI:
 
     def get_management_choice(self) -> str:
         """Get the user's menu choice"""
-        return input("Please select an option (1-9): ").strip()
+        return input("Please select an option (1-9, or enter 'CANCEL' to return): ").strip()
 
     def display_room_list(self, rooms: list) -> None:
         """Display all rooms in a formatted table"""
@@ -67,17 +67,23 @@ class RoomManagementUI:
         print("-" * 80)
 
         try:
-            name = input("Enter room name: ").strip()
+            name = input("Enter room name (or enter 'CANCEL' to return): ").strip()
+            if name.upper() == "CANCEL":
+                return None
             if not name:
                 print("Error: Room name cannot be empty")
                 return None
 
-            building = input("Enter building: ").strip()
+            building = input("Enter building (or enter 'CANCEL' to return): ").strip()
+            if building.upper() == "CANCEL":
+                return None
             if not building:
                 print("Error: Building cannot be empty")
                 return None
 
-            capacity_str = input("Enter capacity (number of students): ").strip()
+            capacity_str = input("Enter capacity (positive integer, or enter 'CANCEL' to return): ").strip()
+            if capacity_str.upper() == "CANCEL":
+                return None
             if not capacity_str:
                 print("Error: Capacity cannot be empty")
                 return None
@@ -88,10 +94,12 @@ class RoomManagementUI:
                     print("Error: Capacity must be greater than 0")
                     return None
             except ValueError:
-                print("Error: Capacity must be a valid number")
+                print("Error: Capacity must be a valid positive integer")
                 return None
 
-            price_str = input("Enter price per hour ($): ").strip()
+            price_str = input("Enter price per hour ($) (positive number, or enter 'CANCEL' to return): ").strip()
+            if price_str.upper() == "CANCEL":
+                return None
             if not price_str:
                 print("Error: Price cannot be empty")
                 return None
@@ -102,12 +110,18 @@ class RoomManagementUI:
                     print("Error: Price must be greater than 0")
                     return None
             except ValueError:
-                print("Error: Price must be a valid number")
+                print("Error: Price must be a valid positive number")
                 return None
 
-            opening_hours = input("Enter opening hours (e.g., 09:00-17:00): ").strip()
+            opening_hours = input("Enter opening hours (format: HH:MM-HH:MM, or enter 'CANCEL' to return): ").strip()
+            if opening_hours.upper() == "CANCEL":
+                return None
             if not opening_hours:
                 print("Error: Opening hours cannot be empty")
+                return None
+
+            if '-' not in opening_hours or len(opening_hours.split('-')) != 2:
+                print("Error: Invalid format. Please use HH:MM-HH:MM (e.g., 09:00-17:00)")
                 return None
 
             return {
@@ -138,7 +152,9 @@ class RoomManagementUI:
         print(" " * 20 + "RECORD PROMOTION IDEA")
         print("-" * 80)
 
-        idea = input("Enter promotion idea: ").strip()
+        idea = input("Enter promotion idea (or enter 'CANCEL' to return): ").strip()
+        if idea.upper() == "CANCEL":
+            return None
         if not idea:
             print("Error: Promotion idea cannot be empty")
             return None
@@ -153,7 +169,7 @@ class RoomManagementUI:
 
     def get_room_number_input(self) -> str:
         """Get room ID input from user"""
-        return input("Enter room ID (e.g., RM0001): ").strip()
+        return input("Enter room ID (e.g., RM0001, or enter 'CANCEL' to return): ").strip()
 
     def display_remove_success(self) -> None:
         """Display success message when room is deleted"""
@@ -172,10 +188,20 @@ class RoomManagementUI:
         print("-" * 80)
 
         try:
-            student_input = input("Is there a student in the room? (y/n): ").strip().lower()
+            student_input = input("Is there a student in the room? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+            if student_input.upper() == "CANCEL":
+                return None
+            if student_input not in ['y', 'n', 'yes', 'no', 'true', 'false', '1', '0']:
+                print("Error: Input must be y or n")
+                return None
             is_student_in = student_input in ['y', 'yes', 'true', '1']
 
-            equipment_input = input("Is equipment rented? (y/n): ").strip().lower()
+            equipment_input = input("Is equipment rented? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+            if equipment_input.upper() == "CANCEL":
+                return None
+            if equipment_input not in ['y', 'n', 'yes', 'no', 'true', 'false', '1', '0']:
+                print("Error: Input must be y or n")
+                return None
             is_equipment_rented = equipment_input in ['y', 'yes', 'true', '1']
 
             return {
@@ -210,12 +236,15 @@ class RoomManagementUI:
         print("\n" + "-" * 80)
         print(" " * 20 + "UPDATE AVAILABLE TIME SLOTS")
         print("-" * 80)
-        print("Enter time slots (format: 09:00-10:00), one per line")
-        print("Enter blank line to finish")
+        print("Enter time slots (format: HH:MM-HH:MM), one per line")
+        print("Enter blank line to finish, or enter 'CANCEL' to return")
 
         time_slots = []
         while True:
-            slot = input("Time slot: ").strip()
+            slot = input("Time slot (or enter 'CANCEL' to return): ").strip()
+
+            if slot.upper() == "CANCEL":
+                return None
 
             if not slot:
                 break
@@ -288,20 +317,26 @@ class RoomManagementUI:
 
     def get_room_update_input(self) -> Optional[Dict[str, str]]:
         """Get room update information from user"""
-        print("\nEnter information to update (leave blank to skip)")
+        print("\nEnter information to update (leave blank to skip, or enter 'CANCEL' to return)")
         print("-" * 80)
 
         updates = {}
 
-        room_name = input("New room name: ").strip()
+        room_name = input("New room name (or enter 'CANCEL' to return): ").strip()
+        if room_name.upper() == "CANCEL":
+            return None
         if room_name:
             updates['name'] = room_name
 
-        building = input("New building: ").strip()
+        building = input("New building (or enter 'CANCEL' to return): ").strip()
+        if building.upper() == "CANCEL":
+            return None
         if building:
             updates['building'] = building
 
-        capacity_str = input("New capacity: ").strip()
+        capacity_str = input("New capacity (positive integer, or enter 'CANCEL' to return): ").strip()
+        if capacity_str.upper() == "CANCEL":
+            return None
         if capacity_str:
             try:
                 capacity = int(capacity_str)
@@ -310,10 +345,12 @@ class RoomManagementUI:
                     return None
                 updates['capacity'] = capacity
             except ValueError:
-                print("Error: Capacity must be an integer")
+                print("Error: Capacity must be a valid positive integer")
                 return None
 
-        price_str = input("New price: ").strip()
+        price_str = input("New price ($) (positive number, or enter 'CANCEL' to return): ").strip()
+        if price_str.upper() == "CANCEL":
+            return None
         if price_str:
             try:
                 price = float(price_str)
@@ -322,11 +359,16 @@ class RoomManagementUI:
                     return None
                 updates['price'] = price
             except ValueError:
-                print("Error: Price must be a valid number")
+                print("Error: Price must be a valid positive number")
                 return None
 
-        opening_hours = input("New opening hours: ").strip()
+        opening_hours = input("New opening hours (format: HH:MM-HH:MM, or enter 'CANCEL' to return): ").strip()
+        if opening_hours.upper() == "CANCEL":
+            return None
         if opening_hours:
+            if '-' not in opening_hours or len(opening_hours.split('-')) != 2:
+                print("Error: Invalid format. Please use HH:MM-HH:MM (e.g., 09:00-17:00)")
+                return None
             updates['opening_hours'] = opening_hours
 
         if not updates:

@@ -42,9 +42,20 @@ class AuthController:
             return None
         if not self.validate_password(password):
             return None
+        if not self.validate_mobile(phone):
+            return None
+        for s in self.__students:
+            if s.get_email() == email or s.get_student_id() == student_id:
+                return None
         student = Student(email, password, first_name, last_name, phone, student_id)
         self.__students.append(student)
         return student
+
+    def find_student_by_id(self, student_id: str) -> Optional[Student]:
+        for s in self.__students:
+            if s.get_student_id() == student_id:
+                return s
+        return None
 
     def login(self, email: str, password: str) -> Optional[User]:
         """login"""

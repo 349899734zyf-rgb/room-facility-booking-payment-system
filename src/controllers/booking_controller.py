@@ -140,12 +140,14 @@ class BookingController:
         self,
         start_time: datetime,
         end_time: datetime,
+        room_type: str = "Small",
     ) -> bool:
         """Book 3.8: check minimum duration and 30-minute blocks."""
         duration_minutes = int(
             (end_time - start_time).total_seconds() / SECONDS_PER_MINUTE,
         )
-        long_enough = duration_minutes >= MINIMUM_BOOKING_MINUTES
+        min_minutes = 120 if room_type in ["Medium", "Large"] else MINIMUM_BOOKING_MINUTES
+        long_enough = duration_minutes >= min_minutes
         follows_increment = duration_minutes % BOOKING_INCREMENT_MINUTES == 0
         return long_enough and follows_increment
 
@@ -205,6 +207,7 @@ class BookingController:
         end_time: datetime,
         equipment_rental: bool,
         payment_method: str = PAYMENT_METHOD_BALANCE,
+        current_time: Optional[datetime] = None,
     ) -> Dict[str, object]:
         """Book 3.4, 3.5 and 3.15: create a valid booking."""
         eligibility = self.check_eligibility(student)
@@ -212,8 +215,19 @@ class BookingController:
             return {"success": False, "reason": REASON_BANNED}
         if eligibility["has_reached_limit"]:
             return {"success": False, "reason": REASON_BOOKING_LIMIT_REACHED}
-        if not self.validate_duration(start_time, end_time):
+            
+        room_type = room.get_room_type() if hasattr(room, "get_room_type") else "Small"
+        if not self.validate_duration(start_time, end_time, room_type):
             return {"success": False, "reason": REASON_INVALID_DURATION}
+
+        # Enforce advance booking rules
+        booking_time = current_time or datetime.now()
+        time_diff = start_time - booking_time
+        from datetime import timedelta
+        if room_type == "Medium" and time_diff < timedelta(hours=3):
+            return {"success": False, "reason": "advance_booking_requirement_not_met"}
+        elif room_type == "Large" and time_diff < timedelta(hours=24):
+            return {"success": False, "reason": "advance_booking_requirement_not_met"}
 
         start_text = self.format_time(start_time)
         end_text = self.format_time(end_time)
@@ -232,6 +246,11 @@ class BookingController:
                 }
             student.deduct_balance(total_required)
         elif payment_method == PAYMENT_METHOD_DEAL_PACKAGE:
+            if room_type != "Small":
+                return {
+                    "success": False,
+                    "reason": "deal_package_room_type_restricted",
+                }
             if equipment_rental:
                 return {
                     "success": False,
@@ -316,12 +335,23 @@ class BookingController:
     def cancel_booking(
         self,
         student: Student,
-        booking_id: str,
-        confirm_cancel: bool,
+        booking_or_id: object,
+        confirm_cancel: bool = True,
         current_time: Optional[datetime] = None,
     ) -> Dict[str, object]:
         """Book 3.2, 3.3, 3.6 and 3.14: handle cancellation."""
+        if hasattr(booking_or_id, "get_booking_id"):
+            booking_id = booking_or_id.get_booking_id()
+        else:
+            booking_id = str(booking_or_id)
+
         booking = self.find_student_booking(student, booking_id)
+        if booking is None:
+            # Fallback: search all student bookings (not just active ones)
+            for b in student.get_bookings():
+                if b.get_booking_id() == booking_id:
+                    booking = b
+                    break
         if booking is None:
             return {"success": False, "reason": REASON_BOOKING_NOT_FOUND}
 
@@ -329,6 +359,7 @@ class BookingController:
             return {
                 "success": True,
                 "reason": CANCELLATION_STOPPED,
+                "type": CANCELLATION_STOPPED,
                 "booking": booking,
                 "refund": 0.0,
             }
@@ -349,6 +380,25 @@ class BookingController:
             )
             student.add_funds(refund)
         else:
+            room_type = "Small"
+            room = booking.get_room()
+            if room and hasattr(room, "get_room_type"):
+                room_type = room.get_room_type()
+                
+            deposit_refund = booking.get_equipment_deposit()
+            
+            if room_type == "Small":
+                room_refund = booking.get_total_price() * 0.5
+            elif room_type == "Medium":
+                room_refund = booking.get_total_price() * 0.5
+            elif room_type == "Large":
+                room_refund = booking.get_total_price() * 0.3
+            else:
+                room_refund = 0.0
+                
+            refund = room_refund + deposit_refund
+            if refund > 0:
+                student.add_funds(refund)
             student.record_late_cancellation()
 
         student.remove_booking(booking)
@@ -356,6 +406,7 @@ class BookingController:
         return {
             "success": True,
             "reason": cancel_type,
+            "type": cancel_type,
             "booking": booking,
             "refund": refund,
             "ban_applied": student.get_booking_ban_status(),
@@ -375,4 +426,20 @@ class BookingController:
             "available_slot_count": available_slot_count,
             "current_bookings": student.get_active_bookings(),
         }
+
+    # Helper/White-box methods:
+    def set_rooms(self, rooms: List[Room]) -> None:
+        self.__rooms = rooms
+
+    def find_room_by_id(self, room_id: str) -> Optional[Room]:
+        for r in self.__rooms:
+            if r.get_room_id() == room_id:
+                return r
+        return None
+
+    def find_booking_by_id(self, booking_id: str) -> Optional[Booking]:
+        for b in self.__all_bookings:
+            if b.get_booking_id() == booking_id:
+                return b
+        return None
 

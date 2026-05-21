@@ -127,6 +127,8 @@ class Student(User):
     def record_no_show(self) -> None:
         """Record no show"""
         self.__no_show_count += 1
+        self.__activity_history.append(
+            ActivityRecord(datetime.now(), "no_show", "No show recorded", 0.0))
         self._check_ban_threshold()
 
     def _check_ban_threshold(self) -> None:

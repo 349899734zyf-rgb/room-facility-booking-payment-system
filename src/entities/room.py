@@ -2,14 +2,15 @@
 Room entity.
 Covers: Room 1-8
 """
-from typing import List
+from typing import List, Optional
 
 
 class Room:
     """Room entity (Room Management 1, 4-8, Booking Management 1)"""
 
     def __init__(self, room_id: str, room_name: str, building: str,
-                 capacity: int, price_per_hour: float, opening_hours: str) -> None:
+                 capacity: int, price_per_hour: float, opening_hours: str,
+                 room_type: Optional[str] = None, standard_equipment: str = "") -> None:
         self.__room_id: str = room_id
         self.__room_name: str = room_name
         self.__building: str = building
@@ -19,6 +20,20 @@ class Room:
         self.__available_time_slots: List[str] = []
         self.__is_equipment_rented: bool = False
         self.__is_student_in_room: bool = False
+
+        if room_type is None:
+            if price_per_hour == 40.0:
+                self.__room_type = "Medium"
+            elif price_per_hour == 80.0:
+                self.__room_type = "Large"
+            elif price_per_hour <= 10.0:
+                self.__room_type = "Small"
+            else:
+                self.__room_type = "Legacy"
+        else:
+            self.__room_type = room_type
+
+        self.__standard_equipment = standard_equipment
 
     # --- Accessors ---
     def get_room_id(self) -> str:
@@ -96,4 +111,19 @@ class Room:
             self.__available_time_slots.append(time_slot)
         elif not available and time_slot in self.__available_time_slots:
             self.__available_time_slots.remove(time_slot)
+
+    def get_room_type(self) -> str:
+        return self.__room_type
+
+    def set_room_type(self, room_type: str) -> None:
+        self.__room_type = room_type
+
+    def get_standard_equipment(self) -> str:
+        return self.__standard_equipment
+
+    def set_standard_equipment(self, equipment: str) -> None:
+        self.__standard_equipment = equipment
+
+    def __str__(self) -> str:
+        return f"{self.__room_id} | {self.__room_name}"
 

@@ -16,12 +16,24 @@ class RegistrationUI:
     @staticmethod
     def get_registration_info():
         """Get all registration fields from user."""
-        first_name = input("First Name: ").strip()
-        last_name = input("Last Name: ").strip()
-        student_id = input("Student ID: ").strip()
-        phone = input("Phone Number: ").strip()
-        email = input("Email: ").strip()
-        password = input("Password: ").strip()
+        first_name = input("First Name (or enter 'CANCEL' to return): ").strip()
+        if first_name.upper() == "CANCEL":
+            return "CANCEL", "", "", "", "", ""
+        last_name = input("Last Name (or enter 'CANCEL' to return): ").strip()
+        if last_name.upper() == "CANCEL":
+            return "CANCEL", "", "", "", "", ""
+        student_id = input("Student ID (8 digits, or enter 'CANCEL' to return): ").strip()
+        if student_id.upper() == "CANCEL":
+            return "CANCEL", "", "", "", "", ""
+        phone = input("Phone Number (10 digits starting with 04, or enter 'CANCEL' to return): ").strip()
+        if phone.upper() == "CANCEL":
+            return "CANCEL", "", "", "", "", ""
+        email = input("Email (must end with @student.monash.edu, or enter 'CANCEL' to return): ").strip()
+        if email.upper() == "CANCEL":
+            return "CANCEL", "", "", "", "", ""
+        password = input("Password (min 8 chars, at least 1 uppercase and 1 digit, or enter 'CANCEL' to return): ").strip()
+        if password.upper() == "CANCEL":
+            return "CANCEL", "", "", "", "", ""
         return first_name, last_name, student_id, phone, email, password
 
     @staticmethod

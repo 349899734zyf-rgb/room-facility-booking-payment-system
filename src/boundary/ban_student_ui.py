@@ -34,7 +34,7 @@ class BanStudentUI:
         print("\n" + "-" * 80)
         print(" " * 25 + "SELECT STUDENT")
         print("-" * 80)
-        return input("Enter student ID: ").strip()
+        return input("Enter student ID (8 digits, or enter 'CANCEL' to return): ").strip()
 
     def display_student_info(self, student_id: str, ban_status: bool) -> None:
         """Display student information"""
@@ -47,12 +47,16 @@ class BanStudentUI:
 
     def get_ban_confirmation(self) -> bool:
         """Get ban confirmation from user"""
-        confirm = input("\nAre you sure you want to ban this student? (y/n): ").strip().lower()
+        confirm = input("\nAre you sure you want to ban this student? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+        if confirm.upper() == "CANCEL":
+            return None
         return confirm in ['y', 'yes']
 
     def get_unban_confirmation(self) -> bool:
         """Get unban confirmation from user"""
-        confirm = input("\nAre you sure you want to unban this student? (y/n): ").strip().lower()
+        confirm = input("\nAre you sure you want to unban this student? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+        if confirm.upper() == "CANCEL":
+            return None
         return confirm in ['y', 'yes']
 
     def display_ban_success(self) -> None:

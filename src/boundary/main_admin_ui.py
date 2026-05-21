@@ -31,9 +31,16 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
         room_ui.display_room_management_menu()
         choice = room_ui.get_management_choice()
 
+        if choice.upper() == "CANCEL":
+            print("\nReturning to main menu")
+            break
+
         if choice == "1":
             # ============ 1. Add New Room ============
             details = room_ui.get_room_details_input()
+            if details is None:
+                print("\nOperation cancelled.")
+                continue
             if details:
                 try:
                     room = room_controller.add_room(
@@ -56,6 +63,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
                 print("\nError: Admin session required to record promotion ideas.")
             else:
                 idea = room_ui.get_promotion_idea_input()
+                if idea is None:
+                    print("\nOperation cancelled.")
+                    continue
                 if idea:
                     if admin_controller.record_promotion_idea(admin, idea):
                         room_ui.display_promotion_recorded()
@@ -72,6 +82,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
             rooms = room_controller.get_rooms()
             room_ui.display_room_list(rooms)
             room_id = room_ui.get_room_number_input()
+            if room_id.upper() == "CANCEL":
+                print("\nOperation cancelled.")
+                continue
 
             if room_controller.find_room(room_id) is None:
                 room_ui.display_room_not_found_message()
@@ -86,12 +99,18 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
             rooms = room_controller.get_rooms()
             room_ui.display_room_list(rooms)
             room_id = room_ui.get_room_number_input()
+            if room_id.upper() == "CANCEL":
+                print("\nOperation cancelled.")
+                continue
             room = room_controller.find_room(room_id)
 
             if room is None:
                 room_ui.display_room_not_found_message()
             else:
                 status = room_ui.get_usage_status_input()
+                if status is None:
+                    print("\nOperation cancelled.")
+                    continue
 
                 if status:
                     is_student_in = status['is_student_in']
@@ -111,6 +130,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
             rooms = room_controller.get_rooms()
             room_ui.display_room_list(rooms)
             room_id = room_ui.get_room_number_input()
+            if room_id.upper() == "CANCEL":
+                print("\nOperation cancelled.")
+                continue
             room = room_controller.find_room(room_id)
 
             if room is None:
@@ -121,6 +143,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
 
                 # Get new time slots using UI method
                 time_slots = room_ui.get_time_slots_input()
+                if time_slots is None:
+                    print("\nOperation cancelled.")
+                    continue
 
                 if time_slots:
                     if room_controller.update_room_time_slots(room_id, time_slots):
@@ -133,6 +158,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
             rooms = room_controller.get_rooms()
             room_ui.display_room_list(rooms)
             room_id = room_ui.get_room_number_input()
+            if room_id.upper() == "CANCEL":
+                print("\nOperation cancelled.")
+                continue
             room = room_controller.find_room(room_id)
 
             if room is None:
@@ -147,6 +175,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
             rooms = room_controller.get_rooms()
             room_ui.display_room_list(rooms)
             room_id = room_ui.get_room_number_input()
+            if room_id.upper() == "CANCEL":
+                print("\nOperation cancelled.")
+                continue
             room = room_controller.find_room(room_id)
 
             if room is None:
@@ -154,6 +185,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
             else:
                 room_ui.display_current_room_details(room)
                 updates = room_ui.get_room_update_input()
+                if updates is None:
+                    print("\nOperation cancelled.")
+                    continue
 
                 if updates:
                     # Convert string values to appropriate types
@@ -199,6 +233,9 @@ def main_admin_booking_status(admin_controller, booking_controller, booking_stat
 
         # Get booking to update
         booking_id = booking_status_ui.get_booking_selection()
+        if booking_id.upper() == "CANCEL":
+            print("\nOperation cancelled.")
+            break
 
         booking = None
         for b in booking_controller.get_all_bookings():
@@ -214,6 +251,9 @@ def main_admin_booking_status(admin_controller, booking_controller, booking_stat
 
             # Get new status
             new_status = booking_status_ui.get_new_status()
+            if new_status.upper() == "CANCEL":
+                print("\nOperation cancelled.")
+                break
 
             if new_status:
                 if admin_controller.update_booking_status(booking_id, new_status):
@@ -222,8 +262,8 @@ def main_admin_booking_status(admin_controller, booking_controller, booking_stat
                     print("Error: Failed to update booking status")
 
         # Ask to continue
-        continue_choice = input("\nUpdate another booking? (y/n): ").strip().lower()
-        if continue_choice not in ['y', 'yes']:
+        continue_choice = input("\nUpdate another booking? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+        if continue_choice.upper() == "CANCEL" or continue_choice not in ['y', 'yes']:
             break
 
 
@@ -245,6 +285,9 @@ def main_admin_ban_student(admin_controller, auth_controller, ban_student_ui):
 
         # Get student selection
         student_id = ban_student_ui.get_student_selection()
+        if student_id.upper() == "CANCEL":
+            print("\nOperation cancelled.")
+            break
 
         student = None
         for s in auth_controller.get_students():
@@ -260,17 +303,25 @@ def main_admin_ban_student(admin_controller, auth_controller, ban_student_ui):
 
             if is_banned:
                 # If already banned, ask to unban
-                if ban_student_ui.get_unban_confirmation():
+                confirm = ban_student_ui.get_unban_confirmation()
+                if confirm is None:
+                    print("\nOperation cancelled.")
+                    break
+                elif confirm:
                     if admin_controller.unban_student(student):
                         ban_student_ui.display_unban_success()
             else:
                 # If not banned, ask to ban
-                if ban_student_ui.get_ban_confirmation():
+                confirm = ban_student_ui.get_ban_confirmation()
+                if confirm is None:
+                    print("\nOperation cancelled.")
+                    break
+                elif confirm:
                     if admin_controller.ban_student(student):
                         ban_student_ui.display_ban_success()
 
-        continue_choice = input("\nManage another student? (y/n): ").strip().lower()
-        if continue_choice not in ['y', 'yes']:
+        continue_choice = input("\nManage another student? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+        if continue_choice.upper() == "CANCEL" or continue_choice not in ['y', 'yes']:
             break
 
 
@@ -291,6 +342,9 @@ def main_admin_equipment_deposit(admin_controller, equipment_deposit_ui):
 
         # Get equipment selection
         equipment_id = equipment_deposit_ui.get_equipment_selection()
+        if equipment_id.upper() == "CANCEL":
+            print("\nOperation cancelled.")
+            break
 
         equipment = None
         for eq in admin_controller.get_equipments():
@@ -306,16 +360,23 @@ def main_admin_equipment_deposit(admin_controller, equipment_deposit_ui):
 
             # Get deposit amount
             amount = equipment_deposit_ui.get_deposit_amount_input()
+            if amount == -1.0:
+                print("\nOperation cancelled.")
+                break
 
             if amount > 0:
-                if equipment_deposit_ui.get_deposit_confirmation():
+                confirm = equipment_deposit_ui.get_deposit_confirmation()
+                if confirm is None:
+                    print("\nOperation cancelled.")
+                    break
+                elif confirm:
                     if admin_controller.set_equipment_deposit(equipment, amount):
                         equipment_deposit_ui.display_deposit_set_success(amount)
                     else:
                         print("Error: Failed to set equipment deposit")
 
-        continue_choice = input("\nSet deposit for another equipment? (y/n): ").strip().lower()
-        if continue_choice not in ['y', 'yes']:
+        continue_choice = input("\nSet deposit for another equipment? (y/n, or enter 'CANCEL' to return): ").strip().lower()
+        if continue_choice.upper() == "CANCEL" or continue_choice not in ['y', 'yes']:
             break
 
 

@@ -17,13 +17,13 @@ class RoomController:
         return self.__rooms
 
     def add_room(self, name: str, building: str, capacity: int,
-                 price: float, opening_hours: str) -> Optional[Room]:
+                 price: float, opening_hours: str, room_type: Optional[str] = None) -> Optional[Room]:
         """Add room (Room 1)"""
         if not all([name, building, opening_hours]) or capacity <= 0 or price <= 0:
             return None
         self.__room_counter += 1
         rid = f"RM{self.__room_counter:04d}"
-        room = Room(rid, name, building, capacity, price, opening_hours)
+        room = Room(rid, name, building, capacity, price, opening_hours, room_type=room_type)
         self.__rooms.append(room)
         return room
 
@@ -57,6 +57,10 @@ class RoomController:
             room.set_price_per_hour(float(updates["price"]))
         if "opening_hours" in updates:
             room.set_opening_hours(str(updates["opening_hours"]))
+        if "standard_equipment" in updates:
+            room.set_standard_equipment(str(updates["standard_equipment"]))
+        if "room_type" in updates:
+            room.set_room_type(str(updates["room_type"]))
         return True
 
     def update_room_usage_status(self, room_id: str, is_student_in: bool,

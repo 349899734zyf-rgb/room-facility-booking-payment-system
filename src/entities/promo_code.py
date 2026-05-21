@@ -42,10 +42,10 @@ class PromoCode:
             self,
             original_price: float
     ) -> float:
-
         discount = original_price * (self.__discount_amount / 100)
 
         return max(
             0,
             original_price - discount
         )
+

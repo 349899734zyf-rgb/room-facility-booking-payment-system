@@ -41,5 +41,5 @@ class ActivityRecord:
         self.__amount = amount
 
     def __str__(self) -> str:
-        return f"[{self.__date}] {self.__record_type}: {self.__details} (${self.__amount})"
+        return f"[{self.__date}] {self.__record_type.upper()}: {self.__details} (${self.__amount:.2f})"
 

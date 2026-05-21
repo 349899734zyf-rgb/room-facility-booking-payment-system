@@ -36,10 +36,12 @@ class ActivityHistoryUI:
         print()
 
     def get_page_navigation_input(self) -> str:
-        return input("Selection: ").strip()
+        return input("Selection (or enter 'CANCEL' to return): ").strip()
 
     def get_direct_page_input(self, total_pages: int) -> int:
-        target_str = input("Enter target page index number (1-{}): ".format(total_pages)).strip()
+        target_str = input("Enter target page index number (1-{}, or enter 'CANCEL' to return): ".format(total_pages)).strip()
+        if target_str.upper() == "CANCEL":
+            return -2
         if target_str.isdigit() and 1 <= int(target_str) <= total_pages:
             return int(target_str)
         else:

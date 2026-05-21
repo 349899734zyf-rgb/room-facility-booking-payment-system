@@ -23,10 +23,10 @@ class ProfileUI:
         print("=== Update Mobile Number ===")
         print("Type 'CANCEL' to return without saving.")
         print()
-        return input("Enter New Mobile Number: ").strip()
+        return input("Enter New Mobile Number (10 digits starting with 04, or enter 'CANCEL' to return): ").strip()
 
     def get_confirm_mobile_number(self) -> str:
-        return input("Confirm New Mobile Number: ").strip()
+        return input("Confirm New Mobile Number (10 digits starting with 04, or enter 'CANCEL' to return): ").strip()
 
     def display_mobile_update_success(self) -> None:
         print("Update Result: Mobile number updated successfully!")
@@ -39,10 +39,19 @@ class ProfileUI:
         print("=== Change Account Password ===")
         print("Type 'CANCEL' at any prompt to exit.")
         print()
+        current = input("Enter Current Password (or enter 'CANCEL' to return): ").strip()
+        if current.upper() == "CANCEL":
+            return {"current": "CANCEL", "new": "", "confirm": ""}
+        new = input("Enter New Password (min 8 chars, at least 1 uppercase and 1 digit, or enter 'CANCEL' to return): ").strip()
+        if new.upper() == "CANCEL":
+            return {"current": "CANCEL", "new": "", "confirm": ""}
+        confirm = input("Confirm New Password (must match, or enter 'CANCEL' to return): ").strip()
+        if confirm.upper() == "CANCEL":
+            return {"current": "CANCEL", "new": "", "confirm": ""}
         return {
-            "current": input("Enter Current Password: ").strip(),
-            "new": input("Enter New Password: ").strip(),
-            "confirm": input("Confirm New Password: ").strip()
+            "current": current,
+            "new": new,
+            "confirm": confirm
         }
 
     def display_password_change_success(self) -> None:

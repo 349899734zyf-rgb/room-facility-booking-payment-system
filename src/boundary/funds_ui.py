@@ -17,7 +17,7 @@ class FundsUI:
         return input("Selection: ").strip()
 
     def get_top_up_amount(self) -> Optional[float]:
-        amount_str = input("Enter top-up amount ($): ").strip()
+        amount_str = input("Enter top-up amount (positive number, e.g. 50.00, or enter 'CANCEL' to return): ").strip()
         if amount_str.upper() == "CANCEL":
             return None
         try:
@@ -34,8 +34,10 @@ class FundsUI:
         print()
         print("Payment Confirmation: Add ${:.2f} to account?".format(amount))
 
-    def get_payment_confirmation(self) -> bool:
-        conf = input("Type 'CONFIRM' to authorise simulated banking payment or 'CANCEL': ").strip().upper()
+    def get_payment_confirmation(self) -> Optional[bool]:
+        conf = input("Type 'CONFIRM' to authorise simulated banking payment or enter 'CANCEL' to return: ").strip().upper()
+        if conf == "CANCEL":
+            return None
         return conf == "CONFIRM"
 
     def display_top_up_success(self, amount: float, new_balance: float) -> None:
