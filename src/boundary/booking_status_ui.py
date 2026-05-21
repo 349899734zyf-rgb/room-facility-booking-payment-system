@@ -59,14 +59,16 @@ class BookingStatusUI:
         print("2. Confirmed")
         print("3. Completed")
         print("4. Cancelled")
+        print("5. No Show")
 
-        choice = input("Select new status (1-4): ").strip()
+        choice = input("Select new status (1-5): ").strip()
 
         status_map = {
             '1': 'Pending',
             '2': 'Confirmed',
             '3': 'Completed',
-            '4': 'Cancelled'
+            '4': 'Cancelled',
+            '5': 'no_show'
         }
 
         return status_map.get(choice, "")

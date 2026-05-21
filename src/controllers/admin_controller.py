@@ -69,6 +69,7 @@ class AdminController:
 
     def update_booking_status(self, booking_id: str, new_status: str) -> bool:
         """Update booking status (Room Management 9)"""
+        new_status = new_status.lower()
         if new_status not in ["confirmed", "completed", "cancelled", "no_show"]:
             return False
             

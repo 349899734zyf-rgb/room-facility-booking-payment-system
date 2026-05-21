@@ -29,6 +29,7 @@ from boundary.main_admin_ui import main_admin_menu
 from entities.student import Student
 from entities.admin import Admin
 from entities.room import Room
+from entities.equipment import Equipment
 from booking_constants import REASON_INVALID_INPUT, REASON_NO_ROOMS
 
 
@@ -509,6 +510,9 @@ def main():
     room_ctrl._RoomController__rooms = book_ctrl.get_rooms()
     acct_ctrl = AccountController()
     admin_ctrl = AdminController()
+    admin_ctrl.set_all_bookings(book_ctrl.get_all_bookings())
+    admin_ctrl.get_equipments().append(Equipment("EQ001", 50.0))
+    admin_ctrl.get_equipments().append(Equipment("EQ002", 100.0))
     payment_ctrl = PaymentController()
 
     # Initialise Boundary UI components
