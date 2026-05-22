@@ -165,6 +165,14 @@ class RoomController:
         room.set_available_time_slots(available_slots)
         return True
 
+    def register_room_time_slot(self, room_id: str, time_slot: str, available: bool) -> bool:
+        """Add or remove an individual time slot, merging/splitting as necessary (Room 6)."""
+        room = self.find_room(room_id)
+        if room is None:
+            return False
+        room.update_availability(time_slot, available)
+        return True
+
     def get_predicted_income(self, room_id: str) -> float:
         """Return predicted income for a room based on booked slots (Room 7)."""
         room = self.find_room(room_id)

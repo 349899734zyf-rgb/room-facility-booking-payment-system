@@ -390,3 +390,50 @@ class RoomManagementUI:
         """Display failure message when room update fails"""
         print("\nError: Failed to update room information")
 
+    def get_update_slot_action(self) -> Optional[str]:
+        """Prompt to select action (AVAILABLE or UNAVAILABLE) (Room 6)."""
+        print("\n" + "-" * 80)
+        print(" " * 20 + "SELECT SLOT ACTION")
+        print("-" * 80)
+        print("1. AVAILABLE (Make time slot available / cancel booked)")
+        print("2. UNAVAILABLE (Make time slot unavailable / book)")
+        print("-" * 80)
+        while True:
+            choice = input("Please select an action (1 or 2, or enter 'CANCEL' to return): ").strip()
+            if choice.upper() == "CANCEL":
+                return None
+            if choice == "1":
+                return "AVAILABLE"
+            elif choice == "2":
+                return "UNAVAILABLE"
+            print("Error: Invalid choice. Please enter 1 or 2.")
+
+    def get_single_time_slot_input(self, action_name: str) -> Optional[str]:
+        """Prompt for a single time slot input for a specific action (Room 6)."""
+        print(f"\nEnter time slot to mark as {action_name}")
+        print("Format: HH:MM-HH:MM (e.g., 09:00-18:00) or with date prefix")
+        print("Enter 'CANCEL' to return")
+        while True:
+            slot = input(f"Time slot ({action_name}, or enter 'CANCEL' to return): ").strip()
+            if slot.upper() == "CANCEL":
+                return None
+            if not slot:
+                print("Error: Time slot cannot be empty")
+                continue
+            if '-' not in slot:
+                print("Error: Format should be HH:MM-HH:MM (e.g., 09:00-10:00)")
+                continue
+            parts = slot.split('-')
+            if len(parts) != 2:
+                print("Error: Format should be HH:MM-HH:MM")
+                continue
+            try:
+                start_part, end_part = parts[0].strip(), parts[1].strip()
+                if ':' not in start_part or ':' not in end_part:
+                    print("Error: Format should be HH:MM-HH:MM")
+                    continue
+                return slot
+            except Exception:
+                print("Error: Format should be HH:MM-HH:MM")
+                continue
+

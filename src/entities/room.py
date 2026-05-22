@@ -129,6 +129,7 @@ class Room:
         self.__is_student_in_room = status
 
     # --- Business Methods ---
+    # --- Business Methods ---
     def _extract_time_only(self, slot_str: str) -> str:
         """Extract HH:MM-HH:MM from YYYY-MM-DD HH:MM-YYYY-MM-DD HH:MM or HH:MM-HH:MM."""
         import re
@@ -136,6 +137,70 @@ class Room:
         if len(times) == 2:
             return f"{times[0]}-{times[1]}"
         return slot_str.strip()
+
+    def _parse_slot(self, slot_str: str):
+        """Parse time slot string into (date_str, start_minutes, end_minutes).
+
+        Returns None if format is invalid.
+        """
+        parts = slot_str.split('-')
+        if len(parts) != 2:
+            return None
+        start_part, end_part = parts[0].strip(), parts[1].strip()
+
+        def to_minutes(t_str: str) -> int:
+            try:
+                h, m = map(int, t_str.split(':'))
+                return h * 60 + m
+            except Exception:
+                return -1
+
+        # Check if there is a date prefix
+        if len(start_part) >= 16 and start_part[10] == ' ':
+            date_str = start_part[:10]
+            start_time_str = start_part[11:]
+            if len(end_part) >= 16 and end_part[10] == ' ':
+                end_time_str = end_part[11:]
+            else:
+                end_time_str = end_part
+            s_min = to_minutes(start_time_str)
+            e_min = to_minutes(end_time_str)
+            if s_min == -1 or e_min == -1 or s_min >= e_min:
+                return None
+            return date_str, s_min, e_min
+        else:
+            s_min = to_minutes(start_part)
+            e_min = to_minutes(end_part)
+            if s_min == -1 or e_min == -1 or s_min >= e_min:
+                return None
+            return None, s_min, e_min
+
+    def _format_slot(self, date_str, start_mins, end_mins) -> str:
+        def to_time_str(mins: int) -> str:
+            h = mins // 60
+            m = mins % 60
+            return f"{h:02d}:{m:02d}"
+
+        start_t = to_time_str(start_mins)
+        end_t = to_time_str(end_mins)
+        if date_str:
+            return f"{date_str} {start_t}-{date_str} {end_t}"
+        else:
+            return f"{start_t}-{end_t}"
+
+    def _merge_intervals(self, intervals):
+        if not intervals:
+            return []
+        intervals.sort(key=lambda x: x[0])
+        merged = [intervals[0]]
+        for current in intervals[1:]:
+            prev_start, prev_end = merged[-1]
+            curr_start, curr_end = current
+            if curr_start <= prev_end:
+                merged[-1] = (prev_start, max(prev_end, curr_end))
+            else:
+                merged.append(current)
+        return merged
 
     def is_available(self, start_time: str, end_time: str) -> bool:
         """Check if the room is available in the specified time slot (Book 3.1).
@@ -145,31 +210,62 @@ class Room:
             end_time: End time string.
 
         Returns:
-            True if the time slot exists in the available slots list.
+            True if the requested slot is contained within any available slot.
         """
+        # First fallback to exact match check
         time_slot = f"{start_time}-{end_time}"
         if time_slot in self.__available_time_slots:
             return True
 
-        # Check for time-only slot matching (when stored slot doesn't specify a date)
-        time_only_search = self._extract_time_only(time_slot)
-        for s in self.__available_time_slots:
-            if ' ' not in s and s == time_only_search:
+        import re
+        def to_minutes(t_str: str) -> int:
+            try:
+                h, m = map(int, t_str.split(':'))
+                return h * 60 + m
+            except Exception:
+                return -1
+
+        def parse_datetime_or_time(t_str: str):
+            t_str = t_str.strip()
+            if len(t_str) >= 16 and t_str[10] == ' ':
+                return t_str[:10], to_minutes(t_str[11:])
+            elif len(t_str) == 5 and ':' in t_str:
+                return None, to_minutes(t_str)
+            else:
+                match = re.search(r'\d{2}:\d{2}', t_str)
+                if match:
+                    return None, to_minutes(match.group())
+                return None, -1
+
+        req_start_date, req_start_mins = parse_datetime_or_time(start_time)
+        req_end_date, req_end_mins = parse_datetime_or_time(end_time)
+
+        if req_start_mins == -1 or req_end_mins == -1 or req_start_mins >= req_end_mins:
+            return False
+
+        req_date = req_start_date or req_end_date
+
+        for slot in self.__available_time_slots:
+            parsed = self._parse_slot(slot)
+            if not parsed:
+                # If slot is invalid/unparseable (e.g. mock string "s1"), check exact string equality
+                if slot == time_slot:
+                    return True
+                # Check extract time only
+                time_only_search = self._extract_time_only(time_slot)
+                if ' ' not in slot and slot == time_only_search:
+                    return True
+                continue
+            avail_date, avail_start, avail_end = parsed
+
+            # Date compatibility check
+            if avail_date is not None and req_date is not None and avail_date != req_date:
+                continue
+
+            # Containment check
+            if avail_start <= req_start_mins and req_end_mins <= avail_end:
                 return True
         return False
-
-    def calculate_predicted_income(self) -> float:
-        """Calculate predicted income from booked time slots (Room 7).
-
-        Returns:
-            Total predicted income = (number of booked slots * hourly rate)
-            + equipment rental fee if equipment is currently rented.
-        """
-        booked_slots = len(self.__available_time_slots)
-        income = booked_slots * self.__price_per_hour
-        if self.__is_equipment_rented:
-            income += EQUIPMENT_RENTAL_FEE
-        return income
 
     def update_availability(self, time_slot: str, available: bool) -> None:
         """Add or remove a time slot from the available slots list (Room 5-6).
@@ -179,18 +275,97 @@ class Room:
             available: True to add the slot, False to remove it.
         """
         if available:
-            if time_slot not in self.__available_time_slots:
-                self.__available_time_slots.append(time_slot)
-        else:
-            if time_slot in self.__available_time_slots:
-                self.__available_time_slots.remove(time_slot)
+            # Merging logic
+            parsed_slots = []
+            unparseable_slots = []
+            for s in self.__available_time_slots:
+                parsed = self._parse_slot(s)
+                if parsed:
+                    parsed_slots.append(parsed)
+                else:
+                    unparseable_slots.append(s)
+
+            new_parsed = self._parse_slot(time_slot)
+            if new_parsed:
+                parsed_slots.append(new_parsed)
             else:
-                # Try matching and removing a time-only slot
-                time_only_search = self._extract_time_only(time_slot)
-                for s in self.__available_time_slots:
-                    if ' ' not in s and s == time_only_search:
-                        self.__available_time_slots.remove(s)
-                        break
+                unparseable_slots.append(time_slot)
+
+            by_date = {}
+            for date_str, s_min, e_min in parsed_slots:
+                if date_str not in by_date:
+                    by_date[date_str] = []
+                by_date[date_str].append((s_min, e_min))
+
+            new_slots = list(unparseable_slots)
+            for date_str, intervals in by_date.items():
+                merged = self._merge_intervals(intervals)
+                for s_min, e_min in merged:
+                    new_slots.append(self._format_slot(date_str, s_min, e_min))
+
+            # Maintain uniqueness of unparseable slots if added
+            self.__available_time_slots = []
+            for ns in new_slots:
+                if ns not in self.__available_time_slots:
+                    self.__available_time_slots.append(ns)
+        else:
+            # Splitting/removing logic
+            req_parsed = self._parse_slot(time_slot)
+            if not req_parsed:
+                # If we cannot parse requested time_slot, fallback to exact string removal
+                if time_slot in self.__available_time_slots:
+                    self.__available_time_slots.remove(time_slot)
+                else:
+                    time_only_search = self._extract_time_only(time_slot)
+                    for s in self.__available_time_slots:
+                        if ' ' not in s and s == time_only_search:
+                            self.__available_time_slots.remove(s)
+                            break
+                return
+
+            req_date, req_start, req_end = req_parsed
+
+            new_slots = []
+            removed = False
+            for slot in self.__available_time_slots:
+                parsed = self._parse_slot(slot)
+                if not parsed:
+                    # Keep unparseable slots but check if they match requested exactly
+                    if slot == time_slot:
+                        removed = True
+                        continue
+                    time_only_search = self._extract_time_only(time_slot)
+                    if ' ' not in slot and slot == time_only_search:
+                        removed = True
+                        continue
+                    new_slots.append(slot)
+                    continue
+
+                avail_date, avail_start, avail_end = parsed
+
+                # Date compatibility check
+                date_matches = (avail_date == req_date) or (avail_date is None) or (req_date is None)
+                contains = (avail_start <= req_start) and (req_end <= avail_end)
+
+                if not removed and date_matches and contains:
+                    removed = True
+                    # Split the slot
+                    if avail_start < req_start:
+                        new_slots.append(self._format_slot(avail_date, avail_start, req_start))
+                    if req_end < avail_end:
+                        new_slots.append(self._format_slot(avail_date, req_end, avail_end))
+                else:
+                    new_slots.append(slot)
+
+            self.__available_time_slots = new_slots
+
+    def calculate_predicted_income(self) -> float:
+        """Room 7: Income = booked_slots * price + equipment fee."""
+        booked_slots = len(self.__available_time_slots)
+        income = booked_slots * self.__price_per_hour
+        if self.__is_equipment_rented:
+            income += EQUIPMENT_RENTAL_FEE
+        return income
 
     def get_room_type(self) -> str:
         """Return the room type classification ('Small', 'Medium', or 'Large')."""

@@ -162,17 +162,24 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
                 # Display current slots
                 room_ui.display_available_time_slots(room)
 
-                # Get new time slots using UI method
-                time_slots = room_ui.get_time_slots_input()
-                if time_slots is None:
+                # Choose action: AVAILABLE (Add) or UNAVAILABLE (Remove)
+                action_name = room_ui.get_update_slot_action()
+                if action_name is None:
                     print("\nOperation cancelled.")
                     continue
 
-                if time_slots:
-                    if room_controller.update_room_time_slots(room_id, time_slots):
-                        room_ui.display_update_success()
-                    else:
-                        room_ui.display_invalid_input_message()
+                # Get single time slot input
+                time_slot = room_ui.get_single_time_slot_input(action_name)
+                if time_slot is None:
+                    print("\nOperation cancelled.")
+                    continue
+
+                available = (action_name == "AVAILABLE")
+                if room_controller.register_room_time_slot(room_id, time_slot, available):
+                    room_ui.display_update_success()
+                    room_ui.display_available_time_slots(room)
+                else:
+                    room_ui.display_invalid_input_message()
 
         elif choice == "7":
             # ============ 7. View Predicted Income ============
