@@ -1,8 +1,16 @@
+"""
+Module: profile_ui.py
+Layer: Boundary
+User Stories: Acct 5-7
+
+Text-based interface for viewing student profile, updating
+mobile number, and changing password.
+"""
 from typing import Dict
 
 
 class ProfileUI:
-    """Profile UI (Account Management 5-7)"""
+    """Boundary class for student profile display and updates (Acct 5-7)."""
     def display_profile(self, first_name: str, last_name: str, student_id: str,
                         email: str, phone: str, balance: float) -> None:
         print()

@@ -1,6 +1,10 @@
 """
-LoginUI - Login interface.
-Covers: Acct 4, 15
+Module: login_ui.py
+Layer: Boundary
+User Stories: Acct 4, 15
+
+Text-based interface for user login: credential input prompts,
+login success/error display messages.
 """
 
 

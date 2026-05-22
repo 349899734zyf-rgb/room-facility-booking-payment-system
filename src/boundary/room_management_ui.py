@@ -1,12 +1,17 @@
 """
-RoomManagementUI - Room management interface for administrators.
-Covers: Room 1-8
+Module: room_management_ui.py
+Layer: Boundary
+User Stories: Room 1-8
+
+Text-based admin interface for room CRUD operations: adding rooms,
+viewing/searching room listings, updating room details, managing
+time slots, and viewing predicted income.
 """
 from typing import Dict, List, Optional
 
 
 class RoomManagementUI:
-    """Room Management User Interface for administrators"""
+    """Boundary class for admin room management console (Room 1-8)."""
 
     def __init__(self, room_controller, admin_controller=None):
         """Initialize RoomManagementUI with controllers"""

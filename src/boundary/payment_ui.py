@@ -1,4 +1,16 @@
+"""
+Module: payment_ui.py
+Layer: Boundary
+User Stories: Checkout 1-9
+
+Text-based user interface for the checkout and payment flow,
+including payment method selection, promo code input, deal package
+display, booking summary, top-up prompts, and order confirmation.
+"""
+
+
 class PaymentUI:
+    """Boundary class for checkout and payment user interactions (Checkout 1-9)."""
 
     def display_payment_options(
             self,

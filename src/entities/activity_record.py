@@ -1,14 +1,34 @@
 """
-ActivityRecord entity.
-Covers: Acct 9-10
+Module: activity_record.py
+Layer: Entity
+User Stories: Acct 9-10
+
+Records a single activity event (booking, recharge, late cancellation,
+or no-show) in a student's activity history.
 """
 from datetime import datetime
 
 
 class ActivityRecord:
-    """Activity record entity (Account Management 9-10)"""
+    """Entity representing one entry in a student's activity history.
+
+    Responsibilities:
+        - Store a timestamped record of a student activity (Acct 9)
+        - Provide data for paginated activity history display (Acct 10)
+
+    Record types: 'booking', 'recharge', 'late_cancellation', 'no_show'.
+    """
 
     def __init__(self, date: datetime, record_type: str, details: str, amount: float) -> None:
+        """Create an activity record.
+
+        Args:
+            date: Timestamp when the activity occurred.
+            record_type: Category of activity ('booking', 'recharge',
+                'late_cancellation', or 'no_show').
+            details: Human-readable description of the activity.
+            amount: Monetary amount associated with the activity.
+        """
         self.__date: datetime = date
         self.__record_type: str = record_type  # booking/recharge/late_cancellation/no_show
         self.__details: str = details

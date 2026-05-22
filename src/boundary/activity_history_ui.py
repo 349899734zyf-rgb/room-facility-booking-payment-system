@@ -1,8 +1,16 @@
+"""
+Module: activity_history_ui.py
+Layer: Boundary
+User Stories: Acct 9-10
+
+Text-based interface for paginated display of student activity
+history records (bookings, recharges, cancellations, no-shows).
+"""
 from datetime import datetime
 
 
 class ActivityHistoryUI:
-    """Activity history UI (Account Management 9-10)"""
+    """Boundary class for activity history display and navigation (Acct 9-10)."""
 
     def display_page(self, page_num: int, total_pages: int) -> None:
         print()

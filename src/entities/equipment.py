@@ -1,16 +1,36 @@
 """
-Equipment entity.
-Covers: Room 11
+Module: equipment.py
+Layer: Entity
+User Stories: Room 5, Room 11, Book 3.4
+
+Represents a piece of rental equipment (e.g. AV gear) that students
+can optionally rent alongside a room booking, subject to a deposit.
 """
+from booking_constants import EQUIPMENT_RENTAL_FEE
 
 
 class Equipment:
-    """Equipment entity (Booking Management 4, Room Management 5, 11)"""
+    """Entity for rental equipment.
+
+    Responsibilities:
+        - Store equipment metadata: ID, name, category, deposit (Room 5)
+        - Track availability status for room usage updates (Room 5)
+        - Provide deposit refund amount on return (Room 11)
+    """
 
     def __init__(self, equipment_id: str, *args, **kwargs) -> None:
+        """Create an equipment item.
+
+        Args:
+            equipment_id: Unique equipment identifier.
+            *args: Positional args parsed as (name), (name, deposit),
+                or (name, category, deposit).
+            **kwargs: Optional keyword args: name, category, deposit_amount,
+                deposit, rental_fee.
+        """
         self.__equipment_id: str = equipment_id
         self.__is_available: bool = True
-        self.__rental_fee: float = float(kwargs.get("rental_fee", 10.0))
+        self.__rental_fee: float = float(kwargs.get("rental_fee", EQUIPMENT_RENTAL_FEE))
 
         name = "Unknown"
         category = "AV"
@@ -80,7 +100,7 @@ class Equipment:
 
     # --- Business Methods ---
     def refund_deposit(self) -> float:
-        """Refund deposit (Room Management 11)"""
+        """Return the deposit amount for refund processing (Room 11)."""
         return self.__deposit_amount
 
     def __str__(self) -> str:

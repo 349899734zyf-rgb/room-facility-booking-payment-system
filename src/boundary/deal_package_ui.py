@@ -1,8 +1,16 @@
+"""
+Module: deal_package_ui.py
+Layer: Boundary
+User Stories: Checkout 6-7
+
+Text-based interface for displaying deal package details and
+confirming pre-paid hour package purchases.
+"""
 from typing import Optional
 
 
 class DealPackageUI:
-    """Deal Package boundary class (Checkout 7)"""
+    """Boundary class for deal package purchase interactions (Checkout 6-7)."""
 
     def display_deal_package_info(self, price: float, hours: float) -> None:
         """Display details of the deal package available for purchase."""

@@ -1,6 +1,10 @@
 """
-RoomController.
-Covers: Room 1, 3-8
+Module: room_controller.py
+Layer: Controller
+User Stories: Room 1, 3-8
+
+Manages room CRUD operations, room type validation, usage status
+tracking, time slot management, and predicted income calculations.
 """
 from typing import List, Dict, Optional
 from entities.room import Room
@@ -19,13 +23,28 @@ from booking_constants import (
 
 
 class RoomController:
-    """Room Controller (Room Management 1, 3-8)"""
+    """Controller for the Room Management feature.
+
+    Responsibilities:
+        - Add new rooms with auto-generated IDs (Room 1)
+        - Validate room type / price / capacity consistency (Room 1)
+        - View room listings (Room 3)
+        - Remove rooms (Room 4)
+        - Update room usage status (Room 5)
+        - Update available time slots (Room 6)
+        - Calculate predicted income (Room 7)
+        - Change room information (Room 8)
+
+    Collaborators:
+        - Room (entity): room data and availability logic
+    """
 
     def __init__(self) -> None:
         self.__rooms: List[Room] = []
         self.__room_counter: int = 0
 
     def get_rooms(self) -> List[Room]:
+        """Return all rooms managed by this controller (Room 3)."""
         return self.__rooms
 
     @staticmethod
@@ -62,7 +81,19 @@ class RoomController:
 
     def add_room(self, name: str, building: str, capacity: int,
                  price: float, opening_hours: str, room_type: Optional[str] = None) -> Optional[Room]:
-        """Add room (Room 1)"""
+        """Create and add a new room with an auto-generated ID (Room 1).
+
+        Args:
+            name: Descriptive room name.
+            building: Building where the room is located.
+            capacity: Maximum occupancy.
+            price: Hourly booking rate.
+            opening_hours: Opening hours string.
+            room_type: Explicit type; if None, inferred from price.
+
+        Returns:
+            The new Room on success, or None if inputs are invalid.
+        """
         if not all([name, building, opening_hours]) or capacity <= 0 or price <= 0:
             return None
         self.__room_counter += 1
@@ -73,7 +104,7 @@ class RoomController:
 
 
     def remove_room(self, room_id: str) -> bool:
-        """Remove room (Room 4)"""
+        """Remove a room by its ID (Room 4)."""
         for room in self.__rooms:
             if room.get_room_id() == room_id:
                 self.__rooms.remove(room)
@@ -81,14 +112,22 @@ class RoomController:
         return False
 
     def find_room(self, room_id: str) -> Optional[Room]:
-        """Find room"""
+        """Find and return a room by its ID, or None if not found."""
         for room in self.__rooms:
             if room.get_room_id() == room_id:
                 return room
         return None
 
     def update_room_info(self, room_id: str, updates: Dict[str, object]) -> bool:
-        """Update room info (Room 8)"""
+        """Update room attributes from a dictionary of changes (Room 8).
+
+        Args:
+            room_id: The ID of the room to update.
+            updates: Dict of field names to new values (e.g. {'name': '...', 'price': 15.0}).
+
+        Returns:
+            True if the room was found and updated, False otherwise.
+        """
         room = self.find_room(room_id)
         if room is None:
             return False
@@ -110,7 +149,7 @@ class RoomController:
 
     def update_room_usage_status(self, room_id: str, is_student_in: bool,
                                  is_equipment_rented: bool) -> bool:
-        """Update room usage status (Room Management 5)"""
+        """Update student presence and equipment rental flags (Room 5)."""
         room = self.find_room(room_id)
         if room is None:
             return False
@@ -119,7 +158,7 @@ class RoomController:
         return True
 
     def update_room_time_slots(self, room_id: str, available_slots: List[str]) -> bool:
-        """Update room time slots (Room Management 6)"""
+        """Replace the room's available time slots list (Room 6)."""
         room = self.find_room(room_id)
         if room is None:
             return False
@@ -127,7 +166,7 @@ class RoomController:
         return True
 
     def get_predicted_income(self, room_id: str) -> float:
-        """Get predicted income (Room 7)"""
+        """Return predicted income for a room based on booked slots (Room 7)."""
         room = self.find_room(room_id)
         if room is None:
             return 0.0

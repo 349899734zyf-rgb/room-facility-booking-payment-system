@@ -1,12 +1,16 @@
 """
-UsageStatusUI.
-Covers: Acct 8
+Module: usage_status_ui.py
+Layer: Boundary
+User Stories: Acct 8
+
+Text-based interface for displaying the student's current account
+usage status: active bookings, ban status, deposit, and balance.
 """
 from typing import Dict
 
 
 class UsageStatusUI:
-    """Usage status UI (Account Management 8)"""
+    """Boundary class for account usage status display (Acct 8)."""
     def display_usage_status(self, bookings: list, ban_status: bool,
                              balance: float, deposit_status: str) -> None:
         print()

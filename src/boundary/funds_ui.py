@@ -1,8 +1,16 @@
+"""
+Module: funds_ui.py
+Layer: Boundary
+User Stories: Acct 11-12, Checkout 8
+
+Text-based interface for viewing account balance, processing
+fund top-ups, and confirming simulated banking payments.
+"""
 from typing import Optional
 
 
 class FundsUI:
-    """Funds management UI (Account Management 11-12, Checkout 8)"""
+    """Boundary class for funds management and top-up (Acct 11-12)."""
 
     def display_current_balance(self, balance: float) -> None:
         print("Current Available Balance: ${:.2f}".format(balance))

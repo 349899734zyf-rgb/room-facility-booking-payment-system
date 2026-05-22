@@ -1,11 +1,15 @@
 """
-BookingStatusUI - Booking status management interface.
-Covers: Room 9
+Module: booking_status_ui.py
+Layer: Boundary
+User Stories: Room 9
+
+Text-based interface for viewing all booking records, selecting a
+booking, and updating its status (confirmed/completed/cancelled/no-show).
 """
 
 
 class BookingStatusUI:
-    """Booking Status Management Interface (Room Management 9)"""
+    """Boundary class for booking status management (Room 9)."""
 
     def __init__(self, booking_controller):
         self.booking_controller = booking_controller

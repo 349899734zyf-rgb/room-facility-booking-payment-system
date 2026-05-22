@@ -1,11 +1,15 @@
 """
-EquipmentDepositUI - Equipment deposit management interface.
-Covers: Room 11
+Module: equipment_deposit_ui.py
+Layer: Boundary
+User Stories: Room 11
+
+Text-based interface for managing equipment deposits: listing equipment,
+selecting items, setting deposit amounts, and processing refunds.
 """
 
 
 class EquipmentDepositUI:
-    """Equipment Deposit User Interface - Story 2.11: Set Equipment Deposit"""
+    """Boundary class for equipment deposit management (Room 11)."""
    
     def __init__(self, admin_controller):
         self.admin_controller = admin_controller

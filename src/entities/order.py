@@ -1,4 +1,21 @@
+"""
+Module: order.py
+Layer: Entity
+User Stories: Checkout 1-5
+
+Represents a payment order linking a booking to a payment method,
+with optional promotional discount applied.
+"""
+
+
 class Order:
+    """Entity for a payment order in the checkout flow.
+
+    Responsibilities:
+        - Link a booking to its payment method and pricing (Checkout 1)
+        - Track promotional discount application (Checkout 4-5)
+        - Calculate the final payable price after discounts (Checkout 3)
+    """
 
     def __init__(
             self,
@@ -7,6 +24,14 @@ class Order:
             price,
             payment_method
     ):
+        """Create an order for a booking.
+
+        Args:
+            order_id: Unique order identifier.
+            booking: The Booking entity this order pays for.
+            price: Original price before any discount.
+            payment_method: 'balance' or 'deal_package'.
+        """
 
         self.__order_id = order_id
         self.__booking = booking
@@ -38,6 +63,7 @@ class Order:
         return self.__promo_code_used
 
     def set_promo_discount(self, discount):
+        """Apply a promotional discount and recalculate the final price (Checkout 4)."""
 
         self.__promo_discount = discount
 
@@ -55,6 +81,7 @@ class Order:
         self.__promo_code_used = code
 
     def calculate_final_price(self):
+        """Recalculate and return the final price after promo discount (Checkout 3)."""
 
         self.__final_price = max(
             0,

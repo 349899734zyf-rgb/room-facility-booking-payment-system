@@ -1,3 +1,12 @@
+"""
+Module: main_admin_ui.py
+Layer: Boundary
+User Stories: Room 1-11, Acct 14
+
+Orchestration UI for the admin portal: dispatches to sub-UIs for
+room management, booking status updates, student bans, equipment
+deposits, and admin profile display.
+"""
 import datetime
 import os
 import sys

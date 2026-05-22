@@ -1,16 +1,40 @@
 """
-AdminController.
-Covers: Room 2, 9-11; Acct 14
+Module: admin_controller.py
+Layer: Controller
+User Stories: Room 2, 9-11; Acct 14
+
+Handles admin-only operations: promotion ideas, booking status updates
+(including no-show refund logic), student ban/unban, and equipment
+deposit management.
 """
 from typing import List, Dict, Optional
 from entities.booking import Booking
 from entities.student import Student
 from entities.equipment import Equipment
 from entities.admin import Admin
+from booking_constants import (
+    BOOKING_STATUS_NO_SHOW,
+    ROOM_TYPE_SMALL,
+    SMALL_NO_SHOW_REFUND_RATE,
+)
 
 
 class AdminController:
-    """Admin Controller (Room Management 2, 9-11)"""
+    """Controller for admin-only management operations.
+
+    Responsibilities:
+        - Retrieve admin profile information (Acct 14)
+        - Record marketing promotion ideas (Room 2)
+        - Update booking status with no-show refund processing (Room 9)
+        - Ban / unban student booking eligibility (Room 10)
+        - Set and refund equipment deposits (Room 11)
+
+    Collaborators:
+        - Admin (entity): admin profile and promotion ideas
+        - Student (entity): ban status, balance for refunds
+        - Booking (entity): booking status updates
+        - Equipment (entity): deposit amounts
+    """
 
     def __init__(self) -> None:
         self.__all_bookings: List[Booking] = []
@@ -55,7 +79,7 @@ class AdminController:
     # Original methods
 
     def get_admin_info(self, admin: Admin) -> Dict[str, str]:
-        """Get admin info (Account Management 14)"""
+        """Return admin profile information for display (Acct 14)."""
         return {
             "email": admin.get_email(),
             "first_name": admin.get_first_name(),
@@ -64,25 +88,31 @@ class AdminController:
         }
 
     def record_promotion_idea(self, admin: Admin, idea: str) -> bool:
-        """Record promotion idea (Room Management 2)"""
+        """Record a marketing promotion idea (Room 2)."""
         return admin.record_promotion_idea(idea)
 
     def update_booking_status(self, booking_id: str, new_status: str) -> bool:
-        """Update booking status (Room Management 9)"""
+        """Update a booking's status; handles no-show refund logic (Room 9).
+
+        Business Rules:
+            - Valid statuses: 'confirmed', 'completed', 'cancelled', 'no_show'.
+            - On 'no_show': partial refund (Small rooms get 20% of room price),
+              equipment deposit is fully refunded, student gets a no-show record.
+        """
         new_status = new_status.lower()
         if new_status not in ["confirmed", "completed", "cancelled", "no_show"]:
             return False
             
         for b in self.__all_bookings:
             if b.get_booking_id() == booking_id:
-                if new_status == "no_show":
+                if new_status == BOOKING_STATUS_NO_SHOW:
                     student = b.get_student()
                     room = b.get_room()
-                    room_type = room.get_room_type() if hasattr(room, "get_room_type") else "Small"
+                    room_type = room.get_room_type() if hasattr(room, "get_room_type") else ROOM_TYPE_SMALL
                     
                     deposit_refund = b.get_equipment_deposit()
-                    if room_type == "Small":
-                        room_refund = b.get_total_price() * 0.2
+                    if room_type == ROOM_TYPE_SMALL:
+                        room_refund = b.get_total_price() * SMALL_NO_SHOW_REFUND_RATE
                     else:
                         room_refund = 0.0
                     refund = room_refund + deposit_refund
@@ -101,28 +131,28 @@ class AdminController:
         return False
 
     def ban_student(self, student: Student) -> bool:
-        """Ban student booking eligibility (Room Management 10)"""
+        """Ban a student from making bookings (Room 10)."""
         if not student.get_booking_ban_status():
             student.set_booking_ban_status(True)
             return True
         return False
 
     def unban_student(self, student: Student) -> bool:
-        """Unban student (Room Management 10)"""
+        """Unban a student to restore booking eligibility (Room 10)."""
         if student.get_booking_ban_status():
             student.set_booking_ban_status(False)
             return True
         return False
 
     def set_equipment_deposit(self, equipment: Equipment, amount: float) -> bool:
-        """Set equipment deposit amount (Room Management 11)"""
+        """Set a new deposit amount for equipment (Room 11)."""
         if amount <= 0:
             return False
         equipment.set_deposit_amount(amount)
         return True
 
     def refund_equipment_deposit(self, equipment: Equipment, student: Student) -> bool:
-        """Refund equipment deposit (Room Management 11)"""
+        """Refund the equipment deposit to the student's balance (Room 11)."""
         refund = equipment.refund_deposit()
         student.add_funds(refund)
         return True
