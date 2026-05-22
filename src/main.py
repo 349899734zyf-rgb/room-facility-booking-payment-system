@@ -39,11 +39,16 @@ from entities.student import Student
 from entities.admin import Admin
 from entities.room import Room
 from entities.equipment import Equipment
-from booking_constants import REASON_INVALID_INPUT, REASON_NO_ROOMS, REASON_INSUFFICIENT_BALANCE
+from booking_constants import REASON_INVALID_INPUT, REASON_NO_ROOMS
 
 
-def run_student_booking(student, book_ctrl, booking_ui, acct_ctrl=None, funds_ui=None, auth_ctrl=None, student_file=None):
-    """Integrates Booking System flow for the logged-in student."""
+def run_student_booking(student, book_ctrl, booking_ui, acct_ctrl=None, funds_ui=None, auth_ctrl=None, student_file=None, payment_ctrl=None, payment_ui=None, deal_package_ui=None):
+    """Integrates Booking System flow for the logged-in student.
+
+    After successfully creating a booking, automatically transitions into
+    the Checkout & Payment flow so the student can choose payment method,
+    enter promo codes, and confirm payment in one continuous process.
+    """
     print("\n=== Booking System ===")
     
     # Check eligibility
@@ -142,75 +147,46 @@ def run_student_booking(student, book_ctrl, booking_ui, acct_ctrl=None, funds_ui
     )
 
     if booking_result['success']:
-        booking_ui.display_booking_confirmation(booking_result['booking'])
-    elif booking_result['reason'] == REASON_INSUFFICIENT_BALANCE and funds_ui and acct_ctrl:
-        # Offer top-up option instead of directly returning
-        booking_ui.display_booking_failure_message(booking_result['reason'])
-        print("\nWould you like to add funds and retry?")
-        print("1. Add Funds (Top-Up)")
-        print("2. Return to Main Menu")
-        top_up_choice = input("\nSelection: ").strip()
-        if top_up_choice == "1":
-            amount = funds_ui.get_top_up_amount()
-            if amount is not None and amount > 0:
-                funds_ui.display_payment_confirmation(amount)
-                if funds_ui.get_payment_confirmation():
-                    acct_ctrl.add_funds(student, amount)
-                    funds_ui.display_top_up_success(amount, student.get_balance())
-                    # Save updated balance
-                    if student_file and auth_ctrl:
-                        if os.path.exists(student_file):
-                            os.remove(student_file)
-                        for s in auth_ctrl.get_students():
-                            FileHandler.save_student(student_file, s)
-                    # Retry the booking automatically
-                    print("\nRetrying booking...")
-                    retry_result = book_ctrl.create_booking(
-                        student, selected_room, start_time, end_time, equipment
-                    )
-                    if retry_result['success']:
-                        booking_ui.display_booking_confirmation(retry_result['booking'])
-                    else:
-                        booking_ui.display_booking_failure_message(retry_result['reason'])
-                else:
-                    funds_ui.display_payment_cancelled()
+        booking = booking_result['booking']
+        print("\nRoom reserved! Proceeding to checkout...")
+        # Automatically enter checkout & payment flow
+        if payment_ctrl and payment_ui and deal_package_ui:
+            run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth_ctrl, student_file, booking=booking)
+        else:
+            booking_ui.display_booking_confirmation(booking)
     else:
         booking_ui.display_booking_failure_message(booking_result['reason'])
 
 
-def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth_ctrl, student_file):
+def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth_ctrl, student_file, booking=None):
     """Integrates Checkout & Payment System flow for the logged-in student."""
     print("\n=== Checkout & Payment System ===")
     
-    active_bookings = student.get_active_bookings()
-    if not active_bookings:
-        print("\nNo current bookings found for checkout.")
-        print("Creating a simulated booking to demonstrate Checkout & Payment...")
-        # Create a sample room and mock booking for demo purposes if no active bookings exist
-        room = Room("RM999", "Simulated Room", "Clayton Building", 4, 10.0, "08:00-22:00")
-        start = datetime.datetime.now().replace(microsecond=0)
-        end = start + datetime.timedelta(hours=2)
-        from entities.booking import Booking
-        booking = Booking("BK_SIM_001", student, room, start, end, False, 20.0)
-    else:
-        print("\nYour current bookings:")
-        for i, bk in enumerate(active_bookings, 1):
-            print(f"{i}. Booking ID: {bk.get_booking_id()} | Room: {bk.get_room().get_room_name()} | Price: ${bk.get_total_price()}")
-        print(f"{len(active_bookings) + 1}. Cancel and return")
-        
-        choice = input("Select a booking to checkout: ").strip()
-        if choice.upper() == "CANCEL":
+    if booking is None:
+        active_bookings = student.get_active_bookings()
+        if not active_bookings:
+            print("\nNo current bookings found for checkout.")
+            print("Please book a room first using Option 1 (Search & Book Rooms).")
             return
-        if not choice.isdigit():
-            print("Invalid selection.")
-            return
-        idx = int(choice) - 1
-        if idx == len(active_bookings):
-            return
-        if idx < 0 or idx >= len(active_bookings):
-            print("Invalid selection.")
-            return
-        booking = active_bookings[idx]
+        else:
+            print("\nYour current bookings:")
+            for i, bk in enumerate(active_bookings, 1):
+                print(f"{i}. Booking ID: {bk.get_booking_id()} | Room: {bk.get_room().get_room_name()} | Price: ${bk.get_total_price()}")
+            print(f"{len(active_bookings) + 1}. Cancel and return")
+            
+            choice = input("Select a booking to checkout: ").strip()
+            if choice.upper() == "CANCEL":
+                return
+            if not choice.isdigit():
+                print("Invalid selection.")
+                return
+            idx = int(choice) - 1
+            if idx == len(active_bookings):
+                return
+            if idx < 0 or idx >= len(active_bookings):
+                print("Invalid selection.")
+                return
+            booking = active_bookings[idx]
 
     duration = booking.calculate_duration_hours()
     time_period = f"{booking.get_start_time()} to {booking.get_end_time()}"
@@ -498,7 +474,7 @@ def student_menu(student, book_ctrl, auth_ctrl, acct_ctrl, payment_ctrl, ui, pro
 
         if choice == "1":
             # Search & Book Rooms
-            run_student_booking(student, book_ctrl, booking_ui, acct_ctrl, funds_ui, auth_ctrl, student_file)
+            run_student_booking(student, book_ctrl, booking_ui, acct_ctrl, funds_ui, auth_ctrl, student_file, payment_ctrl, payment_ui, deal_package_ui)
             # Save student state changes that may result from booking costs
             if os.path.exists(student_file):
                 os.remove(student_file)
@@ -779,347 +755,6 @@ def main():
         else:
             print("Error: Invalid choice! Please select 1-3.")
 
-
-def build_sample_booking(equipment_rental=False):
-    from entities.student import Student
-    from entities.room import Room
-    from entities.booking import Booking
-    
-    student = Student(
-        "test@student.monash.edu",
-        "Password123",
-        "Tom",
-        "Lee",
-        "0412345678",
-        "12345678"
-    )
-    student.add_funds(200.0)
-    student.add_deal_package_hours(1.0)
-
-    room = Room(
-        "RM001",
-        "Study Room",
-        "Clayton",
-        4,
-        10.0,
-        "08:00-22:00"
-    )
-
-    start = datetime.datetime.now().replace(microsecond=0)
-    end = start + datetime.timedelta(hours=2)
-
-    booking = Booking(
-        "BK001",
-        student,
-        room,
-        start,
-        end,
-        equipment_rental,
-        20.0,
-        0.0
-    )
-
-    return student, room, booking
-
-
-def run_booking_flow():
-    payment_ui = PaymentUI()
-    deal_package_ui = DealPackageUI()
-    payment_controller = PaymentController()
-
-    payment_ui.display_equipment_options()
-    equipment_choice = payment_ui.get_equipment_choice()
-    if equipment_choice.upper() == "CANCEL":
-        print("Payment cancelled.")
-        return False
-    elif equipment_choice == "1":
-        equipment_rental = True
-    elif equipment_choice == "2":
-        equipment_rental = False
-    else:
-        payment_ui.display_invalid_equipment_option_message()
-        return False
-
-    student, room, booking = build_sample_booking(equipment_rental)
-    duration = booking.calculate_duration_hours()
-    time_period = f"{booking.get_start_time()} to {booking.get_end_time()}"
-
-    payment_ui.display_booking_summary(
-        name=f"{student.get_first_name()} {student.get_last_name()}",
-        room=room.get_room_name(),
-        building=room.get_building(),
-        time_period=time_period,
-        price=booking.get_total_price(),
-        equipment=booking.get_equipment_rental()
-    )
-
-    payment_ui.display_payment_options(
-        price=booking.get_total_price(),
-        duration=duration
-    )
-
-    choice = payment_ui.get_payment_method_choice()
-    if choice.upper() == "CANCEL":
-        print("Payment cancelled.")
-        return False
-    payment_method = payment_controller.select_payment_method(choice)
-    if payment_method is None:
-        payment_ui.display_invalid_payment_option_message()
-        return False
-
-    order = payment_controller.create_order(booking, payment_method)
-
-    promo_input = payment_ui.get_promo_code_input().strip()
-    if promo_input.upper() == "CANCEL":
-        print("Payment cancelled.")
-        return False
-    if promo_input and payment_method == "deal_package":
-        payment_ui.display_promo_deal_package_restriction_message()
-    elif promo_input:
-        promo = payment_controller.validate_promo_code(promo_input, student, booking)
-        if promo is None:
-            if student.has_used_promo_code(promo_input):
-                payment_ui.display_promo_code_used_message()
-            else:
-                payment_ui.display_promo_code_invalid_message()
-        else:
-            final_price = payment_controller.apply_promo_code(
-                promo,
-                student,
-                order
-            )
-            payment_ui.display_promo_code_valid(final_price)
-
-    if payment_method == "balance":
-        payable_amount = payment_controller.get_order_payable_amount(order)
-        payment_ui.display_balance_payment_info(
-            price=payable_amount,
-            balance=student.get_balance()
-        )
-        success = payment_controller.check_balance_sufficient(
-            student,
-            payable_amount
-        )
-    else:
-        room_type = room.get_room_type() if hasattr(room, "get_room_type") else "Small"
-        if not payment_controller.can_use_deal_package(booking.get_equipment_rental(), room_type):
-            payment_ui.display_equipment_restriction_message()
-            return prompt_for_next_step(payment_ui, payment_controller)
-
-        payment_ui.display_deal_package_info(
-            duration=duration,
-            remaining=student.get_deal_package_hours()
-        )
-        success = student.get_deal_package_hours() >= duration
-
-        if not success and student.get_deal_package_hours() < duration:
-            payment_ui.display_insufficient_deal_hours_message()
-            package = payment_controller.get_deal_package()
-            deal_package_ui.display_deal_package_info(
-                package.get_price(),
-                package.get_hours()
-            )
-            purchase_confirm = deal_package_ui.get_purchase_confirmation()
-            if purchase_confirm is None:
-                print("Payment cancelled.")
-                return False
-            elif not purchase_confirm:
-                payment_ui.display_booking_not_confirmed()
-                return prompt_for_next_step(payment_ui, payment_controller)
-
-            if not payment_controller.purchase_deal_package(student):
-                payment_ui.display_insufficient_balance_message()
-                payment_ui.display_top_up_option()
-                top_up_choice = payment_ui.get_top_up_choice()
-                if top_up_choice.upper() == "CANCEL":
-                    print("Payment cancelled.")
-                    return False
-                elif top_up_choice != "1":
-                    payment_ui.display_checkout_finished()
-                    return False
-
-                top_up_amount_val = payment_ui.get_top_up_amount()
-                if top_up_amount_val.upper() == "CANCEL":
-                    print("Payment cancelled.")
-                    return False
-                try:
-                    top_up_amount = float(top_up_amount_val)
-                except ValueError:
-                    payment_ui.display_invalid_payment_option_message()
-                    return False
-
-                if not payment_controller.top_up_account(student, top_up_amount):
-                    payment_ui.display_invalid_payment_option_message()
-                    return False
-
-                payment_ui.display_top_up_success(student.get_balance())
-                if not payment_controller.purchase_deal_package(student):
-                    payment_ui.display_insufficient_balance_message()
-                    print("\nWould you like to add more funds?")
-                    print("1. Add Funds (Top-Up)")
-                    print("2. Return to Main Menu")
-                    retry_choice = input("\nSelection: ").strip()
-                    if retry_choice != "1":
-                        return False
-                    continue_top_up = True
-                    while continue_top_up:
-                        extra_val = payment_ui.get_top_up_amount()
-                        if extra_val.upper() == "CANCEL":
-                            return False
-                        try:
-                            extra_amt = float(extra_val)
-                        except ValueError:
-                            payment_ui.display_invalid_payment_option_message()
-                            return False
-                        if not payment_controller.top_up_account(student, extra_amt):
-                            payment_ui.display_invalid_payment_option_message()
-                            return False
-                        payment_ui.display_top_up_success(student.get_balance())
-                        if payment_controller.purchase_deal_package(student):
-                            continue_top_up = False
-                        else:
-                            payment_ui.display_insufficient_balance_message()
-                            print("\nWould you like to add more funds?")
-                            print("1. Add Funds (Top-Up)")
-                            print("2. Return to Main Menu")
-                            again = input("\nSelection: ").strip()
-                            if again != "1":
-                                return False
-
-            deal_package_ui.display_purchase_success(package.get_hours())
-            payment_ui.display_deal_package_info(
-                duration=duration,
-                remaining=student.get_deal_package_hours()
-            )
-            success = student.get_deal_package_hours() >= duration
-
-    if success:
-        payment_ui.display_proceed_confirmation_prompt()
-        proceed_choice = payment_ui.get_proceed_confirmation_choice()
-        if proceed_choice.upper() == "CANCEL":
-            print("Payment cancelled.")
-            return False
-        elif proceed_choice != "1":
-            payment_ui.display_booking_not_confirmed()
-            return False
-
-        if payment_method == "balance":
-            payment_controller.pay_by_balance(student, payable_amount)
-        else:
-            room_type = room.get_room_type() if hasattr(room, "get_room_type") else "Small"
-            payment_controller.pay_by_deal_package(
-                student,
-                duration,
-                booking.get_equipment_rental(),
-                room_type
-            )
-            payment_ui.display_deal_package_info(
-                duration=duration,
-                remaining=student.get_deal_package_hours()
-            )
-
-        payment_controller.confirm_order(order, student)
-        payment_ui.display_booking_confirmed()
-        display_order_detail(payment_ui, payment_controller, order)
-        payment_ui.display_next_step_options()
-        next_step_choice = payment_ui.get_next_step_choice()
-        if next_step_choice.upper() == "CANCEL":
-            payment_ui.display_checkout_finished()
-            return False
-        next_step = payment_controller.choose_next_step(next_step_choice)
-        if next_step == "continue_booking":
-            return True
-        payment_ui.display_checkout_finished()
-        return False
-    elif payment_method == "balance":
-        payment_ui.display_insufficient_balance_message()
-        payment_ui.display_top_up_option()
-        top_up_choice = payment_ui.get_top_up_choice()
-        if top_up_choice.upper() == "CANCEL":
-            print("Payment cancelled.")
-            return False
-        elif top_up_choice != "1":
-            payment_ui.display_checkout_finished()
-            return False
-
-        top_up_amount_val = payment_ui.get_top_up_amount()
-        if top_up_amount_val.upper() == "CANCEL":
-            print("Payment cancelled.")
-            return False
-        try:
-            top_up_amount = float(top_up_amount_val)
-        except ValueError:
-            payment_ui.display_invalid_payment_option_message()
-            return False
-
-        if not payment_controller.top_up_account(student, top_up_amount):
-            payment_ui.display_invalid_payment_option_message()
-            return False
-
-        payment_ui.display_top_up_success(student.get_balance())
-
-        while not payment_controller.check_balance_sufficient(student, payable_amount):
-            payment_ui.display_insufficient_balance_message()
-            print("\nWould you like to add more funds?")
-            print("1. Add Funds (Top-Up)")
-            print("2. Return to Main Menu")
-            retry_choice = input("\nSelection: ").strip()
-            if retry_choice != "1":
-                return False
-            extra_val = payment_ui.get_top_up_amount()
-            if extra_val.upper() == "CANCEL":
-                return False
-            try:
-                extra_amt = float(extra_val)
-            except ValueError:
-                payment_ui.display_invalid_payment_option_message()
-                return False
-            if not payment_controller.top_up_account(student, extra_amt):
-                payment_ui.display_invalid_payment_option_message()
-                return False
-            payment_ui.display_top_up_success(student.get_balance())
-
-        payment_ui.display_proceed_confirmation_prompt()
-        proceed_choice = payment_ui.get_proceed_confirmation_choice()
-        if proceed_choice.upper() == "CANCEL":
-            print("Payment cancelled.")
-            return False
-        elif proceed_choice != "1":
-            payment_ui.display_booking_not_confirmed()
-            return False
-
-        payment_controller.pay_by_balance(student, payable_amount)
-        payment_controller.confirm_order(order, student)
-        payment_ui.display_booking_confirmed()
-        display_order_detail(payment_ui, payment_controller, order)
-        return prompt_for_next_step(payment_ui, payment_controller)
-
-    return False
-
-
-def display_order_detail(payment_ui, payment_controller, order):
-    summary = payment_controller.get_booking_summary(order)
-    payment_ui.display_order_detail(
-        order_id=order.get_order_id(),
-        name=summary["name"],
-        room=summary["room"],
-        building=summary["building"],
-        time_period=summary["time_period"],
-        price=summary["price"],
-        equipment=summary["equipment"],
-        payment_method=order.get_payment_method()
-    )
-
-
-def prompt_for_next_step(payment_ui, payment_controller):
-    payment_ui.display_next_step_options()
-    next_step = payment_controller.choose_next_step(
-        payment_ui.get_next_step_choice()
-    )
-    if next_step == "continue_booking":
-        return True
-    payment_ui.display_checkout_finished()
-    return False
 
 
 if __name__ == "__main__":
