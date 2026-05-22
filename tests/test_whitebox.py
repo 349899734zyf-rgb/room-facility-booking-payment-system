@@ -194,6 +194,39 @@ class TestWB_Room(unittest.TestCase):
         r.update_availability("15:00-16:00", False)
         self.assertEqual(r.get_available_time_slots(), [])
 
+    def test_is_available_exact_match(self):
+        """WB - is_available with exact match"""
+        r = make_room()
+        r.set_available_time_slots(["2026-05-06 10:00-2026-05-06 12:00"])
+        self.assertTrue(r.is_available("2026-05-06 10:00", "2026-05-06 12:00"))
+
+    def test_is_available_time_only_match(self):
+        """WB - is_available with time-only matching"""
+        r = make_room()
+        r.set_available_time_slots(["10:00-12:00"])
+        self.assertTrue(r.is_available("2026-05-06 10:00", "2026-05-06 12:00"))
+        self.assertTrue(r.is_available("10:00", "12:00"))
+
+    def test_is_available_time_only_no_match(self):
+        """WB - is_available with time-only no match"""
+        r = make_room()
+        r.set_available_time_slots(["10:00-12:00"])
+        self.assertFalse(r.is_available("2026-05-06 13:00", "2026-05-06 15:00"))
+
+    def test_update_availability_remove_time_only(self):
+        """WB - update_availability remove time-only slot"""
+        r = make_room()
+        r.set_available_time_slots(["10:00-12:00"])
+        r.update_availability("2026-05-06 10:00-2026-05-06 12:00", False)
+        self.assertEqual(r.get_available_time_slots(), [])
+
+    def test_update_availability_remove_time_only_no_match(self):
+        """WB - update_availability remove time-only slot mismatch"""
+        r = make_room()
+        r.set_available_time_slots(["10:00-12:00"])
+        r.update_availability("2026-05-06 13:00-2026-05-06 15:00", False)
+        self.assertEqual(r.get_available_time_slots(), ["10:00-12:00"])
+
     def test_room_accessors_uncovered(self):
         """WB - opening_hours, is_student_in_room (lines 365, 374)"""
         r = make_room()

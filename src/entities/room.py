@@ -129,6 +129,14 @@ class Room:
         self.__is_student_in_room = status
 
     # --- Business Methods ---
+    def _extract_time_only(self, slot_str: str) -> str:
+        """Extract HH:MM-HH:MM from YYYY-MM-DD HH:MM-YYYY-MM-DD HH:MM or HH:MM-HH:MM."""
+        import re
+        times = re.findall(r'\d{2}:\d{2}', slot_str)
+        if len(times) == 2:
+            return f"{times[0]}-{times[1]}"
+        return slot_str.strip()
+
     def is_available(self, start_time: str, end_time: str) -> bool:
         """Check if the room is available in the specified time slot (Book 3.1).
 
@@ -140,7 +148,15 @@ class Room:
             True if the time slot exists in the available slots list.
         """
         time_slot = f"{start_time}-{end_time}"
-        return time_slot in self.__available_time_slots
+        if time_slot in self.__available_time_slots:
+            return True
+
+        # Check for time-only slot matching (when stored slot doesn't specify a date)
+        time_only_search = self._extract_time_only(time_slot)
+        for s in self.__available_time_slots:
+            if ' ' not in s and s == time_only_search:
+                return True
+        return False
 
     def calculate_predicted_income(self) -> float:
         """Calculate predicted income from booked time slots (Room 7).
@@ -162,10 +178,19 @@ class Room:
             time_slot: Time slot string to add/remove.
             available: True to add the slot, False to remove it.
         """
-        if available and time_slot not in self.__available_time_slots:
-            self.__available_time_slots.append(time_slot)
-        elif not available and time_slot in self.__available_time_slots:
-            self.__available_time_slots.remove(time_slot)
+        if available:
+            if time_slot not in self.__available_time_slots:
+                self.__available_time_slots.append(time_slot)
+        else:
+            if time_slot in self.__available_time_slots:
+                self.__available_time_slots.remove(time_slot)
+            else:
+                # Try matching and removing a time-only slot
+                time_only_search = self._extract_time_only(time_slot)
+                for s in self.__available_time_slots:
+                    if ' ' not in s and s == time_only_search:
+                        self.__available_time_slots.remove(s)
+                        break
 
     def get_room_type(self) -> str:
         """Return the room type classification ('Small', 'Medium', or 'Large')."""
