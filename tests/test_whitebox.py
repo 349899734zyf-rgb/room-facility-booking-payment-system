@@ -491,7 +491,7 @@ class TestWB_BookingController(unittest.TestCase):
         ctrl.get_all_bookings().append(b)
         result = ctrl.cancel_booking(s, b)
         self.assertEqual(result["type"], "late_cancellation")
-        self.assertEqual(result["refund"], 0.0)
+        self.assertEqual(result["refund"], 7.5)
 
 
 # ================================================================

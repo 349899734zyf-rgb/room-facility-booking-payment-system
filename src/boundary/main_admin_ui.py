@@ -85,9 +85,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
                         print("Error: Failed to record promotion idea.")
 
         elif choice == "3":
-            # ============ 3. View All Rooms ============
-            rooms = room_controller.get_rooms()
-            room_ui.display_room_list(rooms)
+            # ============ 3. Return to Main Menu ============
+            print("\nReturning to main menu")
+            break
 
         elif choice == "4":
             # ============ 4. Delete Room ============
@@ -220,9 +220,9 @@ def main_admin_room_management(room_controller=None, admin=None, admin_controlle
                         room_ui.display_invalid_input_message()
 
         elif choice == "9":
-            # ============ 9. Return to Main Menu ============
-            print("\nReturning to main menu")
-            break
+            # ============ 9. View All Rooms ============
+            rooms = room_controller.get_rooms()
+            room_ui.display_room_list(rooms)
 
         else:
             room_ui.display_invalid_input_message()
@@ -429,16 +429,16 @@ def main_admin_menu(admin, admin_controller, auth_controller, room_controller, b
             main_admin_room_management(room_controller, admin, admin_controller)
 
         elif choice == "2":
-            # Update Booking Status
-            main_admin_booking_status(admin_controller, booking_controller, booking_status_ui, auth_controller, student_file)
-
-        elif choice == "3":
-            # Ban Student
+            # Ban Student (Student Management)
             main_admin_ban_student(admin_controller, auth_controller, ban_student_ui, student_file)
 
-        elif choice == "4":
-            # Set Equipment Deposit
+        elif choice == "3":
+            # Set Equipment Deposit (System Settings)
             main_admin_equipment_deposit(admin_controller, equipment_deposit_ui)
+
+        elif choice == "4":
+            # Update Booking Status (View Reports)
+            main_admin_booking_status(admin_controller, booking_controller, booking_status_ui, auth_controller, student_file)
 
         elif choice == "5":
             # Logout

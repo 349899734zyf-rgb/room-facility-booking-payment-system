@@ -24,7 +24,7 @@ def make_student(banned=False, balance=0.0):
     return s
 
 
-def make_room(price=15.0, slots=None):
+def make_room(price=10.0, slots=None):
     r = Room("RM0001", "Room A", "BldgA", 10, price, "09:00-21:00")
     if slots:
         r.set_available_time_slots(slots)
@@ -586,6 +586,8 @@ class TestBook15_MakeBooking(unittest.TestCase):
 
     def test_bvt_price_calculation(self):
         """BVT - price = duration * price_per_hour"""
+        self.room = make_room(price=15.0)
+        self.ctrl.get_rooms().append(self.room)
         start = future(24)
         end = start + timedelta(hours=2)
         start_text = self.ctrl.format_time(start)

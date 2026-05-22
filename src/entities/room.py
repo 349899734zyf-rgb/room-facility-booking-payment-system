@@ -22,14 +22,12 @@ class Room:
         self.__is_student_in_room: bool = False
 
         if room_type is None:
-            if price_per_hour == 40.0:
-                self.__room_type = "Medium"
-            elif price_per_hour == 80.0:
-                self.__room_type = "Large"
-            elif price_per_hour <= 10.0:
+            if price_per_hour <= 10.0:
                 self.__room_type = "Small"
+            elif price_per_hour <= 40.0:
+                self.__room_type = "Medium"
             else:
-                self.__room_type = "Legacy"
+                self.__room_type = "Large"
         else:
             self.__room_type = room_type
 
