@@ -3,6 +3,14 @@ Room entity.
 Covers: Room 1-8
 """
 from typing import List, Optional
+from booking_constants import (
+    ROOM_TYPE_SMALL,
+    ROOM_TYPE_MEDIUM,
+    ROOM_TYPE_LARGE,
+    SMALL_ROOM_MAX_PRICE,
+    MEDIUM_ROOM_MAX_PRICE,
+    EQUIPMENT_RENTAL_FEE,
+)
 
 
 class Room:
@@ -22,12 +30,12 @@ class Room:
         self.__is_student_in_room: bool = False
 
         if room_type is None:
-            if price_per_hour <= 10.0:
-                self.__room_type = "Small"
-            elif price_per_hour <= 40.0:
-                self.__room_type = "Medium"
+            if price_per_hour <= SMALL_ROOM_MAX_PRICE:
+                self.__room_type = ROOM_TYPE_SMALL
+            elif price_per_hour <= MEDIUM_ROOM_MAX_PRICE:
+                self.__room_type = ROOM_TYPE_MEDIUM
             else:
-                self.__room_type = "Large"
+                self.__room_type = ROOM_TYPE_LARGE
         else:
             self.__room_type = room_type
 
@@ -100,7 +108,7 @@ class Room:
         booked_slots = len(self.__available_time_slots)
         income = booked_slots * self.__price_per_hour
         if self.__is_equipment_rented:
-            income += 10.0  # equipment rental fee
+            income += EQUIPMENT_RENTAL_FEE
         return income
 
     def update_availability(self, time_slot: str, available: bool) -> None:

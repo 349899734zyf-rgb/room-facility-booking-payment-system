@@ -87,8 +87,9 @@ class BookingController:
         building: str,
         start_time: str,
         end_time: str,
+        capacity: int = 1,
     ) -> Dict[str, object]:
-        """Validate building code and time input before searching rooms."""
+        """Validate building code, time input, and capacity before searching rooms."""
         start_dt = self.parse_time(start_time)
         end_dt = self.parse_time(end_time)
         invalid_time_range = (
@@ -97,7 +98,7 @@ class BookingController:
             or end_dt <= start_dt
         )
 
-        if not building.strip() or invalid_time_range:
+        if not building.strip() or invalid_time_range or capacity <= 0:
             return {"valid": False, "start_time": None, "end_time": None}
 
         return {"valid": True, "start_time": start_dt, "end_time": end_dt}
@@ -107,12 +108,14 @@ class BookingController:
         building: str,
         start_time: str,
         end_time: str,
+        capacity: int = 1,
     ) -> Dict[str, object]:
-        """Book 3.1: search rooms by building and time period."""
+        """Book 3.1: search rooms by building, time period, and capacity."""
         criteria = self.validate_search_criteria(
             building,
             start_time,
             end_time,
+            capacity,
         )
         if not criteria["valid"]:
             return {
@@ -124,7 +127,8 @@ class BookingController:
         available_rooms = []
         for room in self.__rooms:
             same_building = room.get_building().upper() == building.upper()
-            if same_building and room.is_available(start_time, end_time):
+            meets_capacity = room.get_capacity() >= capacity
+            if same_building and meets_capacity and room.is_available(start_time, end_time):
                 available_rooms.append(room)
 
         if not available_rooms:

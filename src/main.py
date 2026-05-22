@@ -53,14 +53,24 @@ def run_student_booking(student, book_ctrl, booking_ui):
 
     # Filter rooms by criteria
     criteria = booking_ui.get_search_criteria()
-    if criteria['building'].upper() == "CANCEL" or criteria['start_time'].upper() == "CANCEL" or criteria['end_time'].upper() == "CANCEL":
+    if criteria['building'].upper() == "CANCEL":
         print("Booking process cancelled.")
+        return
+
+    # Parse and validate capacity input
+    try:
+        capacity = int(criteria['capacity'])
+        if capacity <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        booking_ui.display_invalid_input_message()
         return
 
     result = book_ctrl.search_rooms(
         criteria['building'],
         criteria['start_time'],
-        criteria['end_time']
+        criteria['end_time'],
+        capacity
     )
 
     if result['reason'] == REASON_INVALID_INPUT:
