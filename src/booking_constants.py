@@ -41,3 +41,28 @@ REASON_DEAL_PACKAGE_EQUIPMENT_RESTRICTED = "deal_package_equipment_restricted"
 REASON_INVALID_PAYMENT_METHOD = "invalid_payment_method"
 REASON_BOOKING_CREATED = "booking_created"
 REASON_BOOKING_NOT_FOUND = "booking_not_found"
+
+# Room type classification
+ROOM_TYPE_SMALL = "Small"
+ROOM_TYPE_MEDIUM = "Medium"
+ROOM_TYPE_LARGE = "Large"
+
+# Price boundaries (per hour) for automatic room type inference
+SMALL_ROOM_MAX_PRICE = 10.0      # price <= 10.0 -> Small
+MEDIUM_ROOM_MAX_PRICE = 40.0     # 10.0 < price <= 40.0 -> Medium
+                                 # price > 40.0 -> Large
+
+# Capacity limits per room type
+SMALL_ROOM_MAX_CAPACITY = 2
+MEDIUM_ROOM_MAX_CAPACITY = 6
+LARGE_ROOM_MAX_CAPACITY = 100
+
+# Equipment rental fee used in predicted income calculation
+EQUIPMENT_RENTAL_FEE = 10.0
+
+# Room ID generation
+ROOM_ID_PREFIX = "RM"
+ROOM_ID_DIGITS = 4
+
+# Cancel command keyword
+CANCEL_COMMAND = "CANCEL"

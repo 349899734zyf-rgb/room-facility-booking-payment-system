@@ -31,31 +31,38 @@ class BookingUI:
         print("4. Return")
 
     def get_search_criteria(self) -> Dict[str, str]:
-        """Get building and time period from the student."""
+        """Get building, time period, and capacity from the student."""
         building = input("Enter building code (or enter 'CANCEL' to return): ").strip()
         if building.upper() == "CANCEL":
-            return {"building": "CANCEL", "start_time": "", "end_time": ""}
+            return {"building": "CANCEL", "start_time": "", "end_time": "", "capacity": ""}
         start_time = input("Enter start time (YYYY-MM-DD HH:MM, or enter 'CANCEL' to return): ").strip()
         if start_time.upper() == "CANCEL":
-            return {"building": "CANCEL", "start_time": "", "end_time": ""}
+            return {"building": "CANCEL", "start_time": "", "end_time": "", "capacity": ""}
         end_time = input("Enter end time (YYYY-MM-DD HH:MM, or enter 'CANCEL' to return): ").strip()
         if end_time.upper() == "CANCEL":
-            return {"building": "CANCEL", "start_time": "", "end_time": ""}
+            return {"building": "CANCEL", "start_time": "", "end_time": "", "capacity": ""}
+        capacity = input("Enter required capacity (or enter 'CANCEL' to return): ").strip()
+        if capacity.upper() == "CANCEL":
+            return {"building": "CANCEL", "start_time": "", "end_time": "", "capacity": ""}
         return {
             "building": building,
             "start_time": start_time,
             "end_time": end_time,
+            "capacity": capacity,
         }
 
     def display_available_rooms(self, rooms: List[object]) -> None:
         """Display all rooms found by the search."""
         print("\nAvailable rooms:")
         for room in rooms:
+            equip = room.get_standard_equipment() or "None"
             print(
                 f"{room.get_room_id()} | {room.get_room_name()} | "
+                f"Type: {room.get_room_type()} | "
                 f"Building: {room.get_building()} | "
                 f"Capacity: {room.get_capacity()} | "
-                f"${room.get_price_per_hour():.2f}/hour"
+                f"${room.get_price_per_hour():.2f}/hour | "
+                f"Equipment: {equip}"
             )
 
     def display_no_rooms_message(self) -> None:

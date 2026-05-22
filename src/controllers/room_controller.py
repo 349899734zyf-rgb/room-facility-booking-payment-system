@@ -4,6 +4,18 @@ Covers: Room 1, 3-8
 """
 from typing import List, Dict, Optional
 from entities.room import Room
+from booking_constants import (
+    ROOM_TYPE_SMALL,
+    ROOM_TYPE_MEDIUM,
+    ROOM_TYPE_LARGE,
+    SMALL_ROOM_MAX_PRICE,
+    MEDIUM_ROOM_MAX_PRICE,
+    SMALL_ROOM_MAX_CAPACITY,
+    MEDIUM_ROOM_MAX_CAPACITY,
+    LARGE_ROOM_MAX_CAPACITY,
+    ROOM_ID_PREFIX,
+    ROOM_ID_DIGITS,
+)
 
 
 class RoomController:
@@ -16,16 +28,49 @@ class RoomController:
     def get_rooms(self) -> List[Room]:
         return self.__rooms
 
+    @staticmethod
+    def validate_room_rules(price: float, capacity: int,
+                            room_type: Optional[str] = None) -> Optional[str]:
+        """Validate price-capacity consistency for a room type.
+
+        If *room_type* is ``None`` the type is inferred from *price*.
+        Returns the validated room-type string on success, or ``None``
+        when the combination violates business rules.
+        """
+        if room_type is None:
+            if price <= SMALL_ROOM_MAX_PRICE:
+                room_type = ROOM_TYPE_SMALL
+            elif price <= MEDIUM_ROOM_MAX_PRICE:
+                room_type = ROOM_TYPE_MEDIUM
+            else:
+                room_type = ROOM_TYPE_LARGE
+
+        if room_type == ROOM_TYPE_SMALL:
+            if price > SMALL_ROOM_MAX_PRICE or capacity > SMALL_ROOM_MAX_CAPACITY:
+                return None
+        elif room_type == ROOM_TYPE_MEDIUM:
+            if (price <= SMALL_ROOM_MAX_PRICE
+                    or price > MEDIUM_ROOM_MAX_PRICE
+                    or capacity > MEDIUM_ROOM_MAX_CAPACITY):
+                return None
+        elif room_type == ROOM_TYPE_LARGE:
+            if price <= MEDIUM_ROOM_MAX_PRICE or capacity > LARGE_ROOM_MAX_CAPACITY:
+                return None
+        else:
+            return None
+        return room_type
+
     def add_room(self, name: str, building: str, capacity: int,
                  price: float, opening_hours: str, room_type: Optional[str] = None) -> Optional[Room]:
         """Add room (Room 1)"""
         if not all([name, building, opening_hours]) or capacity <= 0 or price <= 0:
             return None
         self.__room_counter += 1
-        rid = f"RM{self.__room_counter:04d}"
+        rid = f"{ROOM_ID_PREFIX}{self.__room_counter:0{ROOM_ID_DIGITS}d}"
         room = Room(rid, name, building, capacity, price, opening_hours, room_type=room_type)
         self.__rooms.append(room)
         return room
+
 
     def remove_room(self, room_id: str) -> bool:
         """Remove room (Room 4)"""
