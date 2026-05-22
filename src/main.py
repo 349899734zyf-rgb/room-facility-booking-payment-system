@@ -316,7 +316,36 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
                 payment_ui.display_top_up_success(student.get_balance())
                 if not payment_ctrl.purchase_deal_package(student):
                     payment_ui.display_insufficient_balance_message()
-                    return
+                    print("\nWould you like to add more funds?")
+                    print("1. Add Funds (Top-Up)")
+                    print("2. Return to Main Menu")
+                    retry_choice = input("\nSelection: ").strip()
+                    if retry_choice != "1":
+                        return
+                    continue_top_up = True
+                    while continue_top_up:
+                        extra_val = payment_ui.get_top_up_amount()
+                        if extra_val.upper() == "CANCEL":
+                            return
+                        try:
+                            extra_amt = float(extra_val)
+                        except ValueError:
+                            payment_ui.display_invalid_payment_option_message()
+                            return
+                        if not payment_ctrl.top_up_account(student, extra_amt):
+                            payment_ui.display_invalid_payment_option_message()
+                            return
+                        payment_ui.display_top_up_success(student.get_balance())
+                        if payment_ctrl.purchase_deal_package(student):
+                            continue_top_up = False
+                        else:
+                            payment_ui.display_insufficient_balance_message()
+                            print("\nWould you like to add more funds?")
+                            print("1. Add Funds (Top-Up)")
+                            print("2. Return to Main Menu")
+                            again = input("\nSelection: ").strip()
+                            if again != "1":
+                                return
 
             deal_package_ui.display_purchase_success(package.get_hours())
             payment_ui.display_deal_package_info(
@@ -406,9 +435,26 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
 
         payment_ui.display_top_up_success(student.get_balance())
 
-        if not payment_ctrl.check_balance_sufficient(student, payable_amount):
+        while not payment_ctrl.check_balance_sufficient(student, payable_amount):
             payment_ui.display_insufficient_balance_message()
-            return
+            print("\nWould you like to add more funds?")
+            print("1. Add Funds (Top-Up)")
+            print("2. Return to Main Menu")
+            retry_choice = input("\nSelection: ").strip()
+            if retry_choice != "1":
+                return
+            extra_val = payment_ui.get_top_up_amount()
+            if extra_val.upper() == "CANCEL":
+                return
+            try:
+                extra_amt = float(extra_val)
+            except ValueError:
+                payment_ui.display_invalid_payment_option_message()
+                return
+            if not payment_ctrl.top_up_account(student, extra_amt):
+                payment_ui.display_invalid_payment_option_message()
+                return
+            payment_ui.display_top_up_success(student.get_balance())
 
         # Confirm payment after top-up
         payment_ui.display_proceed_confirmation_prompt()
@@ -909,7 +955,36 @@ def run_booking_flow():
                 payment_ui.display_top_up_success(student.get_balance())
                 if not payment_controller.purchase_deal_package(student):
                     payment_ui.display_insufficient_balance_message()
-                    return False
+                    print("\nWould you like to add more funds?")
+                    print("1. Add Funds (Top-Up)")
+                    print("2. Return to Main Menu")
+                    retry_choice = input("\nSelection: ").strip()
+                    if retry_choice != "1":
+                        return False
+                    continue_top_up = True
+                    while continue_top_up:
+                        extra_val = payment_ui.get_top_up_amount()
+                        if extra_val.upper() == "CANCEL":
+                            return False
+                        try:
+                            extra_amt = float(extra_val)
+                        except ValueError:
+                            payment_ui.display_invalid_payment_option_message()
+                            return False
+                        if not payment_controller.top_up_account(student, extra_amt):
+                            payment_ui.display_invalid_payment_option_message()
+                            return False
+                        payment_ui.display_top_up_success(student.get_balance())
+                        if payment_controller.purchase_deal_package(student):
+                            continue_top_up = False
+                        else:
+                            payment_ui.display_insufficient_balance_message()
+                            print("\nWould you like to add more funds?")
+                            print("1. Add Funds (Top-Up)")
+                            print("2. Return to Main Menu")
+                            again = input("\nSelection: ").strip()
+                            if again != "1":
+                                return False
 
             deal_package_ui.display_purchase_success(package.get_hours())
             payment_ui.display_deal_package_info(
@@ -983,9 +1058,26 @@ def run_booking_flow():
 
         payment_ui.display_top_up_success(student.get_balance())
 
-        if not payment_controller.check_balance_sufficient(student, payable_amount):
+        while not payment_controller.check_balance_sufficient(student, payable_amount):
             payment_ui.display_insufficient_balance_message()
-            return False
+            print("\nWould you like to add more funds?")
+            print("1. Add Funds (Top-Up)")
+            print("2. Return to Main Menu")
+            retry_choice = input("\nSelection: ").strip()
+            if retry_choice != "1":
+                return False
+            extra_val = payment_ui.get_top_up_amount()
+            if extra_val.upper() == "CANCEL":
+                return False
+            try:
+                extra_amt = float(extra_val)
+            except ValueError:
+                payment_ui.display_invalid_payment_option_message()
+                return False
+            if not payment_controller.top_up_account(student, extra_amt):
+                payment_ui.display_invalid_payment_option_message()
+                return False
+            payment_ui.display_top_up_success(student.get_balance())
 
         payment_ui.display_proceed_confirmation_prompt()
         proceed_choice = payment_ui.get_proceed_confirmation_choice()
