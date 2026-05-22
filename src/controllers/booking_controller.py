@@ -316,38 +316,6 @@ class BookingController:
 
         room_price = self.calculate_booking_price(room, start_time, end_time)
         deposit = self.__equipment_deposit if equipment_rental else 0.0
-        total_required = room_price + deposit
-
-        if payment_method == PAYMENT_METHOD_BALANCE:
-            if student.get_balance() < total_required:
-                return {
-                    "success": False,
-                    "reason": REASON_INSUFFICIENT_BALANCE,
-                }
-            student.deduct_balance(total_required)
-        elif payment_method == PAYMENT_METHOD_DEAL_PACKAGE:
-            if room_type != ROOM_TYPE_SMALL:
-                return {
-                    "success": False,
-                    "reason": "deal_package_room_type_restricted",
-                }
-            if equipment_rental:
-                return {
-                    "success": False,
-                    "reason": REASON_DEAL_PACKAGE_EQUIPMENT_RESTRICTED,
-                }
-
-            duration_hours = (
-                (end_time - start_time).total_seconds() / SECONDS_PER_HOUR
-            )
-            if student.get_deal_package_hours() < duration_hours:
-                return {
-                    "success": False,
-                    "reason": REASON_INSUFFICIENT_DEAL_HOURS,
-                }
-            student.deduct_deal_package_hours(duration_hours)
-        else:
-            return {"success": False, "reason": REASON_INVALID_PAYMENT_METHOD}
 
         self.__booking_counter += 1
         booking_id = (
