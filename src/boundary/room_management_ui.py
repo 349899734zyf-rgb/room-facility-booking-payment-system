@@ -22,13 +22,13 @@ class RoomManagementUI:
         print("=" * 80)
         print("1.  Add a New Room (Story 2.1)")
         print("2.  Record Promotion Idea (Story 2.2)")
-        print("3.  View All Rooms")
+        print("3.  Return to Main Menu")
         print("4.  Delete a Room (Story 2.4)")
         print("5.  Update Room Status - Student Presence & Equipment (Story 2.5)")
         print("6.  Update Available Time Slots (Story 2.6)")
         print("7.  View Predicted Income (Story 2.7)")
         print("8.  Change Room Information (Story 2.8)")
-        print("9.  Return to Main Menu")
+        print("9.  View All Rooms")
         print("=" * 80)
 
     def get_management_choice(self) -> str:

@@ -213,7 +213,7 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
         )
         success = payment_ctrl.check_balance_sufficient(student, payable_amount)
     else:
-        if not payment_ctrl.can_use_deal_package(booking.get_equipment_rental()):
+        if not payment_ctrl.can_use_deal_package(booking.get_equipment_rental(), booking.get_room().get_room_type()):
             payment_ui.display_equipment_restriction_message()
             return
 
@@ -289,7 +289,7 @@ def run_student_payment(student, payment_ctrl, payment_ui, deal_package_ui, auth
         if payment_method == "balance":
             payment_ctrl.pay_by_balance(student, payable_amount)
         else:
-            payment_ctrl.pay_by_deal_package(student, duration, booking.get_equipment_rental())
+            payment_ctrl.pay_by_deal_package(student, duration, booking.get_equipment_rental(), booking.get_room().get_room_type())
             payment_ui.display_deal_package_info(
                 duration=duration,
                 remaining=student.get_deal_package_hours()
@@ -557,6 +557,7 @@ def main():
     admin_ctrl.get_equipments().append(Equipment("EQ001", 50.0))
     admin_ctrl.get_equipments().append(Equipment("EQ002", 100.0))
     payment_ctrl = PaymentController()
+    payment_ctrl.set_booking_controller(book_ctrl)
 
     # Initialise Boundary UI components
     ui = AccountUI()
@@ -596,7 +597,7 @@ def main():
 
     # Prepopulate one test room inside Clayton with slot for booking demo
     if not book_ctrl.get_rooms():
-        room = Room("R001", "Study Room 1", "Building A", 4, 15.0, "09:00-18:00")
+        room = Room("R001", "Study Room 1", "Building A", 4, 10.0, "09:00-18:00")
         room.set_available_time_slots([
             "2026-05-06 10:00-2026-05-06 12:00"
         ])

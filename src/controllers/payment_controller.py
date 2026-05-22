@@ -8,7 +8,7 @@ from entities.booking import Booking
 class PaymentController:
     """Checkout and Payment Controller"""
 
-    EQUIPMENT_DEPOSIT_AMOUNT = 100.0
+    EQUIPMENT_DEPOSIT_AMOUNT = 50.0
 
     # Constants imported from Branch_CQ
     PAYMENT_METHOD_CHOICES = {
@@ -29,6 +29,7 @@ class PaymentController:
         self.__deal_package = DealPackage("DP001", 100.0, 12.0)
         self.__order_counter = 0
         self.__latest_order: Optional[Order] = None
+        self.__booking_controller = None
 
         # default promo code
         self.__promo_codes.append(PromoCode("NEWBEE20", 20.0))
@@ -220,7 +221,12 @@ class PaymentController:
             self._resolve_payment_amount(amount)
         )
 
+    def set_booking_controller(self, booking_controller) -> None:
+        self.__booking_controller = booking_controller
+
     def get_equipment_deposit_amount(self) -> float:
+        if hasattr(self, "_PaymentController__booking_controller") and self.__booking_controller is not None:
+            return self.__booking_controller.get_equipment_deposit()
         return self.EQUIPMENT_DEPOSIT_AMOUNT
 
     def get_order_payable_amount(
@@ -231,7 +237,7 @@ class PaymentController:
         amount = order.get_final_price()
 
         if order.get_booking().get_equipment_rental():
-            amount += self.EQUIPMENT_DEPOSIT_AMOUNT
+            amount += self.get_equipment_deposit_amount()
 
         return amount
 
