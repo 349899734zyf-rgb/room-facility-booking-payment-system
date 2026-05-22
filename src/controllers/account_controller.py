@@ -1,13 +1,25 @@
 """
-AccountController.
-Covers: Acct 5, 8-12
+Module: account_controller.py
+Layer: Controller
+User Stories: Acct 5, 8-12
+
+Provides student account operations: profile retrieval, usage status,
+activity history pagination, funds summary, and balance top-up.
 """
 from typing import Dict, List, Optional
 from entities.student import Student
 
 
 class AccountController:
-    """Account Controller (Account Management 5, 8-12)"""
+    """Controller for student account management.
+
+    Responsibilities:
+        - Return student profile information (Acct 5)
+        - Return booking and ban usage status (Acct 8)
+        - Return paginated activity history (Acct 9-10)
+        - Return account funds summary (Acct 11)
+        - Process balance top-ups (Acct 12)
+    """
 
     def __init__(self) -> None:
         pass
@@ -24,7 +36,7 @@ class AccountController:
         }
 
     def get_usage_status(self, student: Student) -> Dict[str, object]:
-        """Get usage status (Acct 8)"""
+        """Return booking status, ban status, balance, and deal hours (Acct 8)."""
         return {
             "current_bookings": student.get_active_bookings(),
             "ban_status": student.get_booking_ban_status(),
@@ -33,14 +45,14 @@ class AccountController:
         }
 
     def get_activity_history(self, student: Student, page: int) -> List:
-        """Get activity history (Acct 9-10)"""
+        """Return a page of activity history records (Acct 9-10)."""
         return student.get_activity_history_page(page)
 
     def get_funds_summary(self, student: Student) -> Dict[str, float]:
-        """Get funds summary (Acct 11)"""
+        """Return account balance summary (Acct 11)."""
         return {"balance": student.get_balance()}
 
     def add_funds(self, student: Student, amount: float) -> bool:
-        """Add funds (Acct 12)"""
+        """Top up the student's balance (Acct 12)."""
         return student.add_funds(amount)
 

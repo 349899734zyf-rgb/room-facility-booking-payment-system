@@ -1,11 +1,15 @@
 """
-BanStudentUI - Student ban management interface.
-Covers: Room 10
+Module: ban_student_ui.py
+Layer: Boundary
+User Stories: Room 10
+
+Text-based interface for viewing students, selecting a student,
+and confirming ban/unban actions on student booking eligibility.
 """
 
 
 class BanStudentUI:
-    """Student Ban Management Interface (Room Management 10)"""
+    """Boundary class for student ban/unban management (Room 10)."""
 
     def __init__(self, admin_controller):
         self.admin_controller = admin_controller

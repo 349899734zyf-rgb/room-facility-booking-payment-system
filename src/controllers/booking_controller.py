@@ -1,6 +1,11 @@
 """
-This file defines the BookingController class, which manages booking search,
-eligibility checks, booking creation, and booking cancellation workflows.
+Module: booking_controller.py
+Layer: Controller
+User Stories: Book 3.1-3.15
+
+Manages the complete booking lifecycle: room search, eligibility checks,
+booking creation with payment, duration validation, and cancellation
+workflows including refund calculations by room type.
 """
 
 from datetime import datetime
@@ -13,9 +18,15 @@ from booking_constants import (
     CANCELLATION_REGULAR,
     CANCELLATION_STOPPED,
     DEFAULT_EQUIPMENT_DEPOSIT,
+    LARGE_ADVANCE_BOOKING_HOURS,
+    LARGE_LATE_CANCEL_REFUND_RATE,
+    MEDIUM_ADVANCE_BOOKING_HOURS,
+    MEDIUM_LARGE_MIN_BOOKING_MINUTES,
+    MEDIUM_LATE_CANCEL_REFUND_RATE,
     MINIMUM_BOOKING_MINUTES,
     PAYMENT_METHOD_BALANCE,
     PAYMENT_METHOD_DEAL_PACKAGE,
+    REASON_ADVANCE_BOOKING_NOT_MET,
     REASON_BANNED,
     REASON_BOOKING_CREATED,
     REASON_BOOKING_LIMIT_REACHED,
@@ -29,8 +40,12 @@ from booking_constants import (
     REASON_NO_ROOMS,
     REASON_ROOM_UNAVAILABLE,
     REASON_ROOMS_FOUND,
+    ROOM_TYPE_LARGE,
+    ROOM_TYPE_MEDIUM,
+    ROOM_TYPE_SMALL,
     SECONDS_PER_HOUR,
     SECONDS_PER_MINUTE,
+    SMALL_LATE_CANCEL_REFUND_RATE,
     TIME_FORMAT,
 )
 from entities.booking import Booking
@@ -39,7 +54,21 @@ from entities.room import Room
 
 
 class BookingController:
-    """Controller class for Booking Management user stories 3.1 to 3.15."""
+    """Controller for the Booking Management feature.
+
+    Responsibilities:
+        - Search available rooms by building, time, and capacity (Book 3.1)
+        - Validate booking duration rules per room type (Book 3.8)
+        - Check student eligibility and booking limits (Book 3.7, 3.10)
+        - Create bookings with balance or deal-package payment (Book 3.4, 3.5, 3.15)
+        - Handle regular and late cancellations with refunds (Book 3.2, 3.3, 3.6, 3.14)
+        - Return active bookings for cancellation selection (Book 3.11-3.13)
+
+    Collaborators:
+        - Room (entity): room availability and pricing
+        - Student (entity): balance, ban status, booking list
+        - Booking (entity): booking data and cancellation logic
+    """
 
     def __init__(self) -> None:
         """Create an empty booking controller with default settings."""
@@ -110,7 +139,17 @@ class BookingController:
         end_time: str,
         capacity: int = 1,
     ) -> Dict[str, object]:
-        """Book 3.1: search rooms by building, time period, and capacity."""
+        """Search available rooms by building, time period, and min capacity (Book 3.1).
+
+        Args:
+            building: Building code to filter rooms (case-insensitive).
+            start_time: Start time in 'YYYY-MM-DD HH:MM' format.
+            end_time: End time in 'YYYY-MM-DD HH:MM' format.
+            capacity: Minimum required room capacity (default 1).
+
+        Returns:
+            Dict with 'success', 'reason', and 'rooms' keys.
+        """
         criteria = self.validate_search_criteria(
             building,
             start_time,
@@ -144,19 +183,38 @@ class BookingController:
         self,
         start_time: datetime,
         end_time: datetime,
-        room_type: str = "Small",
+        room_type: str = ROOM_TYPE_SMALL,
     ) -> bool:
-        """Book 3.8: check minimum duration and 30-minute blocks."""
+        """Validate booking duration against room-type-specific rules (Book 3.8).
+
+        Args:
+            start_time: Booking start datetime.
+            end_time: Booking end datetime.
+            room_type: Room type ('Small', 'Medium', or 'Large').
+
+        Returns:
+            True if duration meets minimum and 30-min increment rules.
+
+        Business Rules:
+            - Small rooms: minimum 60 minutes.
+            - Medium/Large rooms: minimum 120 minutes.
+            - All types: duration must be a multiple of 30 minutes.
+        """
         duration_minutes = int(
             (end_time - start_time).total_seconds() / SECONDS_PER_MINUTE,
         )
-        min_minutes = 120 if room_type in ["Medium", "Large"] else MINIMUM_BOOKING_MINUTES
+        min_minutes = MEDIUM_LARGE_MIN_BOOKING_MINUTES if room_type in [ROOM_TYPE_MEDIUM, ROOM_TYPE_LARGE] else MINIMUM_BOOKING_MINUTES
         long_enough = duration_minutes >= min_minutes
         follows_increment = duration_minutes % BOOKING_INCREMENT_MINUTES == 0
         return long_enough and follows_increment
 
     def check_eligibility(self, student: Student) -> Dict[str, object]:
-        """Book 3.7 and 3.10: check ban status and booking limit."""
+        """Check student ban status and booking limit (Book 3.7, 3.10).
+
+        Returns:
+            Dict with 'is_banned', 'has_reached_limit', 'can_make_booking',
+            and 'active_bookings' keys.
+        """
         is_banned = student.get_booking_ban_status()
         has_reached_limit = student.has_reached_booking_limit()
 
@@ -172,7 +230,7 @@ class BookingController:
         available_rooms: List[Room],
         room_id: str,
     ) -> Optional[Room]:
-        """Book 3.9: select a room from the displayed room list."""
+        """Select a room from available search results by room ID (Book 3.9)."""
         for room in available_rooms:
             if room.get_room_id() == room_id:
                 return room
@@ -213,14 +271,32 @@ class BookingController:
         payment_method: str = PAYMENT_METHOD_BALANCE,
         current_time: Optional[datetime] = None,
     ) -> Dict[str, object]:
-        """Book 3.4, 3.5 and 3.15: create a valid booking."""
+        """Create a booking with eligibility, duration, and payment validation (Book 3.4, 3.5, 3.15).
+
+        Args:
+            student: The booking student.
+            room: The room to book.
+            start_time: Booking start datetime.
+            end_time: Booking end datetime.
+            equipment_rental: Whether equipment is rented.
+            payment_method: 'balance' or 'deal_package'.
+            current_time: Override for current time (used in testing).
+
+        Returns:
+            Dict with 'success', 'reason', and 'booking' (if created).
+
+        Business Rules:
+            - Medium rooms require 3 hours advance booking.
+            - Large rooms require 24 hours advance booking.
+            - Deal package can only pay for Small rooms without equipment.
+        """
         eligibility = self.check_eligibility(student)
         if eligibility["is_banned"]:
             return {"success": False, "reason": REASON_BANNED}
         if eligibility["has_reached_limit"]:
             return {"success": False, "reason": REASON_BOOKING_LIMIT_REACHED}
             
-        room_type = room.get_room_type() if hasattr(room, "get_room_type") else "Small"
+        room_type = room.get_room_type() if hasattr(room, "get_room_type") else ROOM_TYPE_SMALL
         if not self.validate_duration(start_time, end_time, room_type):
             return {"success": False, "reason": REASON_INVALID_DURATION}
 
@@ -228,10 +304,10 @@ class BookingController:
         booking_time = current_time or datetime.now()
         time_diff = start_time - booking_time
         from datetime import timedelta
-        if room_type == "Medium" and time_diff < timedelta(hours=3):
-            return {"success": False, "reason": "advance_booking_requirement_not_met"}
-        elif room_type == "Large" and time_diff < timedelta(hours=24):
-            return {"success": False, "reason": "advance_booking_requirement_not_met"}
+        if room_type == ROOM_TYPE_MEDIUM and time_diff < timedelta(hours=MEDIUM_ADVANCE_BOOKING_HOURS):
+            return {"success": False, "reason": REASON_ADVANCE_BOOKING_NOT_MET}
+        elif room_type == ROOM_TYPE_LARGE and time_diff < timedelta(hours=LARGE_ADVANCE_BOOKING_HOURS):
+            return {"success": False, "reason": REASON_ADVANCE_BOOKING_NOT_MET}
 
         start_text = self.format_time(start_time)
         end_text = self.format_time(end_time)
@@ -250,7 +326,7 @@ class BookingController:
                 }
             student.deduct_balance(total_required)
         elif payment_method == PAYMENT_METHOD_DEAL_PACKAGE:
-            if room_type != "Small":
+            if room_type != ROOM_TYPE_SMALL:
                 return {
                     "success": False,
                     "reason": "deal_package_room_type_restricted",
@@ -301,7 +377,7 @@ class BookingController:
         }
 
     def get_student_bookings(self, student: Student) -> List[Booking]:
-        """Book 3.11, 3.12 and 3.13: return active bookings."""
+        """Return active bookings for cancellation selection (Book 3.11-3.13)."""
         return student.get_active_bookings()
 
     def find_student_booking(
@@ -320,7 +396,7 @@ class BookingController:
         student: Student,
         booking_id: str,
     ) -> Dict[str, object]:
-        """Book 3.11: show booking details before cancellation."""
+        """Show booking details before cancellation (Book 3.11)."""
         if not booking_id.strip():
             return {"success": False, "reason": REASON_INVALID_INPUT}
 
@@ -343,7 +419,18 @@ class BookingController:
         confirm_cancel: bool = True,
         current_time: Optional[datetime] = None,
     ) -> Dict[str, object]:
-        """Book 3.2, 3.3, 3.6 and 3.14: handle cancellation."""
+        """Cancel a booking and process refund by room type (Book 3.2, 3.3, 3.6, 3.14).
+
+        Business Rules:
+            - Regular cancellation: full refund (room price + deposit).
+            - Late cancellation refund rates by room type:
+              Small = 50%, Medium = 50%, Large = 30% (of room price).
+            - Equipment deposit is always fully refunded.
+            - Late cancellation increments the student's penalty count.
+
+        Returns:
+            Dict with 'success', 'cancel_type', 'refund', and 'reason'.
+        """
         if hasattr(booking_or_id, "get_booking_id"):
             booking_id = booking_or_id.get_booking_id()
         else:
@@ -384,19 +471,19 @@ class BookingController:
             )
             student.add_funds(refund)
         else:
-            room_type = "Small"
+            room_type = ROOM_TYPE_SMALL
             room = booking.get_room()
             if room and hasattr(room, "get_room_type"):
                 room_type = room.get_room_type()
                 
             deposit_refund = booking.get_equipment_deposit()
             
-            if room_type == "Small":
-                room_refund = booking.get_total_price() * 0.5
-            elif room_type == "Medium":
-                room_refund = booking.get_total_price() * 0.5
-            elif room_type == "Large":
-                room_refund = booking.get_total_price() * 0.3
+            if room_type == ROOM_TYPE_SMALL:
+                room_refund = booking.get_total_price() * SMALL_LATE_CANCEL_REFUND_RATE
+            elif room_type == ROOM_TYPE_MEDIUM:
+                room_refund = booking.get_total_price() * MEDIUM_LATE_CANCEL_REFUND_RATE
+            elif room_type == ROOM_TYPE_LARGE:
+                room_refund = booking.get_total_price() * LARGE_LATE_CANCEL_REFUND_RATE
             else:
                 room_refund = 0.0
                 
@@ -417,7 +504,7 @@ class BookingController:
         }
 
     def get_booking_system_status(self, student: Student) -> Dict[str, object]:
-        """Book 3.7 and 3.12: return booking system status."""
+        """Return booking system status summary (Book 3.7, 3.12)."""
         eligibility = self.check_eligibility(student)
         available_slot_count = sum(
             len(room.get_available_time_slots()) for room in self.__rooms

@@ -1,6 +1,10 @@
 """
-This file defines the CancellationUI class, which handles text-based input and
-output for reviewing bookings and confirming or stopping cancellation requests.
+Module: cancellation_ui.py
+Layer: Boundary
+User Stories: Book 3.2, 3.3, 3.6, 3.11-3.14
+
+Text-based interface for reviewing bookings, confirming or stopping
+cancellation requests, and displaying refund/ban results.
 """
 
 from datetime import datetime

@@ -1,7 +1,10 @@
 """
-AccountUI - Account menu navigation UI.
-Extracted from Amanda's main.py. No new content added.
-Covers: Menu navigation, student/admin portal display
+Module: account_ui.py
+Layer: Boundary
+User Stories: Acct 1-15 (navigation), Book 3.1 (search input)
+
+Main navigation boundary: system main menu, student portal menu,
+admin portal menu, room search input, and portal logout/exit messages.
 """
 
 

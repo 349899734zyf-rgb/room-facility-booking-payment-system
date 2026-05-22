@@ -1,7 +1,10 @@
 """
-AdminUI - Admin home screen and admin-specific UI.
-Extracted from QIuerying's boundary_classes.py.
-Covers: Acct 14
+Module: admin_ui.py
+Layer: Boundary
+User Stories: Acct 14
+
+Text-based interface for the admin home screen, displaying
+admin profile information via AdminController.
 """
 
 

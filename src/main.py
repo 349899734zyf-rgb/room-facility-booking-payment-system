@@ -1,3 +1,12 @@
+"""
+Module: main.py
+Layer: Application entry point
+User Stories: All
+
+Main entry point for the Monash Smart Study Room Booking System (MSSRB).
+Initialises all controllers and boundary UIs, pre-loads demonstration data,
+and runs the main event loop dispatching to student and admin portals.
+"""
 import sys
 import os
 import datetime

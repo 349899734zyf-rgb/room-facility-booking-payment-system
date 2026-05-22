@@ -1,7 +1,10 @@
 """
-This file defines the BookingUI class, which handles text-based input and
-output for room search, room selection, equipment selection, and booking
-display.
+Module: booking_ui.py
+Layer: Boundary
+User Stories: Book 3.1-3.15
+
+Text-based interface for room search, room selection, equipment
+choices, booking creation display, and cancellation error messages.
 """
 
 from typing import Dict, List

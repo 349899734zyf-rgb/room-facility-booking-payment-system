@@ -1,14 +1,44 @@
+"""
+Module: payment_controller.py
+Layer: Controller
+User Stories: Checkout 1-9
+
+Manages the full checkout and payment flow: promo code validation,
+deal-package purchase and payment, balance payment, order creation
+and confirmation, and post-booking navigation.
+"""
 from typing import List, Optional
 from entities.promo_code import PromoCode
 from entities.deal_package import DealPackage
 from entities.order import Order
 from entities.student import Student
 from entities.booking import Booking
-
+from booking_constants import (
+    BOOKING_STATUS_CONFIRMED,
+    DEFAULT_EQUIPMENT_DEPOSIT,
+    PAYMENT_METHOD_DEAL_PACKAGE,
+    ROOM_TYPE_SMALL,
+)
 class PaymentController:
-    """Checkout and Payment Controller"""
+    """Controller for the Checkout and Payment feature.
 
-    EQUIPMENT_DEPOSIT_AMOUNT = 50.0
+    Responsibilities:
+        - Validate and apply promotional discount codes (Checkout 4-5)
+        - Purchase and pay with deal packages (Checkout 6-7)
+        - Process balance payments with deposit handling (Checkout 2)
+        - Create and confirm orders linking bookings to payments (Checkout 1, 3)
+        - Provide booking summaries before confirmation (Checkout 8)
+        - Handle post-confirmation navigation choices (Checkout 9)
+
+    Collaborators:
+        - Order (entity): payment order data
+        - PromoCode (entity): discount code management
+        - DealPackage (entity): pre-paid package data
+        - Student (entity): balance and promo code tracking
+        - Booking (entity): booking details for order creation
+    """
+
+    EQUIPMENT_DEPOSIT_AMOUNT = DEFAULT_EQUIPMENT_DEPOSIT
 
     # Constants imported from Branch_CQ
     PAYMENT_METHOD_CHOICES = {
@@ -62,12 +92,12 @@ class PaymentController:
                     return None
 
                 if search_code == "NEWBEE20":
-                    room_type = "Small"
+                    room_type = ROOM_TYPE_SMALL
                     if booking and hasattr(booking, "get_room"):
                         room = booking.get_room()
                         if room and hasattr(room, "get_room_type"):
                             room_type = room.get_room_type()
-                    if room_type != "Small":
+                    if room_type != ROOM_TYPE_SMALL:
                         return None
 
                 return promo
@@ -81,7 +111,7 @@ class PaymentController:
             order: Order
     ) -> float:
 
-        if order.get_payment_method() == "deal_package":
+        if order.get_payment_method() == PAYMENT_METHOD_DEAL_PACKAGE:
             return order.get_final_price()
 
         if promo.is_used_by(student.get_student_id()):
@@ -150,7 +180,7 @@ class PaymentController:
         previous_bookings = [
             booking
             for booking in student.get_bookings()
-            if booking is not current_booking and booking.get_status() == "confirmed"
+            if booking is not current_booking and booking.get_status() == BOOKING_STATUS_CONFIRMED
         ]
 
         return len(previous_bookings) == 0
@@ -181,7 +211,7 @@ class PaymentController:
             student: Student,
             required_hours: float,
             has_equipment: bool,
-            room_type: str = "Small"
+            room_type: str = ROOM_TYPE_SMALL
     ) -> bool:
 
         if not self.can_use_deal_package(has_equipment, room_type):
@@ -194,10 +224,10 @@ class PaymentController:
     def can_use_deal_package(
             self,
             has_equipment: bool,
-            room_type: str = "Small"
+            room_type: str = ROOM_TYPE_SMALL
     ) -> bool:
 
-        return (not has_equipment) and (room_type == "Small")
+        return (not has_equipment) and (room_type == ROOM_TYPE_SMALL)
 
     # =====================================================
     # Balance Payment
@@ -222,9 +252,11 @@ class PaymentController:
         )
 
     def set_booking_controller(self, booking_controller) -> None:
+        """Link to BookingController for shared deposit amount."""
         self.__booking_controller = booking_controller
 
     def get_equipment_deposit_amount(self) -> float:
+        """Return equipment deposit from BookingController if linked, else class default."""
         if hasattr(self, "_PaymentController__booking_controller") and self.__booking_controller is not None:
             return self.__booking_controller.get_equipment_deposit()
         return self.EQUIPMENT_DEPOSIT_AMOUNT
@@ -233,6 +265,7 @@ class PaymentController:
             self,
             order: Order
     ) -> float:
+        """Calculate total payable: final price + equipment deposit if applicable (Checkout 3)."""
 
         amount = order.get_final_price()
 
@@ -245,6 +278,7 @@ class PaymentController:
             self,
             amount
     ) -> float:
+        """Resolve a payment amount, handling Order objects and deposit addition."""
 
         if hasattr(amount, "get_booking") and hasattr(amount, "get_final_price"):
             return self.get_order_payable_amount(amount)
@@ -268,6 +302,7 @@ class PaymentController:
             booking: Booking,
             payment_method: str
     ) -> Order:
+        """Create a new order for a booking with the selected payment method (Checkout 1)."""
 
         self.__order_counter += 1
 
@@ -287,6 +322,7 @@ class PaymentController:
             order: Order,
             student: Student
     ) -> bool:
+        """Finalise the order: set booking status and remove room availability (Checkout 3)."""
 
         booking = order.get_booking()
 

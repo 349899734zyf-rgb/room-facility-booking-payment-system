@@ -1,7 +1,11 @@
 """
-This file stores shared constant values used by the booking feature.
-Keeping these values in one place avoids embedded constants and improves
-readability.
+Module: booking_constants.py
+Layer: Configuration (cross-cutting)
+User Stories: All
+
+Centralised business rule constants shared across Entity, Controller,
+and Boundary layers. Any change to a business rule (e.g. refund rate,
+booking limit, ban threshold) should only happen in this file.
 """
 
 TIME_FORMAT = "%Y-%m-%d %H:%M"
@@ -66,3 +70,33 @@ ROOM_ID_DIGITS = 4
 
 # Cancel command keyword
 CANCEL_COMMAND = "CANCEL"
+
+# Late cancellation refund rates (percentage of room price)
+SMALL_LATE_CANCEL_REFUND_RATE = 0.5
+MEDIUM_LATE_CANCEL_REFUND_RATE = 0.5
+LARGE_LATE_CANCEL_REFUND_RATE = 0.3
+
+# No-show refund rates
+SMALL_NO_SHOW_REFUND_RATE = 0.2
+
+# Late cancellation time windows
+SMALL_LATE_CANCEL_WINDOW_MINUTES = 30
+MEDIUM_LATE_CANCEL_WINDOW_HOURS = 3
+LARGE_LATE_CANCEL_WINDOW_HOURS = 4
+
+# Advance booking requirements
+MEDIUM_ADVANCE_BOOKING_HOURS = 3
+LARGE_ADVANCE_BOOKING_HOURS = 24
+
+# Minimum booking duration for Medium/Large rooms
+MEDIUM_LARGE_MIN_BOOKING_MINUTES = 120
+
+# Student limits
+MAX_ACTIVE_BOOKINGS = 3
+BAN_THRESHOLD = 3
+
+# Advance booking rejection reason
+REASON_ADVANCE_BOOKING_NOT_MET = "advance_booking_requirement_not_met"
+
+# No-show status
+BOOKING_STATUS_NO_SHOW = "no_show"

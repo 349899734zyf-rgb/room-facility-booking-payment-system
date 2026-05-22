@@ -1,6 +1,10 @@
 """
-This file defines the Booking entity class used to store booking details,
-calculate booking duration, and determine cancellation type.
+Module: booking.py
+Layer: Entity
+User Stories: Book 3.1-3.15
+
+Represents a single room booking with its time period, pricing,
+equipment rental, and cancellation logic (regular vs late).
 """
 
 from datetime import datetime, timedelta
@@ -12,13 +16,35 @@ from booking_constants import (
     CANCELLATION_LATE,
     CANCELLATION_REGULAR,
     DISPLAY_TIME_FORMAT,
+    LARGE_LATE_CANCEL_WINDOW_HOURS,
     LATE_CANCELLATION_MINUTES,
+    MEDIUM_LATE_CANCEL_WINDOW_HOURS,
+    ROOM_TYPE_LARGE,
+    ROOM_TYPE_MEDIUM,
+    ROOM_TYPE_SMALL,
     SECONDS_PER_HOUR,
+    SMALL_LATE_CANCEL_WINDOW_MINUTES,
 )
 
 
 class Booking:
-    """Entity class for Booking Management user stories."""
+    """Entity for a room booking.
+
+    Responsibilities:
+        - Store booking details: student, room, time, price, status (Book 3.4-3.5)
+        - Calculate booking duration in hours (Book 3.8)
+        - Determine late cancellation based on room-type-specific time windows (Book 3.3)
+        - Execute cancellation and return cancellation type (Book 3.2, 3.6)
+
+    Business Rules:
+        - Late cancellation window varies by room type:
+          Small = 30 min, Medium = 3 hours, Large = 4 hours.
+        - Status transitions: 'confirmed' -> 'cancelled'.
+
+    Collaborators:
+        - Student: the booking owner
+        - Room: the booked room (provides room_type for cancellation rules)
+    """
 
     def __init__(
         self,
@@ -31,7 +57,18 @@ class Booking:
         total_price: float,
         equipment_deposit: float = 0.0,
     ) -> None:
-        """Create a booking record with room, time, price, and status."""
+        """Create a booking record.
+
+        Args:
+            booking_id: Unique booking identifier (e.g. 'BK0001').
+            student: The Student entity who owns this booking.
+            room: The Room entity being booked.
+            start_time: Booking start datetime.
+            end_time: Booking end datetime.
+            equipment_rental: Whether equipment is rented with this booking.
+            total_price: Room booking price (excl. deposit).
+            equipment_deposit: Refundable equipment deposit amount.
+        """
         self.__booking_id = booking_id
         self.__student = student
         self.__room = room
@@ -105,7 +142,7 @@ class Booking:
         self.__total_price = total_price
 
     def calculate_duration_hours(self) -> float:
-        """Calculate the booking duration in hours."""
+        """Calculate and return the booking duration in hours (Book 3.8)."""
         duration = self.__end_time - self.__start_time
         return duration.total_seconds() / SECONDS_PER_HOUR
 
@@ -117,16 +154,16 @@ class Booking:
         check_time = current_time or datetime.now()
         time_before_start = self.__start_time - check_time
         
-        room_type = "Small"
+        room_type = ROOM_TYPE_SMALL
         if hasattr(self.__room, "get_room_type"):
             room_type = self.__room.get_room_type()
             
-        if room_type == "Medium":
-            late_window = timedelta(hours=3)
-        elif room_type == "Large":
-            late_window = timedelta(hours=4)
+        if room_type == ROOM_TYPE_MEDIUM:
+            late_window = timedelta(hours=MEDIUM_LATE_CANCEL_WINDOW_HOURS)
+        elif room_type == ROOM_TYPE_LARGE:
+            late_window = timedelta(hours=LARGE_LATE_CANCEL_WINDOW_HOURS)
         else:
-            late_window = timedelta(minutes=30)
+            late_window = timedelta(minutes=SMALL_LATE_CANCEL_WINDOW_MINUTES)
             
         return timedelta(0) <= time_before_start <= late_window
 

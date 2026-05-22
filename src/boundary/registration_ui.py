@@ -1,11 +1,15 @@
 """
-RegistrationUI - Registration interface.
-Covers: Acct 1-3
+Module: registration_ui.py
+Layer: Boundary
+User Stories: Acct 1-3
+
+Text-based interface for student registration: collecting personal
+details, credentials, and displaying success/error messages.
 """
 
 
 class RegistrationUI:
-    """Registration boundary class (Account Management 1-3)"""
+    """Boundary class for student registration input and feedback (Acct 1-3)."""
 
     @staticmethod
     def display_registration_header():

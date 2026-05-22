@@ -1,8 +1,22 @@
+"""
+Module: file_handler.py
+Layer: Utility (cross-cutting)
+User Stories: Acct 4 (persist registration), Acct 15 (load for login)
+
+Handles CSV-based persistence of student data: saving new registrations
+and loading existing student records with full attribute restoration.
+"""
 import csv
 import os
 from entities.student import Student
 
 class FileHandler:
+    """Utility class for CSV-based student data persistence.
+
+    Responsibilities:
+        - Save a student's full state to a CSV file (Acct 4)
+        - Load all students from CSV with backward-compatible field parsing (Acct 15)
+    """
     Fields = [
         'firstName', 'lastName', 'sID', 'phone', 'email', 'password', 'balance',
         'booking_ban_status', 'late_cancellation_count', 'no_show_count', 'deal_package_hours', 'used_promo_codes'
