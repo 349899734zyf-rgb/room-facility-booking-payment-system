@@ -39,10 +39,10 @@ from entities.student import Student
 from entities.admin import Admin
 from entities.room import Room
 from entities.equipment import Equipment
-from booking_constants import REASON_INVALID_INPUT, REASON_NO_ROOMS
+from booking_constants import REASON_INVALID_INPUT, REASON_NO_ROOMS, REASON_INSUFFICIENT_BALANCE
 
 
-def run_student_booking(student, book_ctrl, booking_ui):
+def run_student_booking(student, book_ctrl, booking_ui, acct_ctrl=None, funds_ui=None, auth_ctrl=None, student_file=None):
     """Integrates Booking System flow for the logged-in student."""
     print("\n=== Booking System ===")
     
@@ -143,6 +143,37 @@ def run_student_booking(student, book_ctrl, booking_ui):
 
     if booking_result['success']:
         booking_ui.display_booking_confirmation(booking_result['booking'])
+    elif booking_result['reason'] == REASON_INSUFFICIENT_BALANCE and funds_ui and acct_ctrl:
+        # Offer top-up option instead of directly returning
+        booking_ui.display_booking_failure_message(booking_result['reason'])
+        print("\nWould you like to add funds and retry?")
+        print("1. Add Funds (Top-Up)")
+        print("2. Return to Main Menu")
+        top_up_choice = input("\nSelection: ").strip()
+        if top_up_choice == "1":
+            amount = funds_ui.get_top_up_amount()
+            if amount is not None and amount > 0:
+                funds_ui.display_payment_confirmation(amount)
+                if funds_ui.get_payment_confirmation():
+                    acct_ctrl.add_funds(student, amount)
+                    funds_ui.display_top_up_success(amount, student.get_balance())
+                    # Save updated balance
+                    if student_file and auth_ctrl:
+                        if os.path.exists(student_file):
+                            os.remove(student_file)
+                        for s in auth_ctrl.get_students():
+                            FileHandler.save_student(student_file, s)
+                    # Retry the booking automatically
+                    print("\nRetrying booking...")
+                    retry_result = book_ctrl.create_booking(
+                        student, selected_room, start_time, end_time, equipment
+                    )
+                    if retry_result['success']:
+                        booking_ui.display_booking_confirmation(retry_result['booking'])
+                    else:
+                        booking_ui.display_booking_failure_message(retry_result['reason'])
+                else:
+                    funds_ui.display_payment_cancelled()
     else:
         booking_ui.display_booking_failure_message(booking_result['reason'])
 
@@ -421,7 +452,7 @@ def student_menu(student, book_ctrl, auth_ctrl, acct_ctrl, payment_ctrl, ui, pro
 
         if choice == "1":
             # Search & Book Rooms
-            run_student_booking(student, book_ctrl, booking_ui)
+            run_student_booking(student, book_ctrl, booking_ui, acct_ctrl, funds_ui, auth_ctrl, student_file)
             # Save student state changes that may result from booking costs
             if os.path.exists(student_file):
                 os.remove(student_file)
